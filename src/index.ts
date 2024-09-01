@@ -28,37 +28,42 @@ let stateByKey: { [key: string]: any };
 let dependenciesByClassName: { [className: string]: Resource[] } = {};
 let dependersByKey: { [key: string]: Resource[] } = {};
 
-let addDependency = (fromResource: Resource, toClass: string, toName: string, toResource: Resource) => {
-		let className = toClass + '_' + toName;
-		let { class_ } = fromResource;
-		let { getKey } = objectByClass[class_];
-		let key = getKey(fromResource);
+let addDependency = (referredResource: Resource, class_: string, name: string, resource: Resource) => {
+		let referredKey = referredResource.key;
 
-		let dependencies = dependenciesByClassName[className];
-		if (dependencies == null) dependencies = dependenciesByClassName[className] = [];
-		dependencies.push(fromResource);
-
-		let dependers = dependersByKey[key];
-		if (dependers == null) dependers = dependersByKey[key] = [];
-		dependers.push(toResource);
+		{
+			let className = class_ + '_' + name;
+			let dependencies = dependenciesByClassName[className];
+			if (dependencies == null) dependencies = dependenciesByClassName[className] = [];
+			dependencies.push(referredResource);
+		}
+		{
+			let dependers = dependersByKey[referredKey];
+			if (dependers == null) dependers = dependersByKey[referredKey] = [];
+			dependers.push(resource);
+		}
 }
 
 let create = (class_: string, name: string, f: (get: any) => Record<string, any>) => {
 	let resource: Resource = { class_, name, attributes: undefined };
 
-	let get = (fromResource: Resource, prop: string) => {
-		addDependency(fromResource, class_, name, resource);
+	let get = (referredResource: Resource, prop: string) => {
+		addDependency(referredResource, class_, name, resource);
 		{
-			let { class_ } = fromResource;
+			let { class_ } = referredResource;
 			let { getKey } = objectByClass[class_];
-			let key = getKey(fromResource);
+			let key = getKey(referredResource);
 
 			let state = stateByKey[key];
 			return state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
 		}
 	};
 
-	resource.attributes = f(get);
+	let attributes = f(get);
+	let { getKey } = objectByClass[resource.class_];
+
+	resource.attributes = attributes;
+	resource.key = getKey(resource);
 	return resource;
 };
 
@@ -114,11 +119,6 @@ for (let stateFilename of stateFilenames) {
 }
 
 let resources = getResources();
-
-for (let resource of resources) {
-	let { getKey } = objectByClass[resource.class_];
-	resource.key = getKey(resource);
-}
 
 let resourceByKey = Object.fromEntries(resources.map(resource => [resource.key, resource]));
 
