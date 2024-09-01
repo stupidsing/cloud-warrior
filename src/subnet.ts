@@ -3,17 +3,6 @@ import { Class, Resource } from "./types";
 
 let class_ = 'subnet';
 
-let getKey = ({ name, attributes }: Resource) => [
-	prefix,
-	class_,
-	name,
-	attributes.VpcId,
-	attributes.AvailabilityZone,
-	attributes.CidrBlock.replaceAll('/', ':'),
-].join('_');
-
-let getStateFilename_ = (resource: Resource) => getStateFilename(getKey(resource));
-
 let delete_ = (state, key: string) => [
 	`aws ec2 delete-subnet \\`,
 	`  --subnet-id ${state.SubnetId}`,
@@ -27,11 +16,11 @@ let refreshById = (key, id) => [
 ];
 
 let upsert = (state, resource: Resource) => {
-	let { attributes } = resource;
+	let { name, attributes, key } = resource;
+	let { AvailabilityZone, CidrBlock, VpcId } = attributes;
 	let commands = [];
 
 	if (state == null) {
-		let { name, attributes: { AvailabilityZone, CidrBlock, VpcId } } = resource;
 		commands.push(
 			`aws ec2 create-subnet \\`,
 			`  --availability-zone ${AvailabilityZone} \\`,
@@ -40,12 +29,12 @@ let upsert = (state, resource: Resource) => {
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
-			`  | jq .Subnet | tee ${getStateFilename_(resource)}`,
+			`  | jq .Subnet | tee ${getStateFilename(key)}`,
 		);
 		state = {};
 	}
 
-	let SubnetId = `$(cat ${getStateFilename_(resource)} | jq -r .SubnetId)`;
+	let SubnetId = `$(cat ${getStateFilename(key)} | jq -r .SubnetId)`;
 
 	{
 		let prop = 'MapPublicIpOnLaunch';
@@ -54,7 +43,7 @@ let upsert = (state, resource: Resource) => {
 				`aws ec2 modify-subnet-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}map-public-ip-on-launch \\`,
 				`  --subnet-id ${SubnetId}`,
-				...refreshById(getKey(resource), SubnetId),
+				...refreshById(key, SubnetId),
 			);
 		}
 	}
@@ -66,7 +55,14 @@ export let subnetClass: () => Class = () => {
 	return {
 		class_,
 		delete_,
-		getKey,
+		getKey: ({ name, attributes }: Resource) => [
+			prefix,
+			class_,
+			name,
+			attributes.VpcId,
+			attributes.AvailabilityZone,
+			attributes.CidrBlock.replaceAll('/', ':'),
+		].join('_'),
 		refresh: ({ SubnetId }, key: string) => refreshById(key, SubnetId),
 		upsert,
 	};

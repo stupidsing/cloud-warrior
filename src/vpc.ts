@@ -3,14 +3,6 @@ import { Class, Resource } from "./types";
 
 let class_ = 'vpc';
 
-let getKey = ({ name }: Resource) => [
-	prefix,
-	class_,
-	name,
-].join('_');
-
-let getStateFilename_ = (resource: Resource) => getStateFilename(getKey(resource));
-
 let delete_ = (state, key: string) => {
 	let stateFilename = getStateFilename(key);
 	return [
@@ -22,24 +14,24 @@ let delete_ = (state, key: string) => {
 };
 
 let upsert = (state, resource: Resource) => {
-	let { attributes } = resource;
+	let { name, attributes, key } = resource;
+	let { CidrBlockAssociationSet } = attributes;
 	let commands = [];
 
 	if (state == null) {
-		let { name, attributes: { CidrBlockAssociationSet } } = resource;
 		commands.push(
 			`aws ec2 create-vpc \\`,
 			`  --cidr-block ${CidrBlockAssociationSet[0].CidrBlock} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' | \\`,
-			`  jq .Vpc | tee ${getStateFilename_(resource)}`,
+			`  jq .Vpc | tee ${getStateFilename(key)}`,
 		);
 		state = { CidrBlockAssociationSet: [{ CidrBlock: attributes['CidrBlockAssociationSet'][0]['CidrBlock'] }] };
 	}
 
 	// let VpcId = `$(aws ec2 describe-vpcs --filter Name:${name} | jq -r .Vpcs[0].VpcId)`;
-	let VpcId = `$(cat ${getStateFilename_(resource)} | jq -r .VpcId)`;
+	let VpcId = `$(cat ${getStateFilename(key)} | jq -r .VpcId)`;
 
 	{
 		let prop = 'CidrBlockAssociationSet';
@@ -71,7 +63,7 @@ let upsert = (state, resource: Resource) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-hostnames \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee ${getStateFilename_(resource)}#${prop}`);
+				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`);
 		}
 	}
 	{
@@ -81,7 +73,7 @@ let upsert = (state, resource: Resource) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-support \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee ${getStateFilename_(resource)}#${prop}`);
+				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`);
 		}
 	}
 
@@ -92,7 +84,11 @@ export let vpcClass: () => Class = () => {
 	return {
 		class_,
 		delete_,
-		getKey,
+		getKey: ({ name }: Resource) => [
+			prefix,
+			class_,
+			name,
+		].join('_'),
 		refresh: ({ VpcId }, key: string) => [
 			`aws ec2 describe-vpcs \\`,
 			`  --vpc-ids ${VpcId} \\`,

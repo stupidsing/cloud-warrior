@@ -3,20 +3,11 @@ import { Class, Resource } from "./types";
 
 let class_ = 'instance';
 
-let getKey = ({ name, attributes }: Resource) => [
-	prefix,
-	class_,
-	name,
-	attributes.InstanceType,
-	attributes.ImageId,
-].join('_');
-
-let getStateFilename_ = (resource: Resource) => getStateFilename(getKey(resource));
-
 let delete_ = (state, key: string) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${state.InstanceId}`,
 	`rm -f ${getStateFilename(key)}`,
+	`# wait for instance to terminate`,
 ];
 
 let refreshById = (key, id) => [
@@ -26,11 +17,11 @@ let refreshById = (key, id) => [
 ];
 
 let upsert = (state, resource: Resource) => {
-	let { attributes } = resource;
+	let { name, attributes, key } = resource;
+	let { ImageId, InstanceType, SecurityGroups, SubnetId } = attributes;
 	let commands = [];
 
 	if (state == null) {
-		let { name, attributes: { ImageId, InstanceType, SecurityGroups, SubnetId } } = resource;
 		commands.push(
 			`aws ec2 run-instances \\`,
 			...(SecurityGroups.length > 0 ? [`  --security-groups ${SecurityGroups.join(',')} \\`] : []),
@@ -40,12 +31,12 @@ let upsert = (state, resource: Resource) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'instance', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | jq .Instances[0] | tee ${getStateFilename_(resource)}`,
+			`  | jq .Instances[0] | tee ${getStateFilename(key)}`,
 		);
 		state = { SecurityGroups };
 	}
 
-	let InstanceId = `$(cat ${getStateFilename_(resource)} | jq -r .InstanceId)`;
+	let InstanceId = `$(cat ${getStateFilename(key)} | jq -r .InstanceId)`;
 
 	{
 		let prop = 'SecurityGroups';
@@ -56,7 +47,7 @@ let upsert = (state, resource: Resource) => {
 					`aws ec2 modify-instance-attribute \\`,
 					...values.length > 0 ? [`  --groups ${values.join(',')} \\`] : [],
 					`  --instance-id ${InstanceId}`,
-					...refreshById(getKey(resource), InstanceId),
+					...refreshById(key, InstanceId),
 				);
 			}
 	}
@@ -68,7 +59,13 @@ export let instanceClass: () => Class = () => {
 	return {
 		class_,
 		delete_,
-		getKey,
+		getKey: ({ name, attributes }: Resource) => [
+			prefix,
+			class_,
+			name,
+			attributes.InstanceType,
+			attributes.ImageId,
+		].join('_'),
 		refresh: ({ InstanceId }, key: string) => refreshById(key, InstanceId),
 		upsert,
 	};
