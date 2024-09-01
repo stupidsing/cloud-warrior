@@ -28,10 +28,11 @@ let stateByKey: { [key: string]: any };
 let dependenciesByClassName: { [className: string]: Resource[] } = {};
 let dependersByKey: { [key: string]: Resource[] } = {};
 
-let addDependency = (referredResource: Resource, class_: string, name: string, resource: Resource) => {
+let addDependency = (referredResource: Resource, resource: Resource) => {
 		let referredKey = referredResource.key;
 
 		{
+			let { class_, name } = resource;
 			let className = class_ + '_' + name;
 			let dependencies = dependenciesByClassName[className];
 			if (dependencies == null) dependencies = dependenciesByClassName[className] = [];
@@ -46,19 +47,17 @@ let addDependency = (referredResource: Resource, class_: string, name: string, r
 
 let create = (class_: string, name: string, f: (get: any) => Record<string, any>) => {
 	let resource: Resource = { class_, name, attributes: undefined };
+	let { getKey } = objectByClass[class_];
 
 	let get = (referredResource: Resource, prop: string) => {
-		addDependency(referredResource, class_, name, resource);
+		addDependency(referredResource, resource);
 
 		let key = referredResource.key;
 		let state = stateByKey[key];
 		return state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
 	};
 
-	let attributes = f(get);
-	let { getKey } = objectByClass[resource.class_];
-
-	resource.attributes = attributes;
+	resource.attributes = f(get);
 	resource.key = getKey(resource);
 	return resource;
 };
