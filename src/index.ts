@@ -49,14 +49,10 @@ let create = (class_: string, name: string, f: (get: any) => Record<string, any>
 
 	let get = (referredResource: Resource, prop: string) => {
 		addDependency(referredResource, class_, name, resource);
-		{
-			let { class_ } = referredResource;
-			let { getKey } = objectByClass[class_];
-			let key = getKey(referredResource);
 
-			let state = stateByKey[key];
-			return state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
-		}
+		let key = referredResource.key;
+		let state = stateByKey[key];
+		return state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
 	};
 
 	let attributes = f(get);
