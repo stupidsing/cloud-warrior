@@ -45,6 +45,7 @@ let addDependency = (referredResource: Resource, resource: Resource) => {
 			if (dependencies == null) dependencies = dependenciesByClassName[className] = [];
 			dependencies.push(referredResource);
 		}
+
 		{
 			let dependers = dependersByKey[referredKey];
 			if (dependers == null) dependers = dependersByKey[referredKey] = [];

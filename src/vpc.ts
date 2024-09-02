@@ -64,6 +64,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			}
 		}
 	}
+
 	{
 		let prop = 'EnableDnsHostnames';
 		if (state[prop] !== attributes[prop]) {
@@ -75,6 +76,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			);
 		}
 	}
+
 	{
 		let prop = 'EnableDnsSupport';
 		if (state[prop] !== attributes[prop]) {

@@ -4,6 +4,7 @@ import { AttributesInput, Class, Resource_ } from "./types";
 let class_ = 'instance';
 
 type Attributes = {
+	IamInstanceProfile?: { Arn: string },
 	ImageId: string,
 	InstanceType: string,
 	SecurityGroups: { GroupId: string }[],
@@ -48,11 +49,37 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 	}
 
 	{
+		let prop = 'InstanceProfile';
+		let source = state[prop]?.Arn;
+		let target = attributes[prop]?.Arn;
+		if (source !== target) {
+			if (source != null) {
+				commands.push(
+					`aws ec2 disassciate-iam-instance-profile \\`,
+					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} | \\`,
+					`    jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
+					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
+					...refreshById(key, InstanceId),
+				);
+			}
+
+			if (target != null) {
+				commands.push(
+					`aws ec2 assciate-iam-instance-profile \\`,
+					`  --iam-instance-profile Arn:${target} \\`,
+					`  --instance-id ${InstanceId}`,
+					...refreshById(key, InstanceId),
+				);
+			}
+		}
+	}
+
+	{
 		let prop = 'SecurityGroups';
 		let source = state[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(',');
 		let target = attributes[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(',');
 		if (source !== target) {
-			if (target.length > 0)
+			if (target.length > 0) {
 				commands.push(
 					`aws ec2 modify-instance-attribute \\`,
 					`  --instance-id ${InstanceId}`,
@@ -60,6 +87,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 					...refreshById(key, InstanceId),
 				);
 			}
+		}
 	}
 
 	return commands;
