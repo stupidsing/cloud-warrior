@@ -1,10 +1,37 @@
 import { createInstance } from './instance';
+import { createInstanceProfile } from './instanceProfile';
+import { createPolicy } from './policy';
+import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
 import { createSubnet } from './subnet';
 import { createVpc } from './vpc';
 import { run } from './warrior';
 
 run(() => {
+	let policy = createPolicy('policy-app', get => ({
+		PolicyDocument: {
+			Version: '2012-10-17',
+			Statement: [
+				{
+				Effect: 'Allow',
+				Action: ['s3:ListBucket*', 's3:PutBucket*', 's3:GetBucket*'],
+				Resource: ['arn:aws:s3:::my-bucket'],
+				}
+			],
+		},
+		PolicyName: 'policy-app',
+	}));
+
+	let role = createRole('role-app', get => ({
+		RoleName: 'role-app',
+		Policies: [policy.getPolicyName(get)],
+	}));
+
+	let instanceProfile = createInstanceProfile('instance-profile-app', get => ({
+		InstanceProfileName: 'instance-profile-app',
+		Roles: [{ RoleName: role.getRoleName(get) }],
+	}));
+
 	let vpc = createVpc('a', get => ({
 		CidrBlockAssociationSet: [{ CidrBlock: '10.88.0.0/16' }],
 		EnableDnsHostnames: true,

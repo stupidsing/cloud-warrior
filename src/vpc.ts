@@ -71,7 +71,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-hostnames \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`);
+				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`,
+			);
 		}
 	}
 	{
@@ -81,7 +82,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-support \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`);
+				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`,
+			);
 		}
 	}
 

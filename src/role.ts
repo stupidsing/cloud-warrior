@@ -4,7 +4,7 @@ import { AttributesInput, Class, Resource_ } from "./types";
 let class_ = 'role';
 
 type Attributes = {
-	Description: string,
+	Description?: string,
 	RoleName: string,
 };
 
@@ -21,7 +21,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws iam create-role \\`,
-			`  --description ${Description} \\`,
+			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --role-name ${RoleName} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'role', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },

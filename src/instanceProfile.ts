@@ -1,10 +1,12 @@
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
+import { difference } from "./utils";
 
 let class_ = 'instance-profile';
 
 type Attributes = {
 	InstanceProfileName: string,
+	Roles: { RoleName: string }[],
 };
 
 let delete_ = (state, key: string) => [
@@ -14,7 +16,8 @@ let delete_ = (state, key: string) => [
 ];
 
 let upsert = (state, resource: Resource_<Attributes>) => {
-	let { name, attributes: { InstanceProfileName }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { InstanceProfileName } = attributes;
 	let commands = [];
 
 	if (state == null) {
@@ -26,7 +29,27 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			])}' | jq .InstanceProfile | tee ${getStateFilename(key)}`,
 			`aws iam wait instance-profile-exists --instance-profile-name ${InstanceProfileName}`,
 		);
-		state = { InstanceProfileName };
+		state = { InstanceProfileName, Roles: [] };
+	}
+
+	{
+		let prop = 'Roles';
+		let source = new Set<string>(state[prop].map(r => r.RoleName));
+		let target = new Set<string>(attributes[prop].map(r => r.RoleName));
+		difference(target, source).forEach(RoleName => {
+			commands.push(
+				`aws iam add-role-to-instance-profile \\`,
+				`  --instance-profile-name ${InstanceProfileName} \\`,
+				`  --role-name ${RoleName}`,
+			);
+		});
+		difference(source, target).forEach(RoleName => {
+			commands.push(
+				`aws iam remove-role-from-instance-profile \\`,
+				`  --instance-profile-name ${InstanceProfileName} \\`,
+				`  --role-name ${RoleName}`,
+			);
+		});
 	}
 
 	return commands;

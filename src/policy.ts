@@ -3,9 +3,18 @@ import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'policy';
 
+type PolicyDocument = {
+	Version: string,
+	Statement: {
+		Action: string[],
+		Effect: string,
+		Resource: string[],
+	}[],
+};
+
 type Attributes = {
-	Description: string,
-	PolicyDocument: string,
+	Description?: string,
+	PolicyDocument: PolicyDocument,
 	PolicyName: string,
 };
 
@@ -15,17 +24,26 @@ let delete_ = (state, key: string) => [
 	`rm -f ${getStateFilename(key)}`,
 ];
 
+let refreshByArn = (key, arn) => [
+	`ARN=${arn}`,
+	`aws iam get-policy \\`,
+	`  --policy-arn \${ARN} \\`,
+	`  | jq .Policy | tee ${getStateFilename(key)}`,
+];
+
 let upsert = (state, resource: Resource_<Attributes>) => {
-	let { name, attributes: { Description, PolicyDocument, PolicyName }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { Description, PolicyDocument, PolicyName } = attributes;
 	let commands = [];
 
 	let PolicyArn = `$(cat ${getStateFilename(key)} | jq -r .Arn)`;
 
 	if (state == null) {
 		commands.push(
+			`echo '${JSON.stringify(PolicyDocument)}' > /tmp/policy_document_${key}.json`,
 			`aws iam create-policy \\`,
-			`  --description ${Description} \\`,
-			`  --policy-document ${PolicyDocument} \\`,
+			...Description != null ? [`  --description ${Description} \\`] : [],
+			`  --policy-document file:///tmp/policy_document_${key}.json \\`,
 			`  --policy-name ${PolicyName} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'policy', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
@@ -33,6 +51,25 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
 		);
 		state = { Description, PolicyDocument, PolicyName };
+	}
+
+	{
+		let prop = 'PolicyDocument';
+		let source = JSON.stringify(state[prop]);
+		let target = JSON.stringify(attributes[prop]);
+		if (source !== target) {
+			commands.push(
+				`aws iam delete-policy-version \\`,
+				`  --policy-arn ${PolicyArn} \\`,
+				`  --version-id $(aws iam list-policy-version --policy-arn ${PolicyArn} | jq -r '.Versions | map(select(.IsDefaultVersion | not).VersionId)[0]')`,
+				`echo '${target}' > /tmp/policy_document_${key}.json`,
+				`aws iam create-policy-version \\`,
+				`  --policy-arn ${PolicyArn} \\`,
+				`  --policy-document '${PolicyDocument}' \\`,
+				`  --set-as-default`,
+				...refreshByArn(key, PolicyArn),
+			);
+		}
 	}
 
 	return commands;
@@ -48,12 +85,7 @@ export let policyClass: Class = {
 		attributes.PolicyName,
 		attributes.Description,
 	].join('_'),
-	refresh: ({ PolicyArn }, key: string) => [
-		`ARN=${PolicyArn}`,
-		`aws iam get-policy \\`,
-		`  --policy-arn \${ARN} \\`,
-		`  | jq .Policy | tee ${getStateFilename(key)}`,
-	],
+	refresh: ({ PolicyArn }, key: string) => refreshByArn(key, PolicyArn),
 	upsert,
 };
 
@@ -64,5 +96,6 @@ export let createPolicy = (name: string, f: AttributesInput<Attributes>) => {
 	return {
 		...resource,
 		getArn: get => get(resource, 'Arn'),
+		getPolicyName: get => get(resource, 'PolicyName'),
 	};
 };
