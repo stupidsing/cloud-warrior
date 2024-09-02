@@ -22,10 +22,12 @@ let upsert = (state, resource: Resource) => {
 	let { ImageId, InstanceType, SecurityGroups, SubnetId } = attributes;
 	let commands = [];
 
+	let InstanceId = `$(cat ${getStateFilename(key)} | jq -r .InstanceId)`;
+
 	if (state == null) {
 		commands.push(
 			`aws ec2 run-instances \\`,
-			...(SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.join(',')} \\`] : []),
+			...(SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(',')} \\`] : []),
 			`  --image-id ${ImageId} \\`,
 			`  --instance-type ${InstanceType} \\`,
 			`  --subnet-id ${SubnetId} \\`,
@@ -33,11 +35,10 @@ let upsert = (state, resource: Resource) => {
 				{ ResourceType: 'instance', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .Instances[0] | tee ${getStateFilename(key)}`,
+			`aws ec2 wait instance-exists --instance-id ${InstanceId}`,
 		);
 		state = { SecurityGroups };
 	}
-
-	let InstanceId = `$(cat ${getStateFilename(key)} | jq -r .InstanceId)`;
 
 	{
 		let prop = 'SecurityGroups';

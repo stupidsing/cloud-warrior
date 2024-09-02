@@ -19,6 +19,9 @@ let upsert = (state, resource: Resource) => {
 	let { CidrBlockAssociationSet } = attributes;
 	let commands = [];
 
+	// let VpcId = `$(aws ec2 describe-vpcs --filter Name:${name} | jq -r .Vpcs[0].VpcId)`;
+	let VpcId = `$(cat ${getStateFilename(key)} | jq -r .VpcId)`;
+
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-vpc \\`,
@@ -27,12 +30,10 @@ let upsert = (state, resource: Resource) => {
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' | \\`,
 			`  jq .Vpc | tee ${getStateFilename(key)}`,
+			`aws ec2 wait vpc-available --vpc-id ${VpcId}`,
 		);
 		state = { CidrBlockAssociationSet: [{ CidrBlock: attributes['CidrBlockAssociationSet'][0]['CidrBlock'] }] };
 	}
-
-	// let VpcId = `$(aws ec2 describe-vpcs --filter Name:${name} | jq -r .Vpcs[0].VpcId)`;
-	let VpcId = `$(cat ${getStateFilename(key)} | jq -r .VpcId)`;
 
 	{
 		let prop = 'CidrBlockAssociationSet';

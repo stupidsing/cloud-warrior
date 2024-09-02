@@ -20,6 +20,8 @@ let upsert = (state, resource: Resource) => {
 	let { name, attributes: { Description, GroupName, VpcId }, key } = resource;
 	let commands = [];
 
+	let GroupId = `$(cat ${getStateFilename(key)} | jq -r .GroupId)`;
+
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-security-group \\`,
@@ -29,12 +31,11 @@ let upsert = (state, resource: Resource) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' | tee ${getStateFilename(key)}`,
-			...refreshById(key, `$(cat ${getStateFilename(key)} | jq -r .GroupId)`),
+			`aws ec2 wait security-group-exists --group-ids ${GroupId}`,
+			...refreshById(key, GroupId),
 		);
 		state = { Description, GroupName, VpcId };
 	}
-
-	let GroupId = `$(cat ${getStateFilename(key)} | jq -r .GroupId)`;
 
 	return commands;
 };

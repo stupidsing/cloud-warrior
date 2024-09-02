@@ -21,6 +21,8 @@ let upsert = (state, resource: Resource) => {
 	let { AvailabilityZone, CidrBlock, VpcId } = attributes;
 	let commands = [];
 
+	let SubnetId = `$(cat ${getStateFilename(key)} | jq -r .SubnetId)`;
+
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-subnet \\`,
@@ -31,11 +33,10 @@ let upsert = (state, resource: Resource) => {
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  | jq .Subnet | tee ${getStateFilename(key)}`,
+			`aws ec2 wait subnet-available --subnet-id ${SubnetId}`,
 		);
 		state = {};
 	}
-
-	let SubnetId = `$(cat ${getStateFilename(key)} | jq -r .SubnetId)`;
 
 	{
 		let prop = 'MapPublicIpOnLaunch';
