@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { dependersDirectory, getStateFilename, stateDirectory } from './constants';
 import { instanceClass } from './instance';
+import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
 import { subnetClass } from './subnet';
 import { AttributesInput, Resource } from './types';
@@ -20,6 +21,7 @@ let classes = Object.fromEntries([
 	instanceClass,
 	securityGroupClass,
 	subnetClass,
+	roleClass,
 	vpcClass,
 ].map(c => [c.class_, c]));
 
