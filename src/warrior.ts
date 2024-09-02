@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { dependersDirectory, getStateFilename, stateDirectory } from './constants';
 import { instanceClass } from './instance';
+import { instanceProfileClass } from './instanceProfile';
 import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
 import { subnetClass } from './subnet';
@@ -19,6 +20,7 @@ let readJsonIfExists = name => {
 
 let classes = Object.fromEntries([
 	instanceClass,
+	instanceProfileClass,
 	securityGroupClass,
 	subnetClass,
 	roleClass,

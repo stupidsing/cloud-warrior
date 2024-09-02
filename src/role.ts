@@ -14,18 +14,9 @@ let delete_ = (state, key: string) => [
 	`rm -f ${getStateFilename(key)}`,
 ];
 
-let refreshByName = (key, RoleName) => [
-	`NAME=${RoleName}`,
-	`aws iam get-role \\`,
-	`  --role-name \${NAME} \\`,
-	`  | jq .Role[0] | tee ${getStateFilename(key)}`,
-];
-
 let upsert = (state, resource: Resource_<Attributes>) => {
 	let { name, attributes: { Description, RoleName }, key } = resource;
 	let commands = [];
-
-	let RoleId = `$(cat ${getStateFilename(key)} | jq -r .RoleId)`;
 
 	if (state == null) {
 		commands.push(
@@ -34,9 +25,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --role-name ${RoleName} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'role', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' | tee ${getStateFilename(key)}`,
+			])}' | jq .Role | tee ${getStateFilename(key)}`,
 			`aws iam wait role-exists --role-name ${RoleName}`,
-			...refreshByName(key, RoleName),
 		);
 		state = { Description, RoleName };
 	}
@@ -54,7 +44,12 @@ export let roleClass: Class = {
 		attributes.RoleName,
 		attributes.Description,
 	].join('_'),
-	refresh: ({ RoleName }, key: string) => refreshByName(key, RoleName),
+	refresh: ({ RoleName }, key: string) => [
+		`NAME=${RoleName}`,
+		`aws iam get-role \\`,
+		`  --role-name \${NAME} \\`,
+		`  | jq .Role[0] | tee ${getStateFilename(key)}`,
+	],
 	upsert,
 };
 
