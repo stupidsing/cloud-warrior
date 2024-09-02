@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { Class, Resource } from "./types";
+import { Class, Resource, Resource_ } from "./types";
 
 let class_ = 'instance';
 
@@ -73,4 +73,11 @@ export let instanceClass: Class = {
 
 import { create } from "./warrior";
 
-export let createInstance = (name, f) => create(class_, name, f);
+type Attributes = {
+	ImageId: string,
+	InstanceType: string,
+	SecurityGroups: { GroupId: string }[],
+	SubnetId: string,
+};
+
+export let createInstance: (name: string, f: (get: (referredResource: Resource, prop: string) => string) => Attributes) => Resource_<Attributes> = (name, f) => create(class_, name, f) as Resource_<Attributes>;

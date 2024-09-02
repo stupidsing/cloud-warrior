@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { Class, Resource } from "./types";
+import { Class, Resource, Resource_ } from "./types";
 
 let class_ = 'subnet';
 
@@ -69,4 +69,11 @@ export let subnetClass: Class = {
 
 import { create } from "./warrior";
 
-export let createSubnet = (name, f) => create(class_, name, f);
+type Attributes = {
+	AvailabilityZone: string,
+	CidrBlock: string,
+	MapPublicIpOnLaunch: boolean,
+	VpcId: string,
+};
+
+export let createSubnet: (name: string, f: (get: (referredResource: Resource, prop: string) => string) => Attributes) => Resource_<Attributes> = (name, f) => create(class_, name, f) as Resource_<Attributes>;

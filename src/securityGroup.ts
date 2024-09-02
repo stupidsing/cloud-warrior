@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { Class, Resource } from "./types";
+import { Class, Resource, Resource_ } from "./types";
 
 let class_ = 'security-group';
 
@@ -56,4 +56,10 @@ export let securityGroupClass: Class = {
 
 import { create } from "./warrior";
 
-export let createSecurityGroup = (name, f) => create(class_, name, f);
+type Attributes = {
+	Description: string,
+	GroupName: string,
+	VpcId: string,
+};
+
+export let createSecurityGroup: (name: string, f: (get: (referredResource: Resource, prop: string) => string) => Attributes) => Resource_<Attributes> = (name, f) => create(class_, name, f) as Resource_<Attributes>;

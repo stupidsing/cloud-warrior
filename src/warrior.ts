@@ -46,7 +46,7 @@ let addDependency = (referredResource: Resource, resource: Resource) => {
 		}
 }
 
-export let create = (class_: string, name: string, f: (get: any) => Record<string, any>) => {
+export let create = (class_: string, name: string, f: (get: (referredResource: Resource, prop: string) => string) => Record<string, any>) => {
 	let resource: Resource = { class_, name, attributes: undefined };
 	let { getKey } = classes[class_];
 
@@ -55,7 +55,8 @@ export let create = (class_: string, name: string, f: (get: any) => Record<strin
 
 		let key = referredResource.key;
 		let state = stateByKey[key];
-		return state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
+		let value: string = state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
+		return value;
 	};
 
 	let key: string;

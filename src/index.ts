@@ -34,7 +34,7 @@ run(() => {
 	let instance = createInstance('0', get => ({
 		ImageId: 'ami-05d6d0aae066c8d93', // aws ssm get-parameter --name /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id | jq -r .Parameter.Value
 		InstanceType: 't3.nano',
-		SecurityGroups: [get(securityGroup, 'GroupId')],
+		SecurityGroups: [{ GroupId: get(securityGroup, 'GroupId') }],
 		SubnetId: get(subnetPrivate, 'SubnetId'),
 	}));
 

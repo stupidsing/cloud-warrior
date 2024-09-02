@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { Class, Resource } from "./types";
+import { Class, Resource, Resource_ } from "./types";
 
 let class_ = 'vpc';
 
@@ -108,4 +108,10 @@ export let vpcClass: Class = {
 
 import { create } from "./warrior";
 
-export let createVpc = (name, f) => create(class_, name, f);
+type Attributes = {
+	CidrBlockAssociationSet: { CidrBlock: string }[],
+	EnableDnsHostnames: boolean,
+	EnableDnsSupport: boolean,
+};
+
+export let createVpc: (name: string, f: (get: (referredResource: Resource, prop: string) => string) => Attributes) => Resource_<Attributes> = (name, f) => create(class_, name, f) as Resource_<Attributes>;

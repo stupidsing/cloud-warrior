@@ -6,10 +6,12 @@ export type Class = {
 	upsert: (state: any, resource: Resource) => string[];
 };
 
-export type Resource = {
+export type Resource_<Attributes> = {
 	class_: string;
 	name: string;
-	attributes: Record<string, any>;
+	attributes: Attributes;
 
 	key?: string;
 };
+
+export type Resource = Resource_<Record<string, any>>;
