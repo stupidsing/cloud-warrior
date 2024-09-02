@@ -47,7 +47,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --policy-name ${PolicyName} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'policy', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' | jq .Policy | tee ${getStateFilename(key)}`,
+			])}' \\`,
+			`  | jq .Policy | tee ${getStateFilename(key)}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
 		);
 		state = { Description, PolicyDocument, PolicyName };

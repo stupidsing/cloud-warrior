@@ -25,7 +25,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --role-name ${RoleName} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'role', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' | jq .Role | tee ${getStateFilename(key)}`,
+			])}' \\`,
+			`  | jq .Role | tee ${getStateFilename(key)}`,
 			`aws iam wait role-exists --role-name ${RoleName}`,
 		);
 		state = { Description, RoleName };

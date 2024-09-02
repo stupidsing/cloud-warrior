@@ -15,7 +15,7 @@ run(() => {
 				{
 				Effect: 'Allow',
 				Action: ['s3:ListBucket*', 's3:PutBucket*', 's3:GetBucket*'],
-				Resource: ['arn:aws:s3:::my-bucket'],
+				Resource: ['arn:aws:s3:::app-bucket'],
 				}
 			],
 		},

@@ -56,8 +56,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			if (source != null) {
 				commands.push(
 					`aws ec2 disassciate-iam-instance-profile \\`,
-					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} | \\`,
-					`    jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
+					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} \\`,
+					`  | jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
 					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
 					...refreshById(key, InstanceId),
 				);

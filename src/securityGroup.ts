@@ -36,7 +36,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --vpc-id ${VpcId} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' | tee ${getStateFilename(key)}`,
+			])}' \\`,
+			`  | tee ${getStateFilename(key)}`,
 			`aws ec2 wait security-group-exists --group-ids ${GroupId}`,
 			...refreshById(key, GroupId),
 		);
