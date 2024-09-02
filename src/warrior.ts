@@ -24,6 +24,7 @@ let classes = Object.fromEntries([
 ].map(c => [c.class_, c]));
 
 let stateByKey: { [key: string]: any };
+let resourceByKey: { [key: string]: Resource } = {};
 
 let dependenciesByClassName: { [className: string]: Resource[] } = {};
 let dependersByKey: { [key: string]: Resource[] } = {};
@@ -57,12 +58,13 @@ export let create = (class_: string, name: string, f: (get: any) => Record<strin
 		return state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
 	};
 
+	let key: string;
 	resource.attributes = f(get);
-	resource.key = getKey(resource);
-	return resource;
+	resource.key = key = getKey(resource);
+	return resourceByKey[key] = resource;
 };
 
-export let run = getResources => {
+export let run = f => {
 	let stateFilenames = readdirSync(stateDirectory);
 	let action = process.env.ACTION ?? 'up';
 
@@ -77,9 +79,7 @@ export let run = getResources => {
 		}
 	}
 
-	let resources = getResources();
-
-	let resourceByKey = Object.fromEntries(resources.map(resource => [resource.key, resource]));
+	f();
 
 	let commands: string[] = [];
 
