@@ -13,9 +13,9 @@ run(() => {
 			Version: '2012-10-17',
 			Statement: [
 				{
-				Effect: 'Allow',
-				Action: ['s3:ListBucket*', 's3:PutBucket*', 's3:GetBucket*'],
-				Resource: ['arn:aws:s3:::app-bucket'],
+					Action: ['s3:ListBucket*', 's3:PutBucket*', 's3:GetBucket*'],
+					Effect: 'Allow',
+					Resource: ['arn:aws:s3:::app-bucket'],
 				}
 			],
 		},
@@ -23,6 +23,16 @@ run(() => {
 	}));
 
 	let role = createRole('role-app', get => ({
+		AssumeRolePolicyDocument: {
+			Version: '2012-10-17',
+			Statement: [
+			{
+				Action: ['sts:AssumeRole'],
+				Effect: 'Allow',
+				Principal: { AWS: 'arn:aws:iam::123456789012:root' },
+			}
+			]
+			},
 		RoleName: 'role-app',
 		Policies: [policy.getPolicyName(get)],
 	}));

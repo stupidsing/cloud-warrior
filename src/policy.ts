@@ -1,16 +1,8 @@
+import { PolicyDocument } from "./aws";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'policy';
-
-type PolicyDocument = {
-	Version: string,
-	Statement: {
-		Action: string[],
-		Effect: string,
-		Resource: string[],
-	}[],
-};
 
 type Attributes = {
 	Description?: string,
@@ -45,9 +37,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --policy-document file:///tmp/policy_document_${key}.json \\`,
 			`  --policy-name ${PolicyName} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'policy', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' \\`,
+			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
 			`  | jq .Policy | tee ${getStateFilename(key)}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
 		);

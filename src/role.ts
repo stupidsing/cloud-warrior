@@ -1,9 +1,11 @@
+import { PolicyDocument } from "./aws";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'role';
 
 type Attributes = {
+	AssumeRolePolicyDocument: PolicyDocument,
 	Description?: string,
 	RoleName: string,
 };
@@ -15,21 +17,37 @@ let delete_ = (state, key: string) => [
 ];
 
 let upsert = (state, resource: Resource_<Attributes>) => {
-	let { name, attributes: { Description, RoleName }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { AssumeRolePolicyDocument, Description, RoleName } = attributes;
 	let commands = [];
 
 	if (state == null) {
 		commands.push(
+			`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > /tmp/assume_role_policy_document_${key}.json`,
 			`aws iam create-role \\`,
+			`  --assume-role-policy-document file:///tmp/assume_role_policy_document_${key}.json`,
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --role-name ${RoleName} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'role', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' \\`,
+			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
 			`  | jq .Role | tee ${getStateFilename(key)}`,
 			`aws iam wait role-exists --role-name ${RoleName}`,
 		);
-		state = { Description, RoleName };
+		state = { AssumeRolePolicyDocument, Description, RoleName };
+	}
+
+	{
+		let prop = 'AssumeRolePolicyDocument';
+		let source = JSON.stringify(state[prop]);
+		let target = JSON.stringify(attributes[prop]);
+		if (source !== target) {
+			commands.push(
+				`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > /tmp/assume_role_policy_document_${key}.json`,
+				`aws iam update-assume-role-policy \\`,
+				`  --policy-document file:///tmp/assume_role_policy_document_${key}.json`,
+				`  --role-name ${RoleName} \\`,
+				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`,
+			);
+		}
 	}
 
 	return commands;
