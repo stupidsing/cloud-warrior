@@ -25,7 +25,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 		commands.push(
 			`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > /tmp/assume_role_policy_document_${key}.json`,
 			`aws iam create-role \\`,
-			`  --assume-role-policy-document file:///tmp/assume_role_policy_document_${key}.json`,
+			`  --assume-role-policy-document file:///tmp/assume_role_policy_document_${key}.json \\`,
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --role-name ${RoleName} \\`,
 			`  --tags Key=Name,Value='${prefix}-${name}' \\`,

@@ -26,11 +26,11 @@ run(() => {
 		AssumeRolePolicyDocument: {
 			Version: '2012-10-17',
 			Statement: [
-			{
-				Action: ['sts:AssumeRole'],
-				Effect: 'Allow',
-				Principal: { AWS: 'arn:aws:iam::123456789012:root' },
-			}
+				{
+					Action: ['sts:AssumeRole'],
+					Effect: 'Allow',
+					Principal: { AWS: 'arn:aws:iam::805876202485:user/ywsing' },
+				}
 			]
 			},
 		RoleName: 'role-app',
