@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { AttributesInput, Class, Resource, Resource_ } from "./types";
+import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'vpc';
 
@@ -91,7 +91,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 export let vpcClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name }: Resource) => [
+	getKey: ({ name }: Resource_<Attributes>) => [
 		prefix,
 		class_,
 		name,

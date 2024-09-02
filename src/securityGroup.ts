@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { AttributesInput, Class, Resource, Resource_ } from "./types";
+import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'security-group';
 
@@ -49,7 +49,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 export let securityGroupClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource) => [
+	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		prefix,
 		class_,
 		name,

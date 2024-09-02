@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { AttributesInput, Class, Resource, Resource_ } from "./types";
+import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'instance-profile';
 
@@ -35,18 +35,17 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 export let instanceProfileClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource) => [
+	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		prefix,
 		class_,
 		name,
 		attributes.InstanceProfileName,
-		attributes.Description,
 	].join('_'),
 	refresh: ({ InstanceProfileName }, key: string) => [
 		`NAME=${InstanceProfileName}`,
 		`aws iam get-instance-profile \\`,
 		`  --instance-profile-name \${NAME} \\`,
-		`  | jq .InstanceProfile[0] | tee ${getStateFilename(key)}`,
+		`  | jq .InstanceProfile | tee ${getStateFilename(key)}`,
 	],
 	upsert,
 };

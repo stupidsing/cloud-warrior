@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { AttributesInput, Class, Resource, Resource_ } from "./types";
+import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'role';
 
@@ -37,7 +37,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 export let roleClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource) => [
+	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		prefix,
 		class_,
 		name,
@@ -48,7 +48,7 @@ export let roleClass: Class = {
 		`NAME=${RoleName}`,
 		`aws iam get-role \\`,
 		`  --role-name \${NAME} \\`,
-		`  | jq .Role[0] | tee ${getStateFilename(key)}`,
+		`  | jq .Role | tee ${getStateFilename(key)}`,
 	],
 	upsert,
 };
