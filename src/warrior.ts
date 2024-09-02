@@ -23,8 +23,8 @@ let classes = Object.fromEntries([
 	vpcClass,
 ].map(c => [c.class_, c]));
 
+let resourceByKey: { [key: string]: Resource };
 let stateByKey: { [key: string]: any };
-let resourceByKey: { [key: string]: Resource } = {};
 
 let dependenciesByClassName: { [className: string]: Resource[] } = {};
 let dependersByKey: { [key: string]: Resource[] } = {};
@@ -68,6 +68,7 @@ export let run = f => {
 	let stateFilenames = readdirSync(stateDirectory);
 	let action = process.env.ACTION ?? 'up';
 
+	resourceByKey = {};
 	stateByKey = {};
 
 	for (let stateFilename of stateFilenames) {
