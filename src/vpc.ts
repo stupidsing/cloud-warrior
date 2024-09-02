@@ -80,28 +80,30 @@ let upsert = (state, resource: Resource) => {
 	return commands;
 };
 
-export let vpcClass: () => Class = () => {
-	return {
+export let vpcClass: Class = {
+	class_,
+	delete_,
+	getKey: ({ name }: Resource) => [
+		prefix,
 		class_,
-		delete_,
-		getKey: ({ name }: Resource) => [
-			prefix,
-			class_,
-			name,
-		].join('_'),
-		refresh: ({ VpcId }, key: string) => [
-			`aws ec2 describe-vpcs \\`,
-			`  --vpc-ids ${VpcId} \\`,
-			`  | jq .Vpcs[0] | tee ${getStateFilename(key)}`,
-			`aws ec2 describe-vpc-attribute \\`,
-			`  --attribute enableDnsHostnames \\`,
-			`  --vpc-id ${VpcId} \\`,
-			`  | jq -r .EnableDnsHostnames.Value | tee ${getStateFilename(key)}.EnableDnsHostnames`,
-			`aws ec2 describe-vpc-attribute \\`,
-			`  --attribute enableDnsSupport \\`,
-			`  --vpc-id ${VpcId} \\`,
-			`  | jq -r .EnableDnsSupport.Value | tee ${getStateFilename(key)}.EnableDnsSupport`,
-		],
-		upsert,
-	};
+		name,
+	].join('_'),
+	refresh: ({ VpcId }, key: string) => [
+		`aws ec2 describe-vpcs \\`,
+		`  --vpc-ids ${VpcId} \\`,
+		`  | jq .Vpcs[0] | tee ${getStateFilename(key)}`,
+		`aws ec2 describe-vpc-attribute \\`,
+		`  --attribute enableDnsHostnames \\`,
+		`  --vpc-id ${VpcId} \\`,
+		`  | jq -r .EnableDnsHostnames.Value | tee ${getStateFilename(key)}.EnableDnsHostnames`,
+		`aws ec2 describe-vpc-attribute \\`,
+		`  --attribute enableDnsSupport \\`,
+		`  --vpc-id ${VpcId} \\`,
+		`  | jq -r .EnableDnsSupport.Value | tee ${getStateFilename(key)}.EnableDnsSupport`,
+	],
+	upsert,
 };
+
+import { create } from "./warrior";
+
+export let createVpc = (name, f) => create(class_, name, f);

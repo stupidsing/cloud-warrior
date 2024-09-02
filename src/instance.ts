@@ -55,18 +55,20 @@ let upsert = (state, resource: Resource) => {
 	return commands;
 };
 
-export let instanceClass: () => Class = () => {
-	return {
+export let instanceClass: Class = {
+	class_,
+	delete_,
+	getKey: ({ name, attributes }: Resource) => [
+		prefix,
 		class_,
-		delete_,
-		getKey: ({ name, attributes }: Resource) => [
-			prefix,
-			class_,
-			name,
-			attributes.InstanceType,
-			attributes.ImageId,
-		].join('_'),
-		refresh: ({ InstanceId }, key: string) => refreshById(key, InstanceId),
-		upsert,
-	};
+		name,
+		attributes.InstanceType,
+		attributes.ImageId,
+	].join('_'),
+	refresh: ({ InstanceId }, key: string) => refreshById(key, InstanceId),
+	upsert,
 };
+
+import { create } from "./warrior";
+
+export let createInstance = (name, f) => create(class_, name, f);

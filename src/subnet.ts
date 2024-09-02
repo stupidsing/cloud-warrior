@@ -51,19 +51,21 @@ let upsert = (state, resource: Resource) => {
 	return commands;
 };
 
-export let subnetClass: () => Class = () => {
-	return {
+export let subnetClass: Class = {
+	class_,
+	delete_,
+	getKey: ({ name, attributes }: Resource) => [
+		prefix,
 		class_,
-		delete_,
-		getKey: ({ name, attributes }: Resource) => [
-			prefix,
-			class_,
-			name,
-			attributes.VpcId,
-			attributes.AvailabilityZone,
-			attributes.CidrBlock.replaceAll('/', ':'),
-		].join('_'),
-		refresh: ({ SubnetId }, key: string) => refreshById(key, SubnetId),
-		upsert,
-	};
+		name,
+		attributes.VpcId,
+		attributes.AvailabilityZone,
+		attributes.CidrBlock.replaceAll('/', ':'),
+	].join('_'),
+	refresh: ({ SubnetId }, key: string) => refreshById(key, SubnetId),
+	upsert,
 };
+
+import { create } from "./warrior";
+
+export let createSubnet = (name, f) => create(class_, name, f);

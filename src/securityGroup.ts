@@ -38,19 +38,21 @@ let upsert = (state, resource: Resource) => {
 	return commands;
 };
 
-export let securityGroupClass: () => Class = () => {
-	return {
+export let securityGroupClass: Class = {
+	class_,
+	delete_,
+	getKey: ({ name, attributes }: Resource) => [
+		prefix,
 		class_,
-		delete_,
-		getKey: ({ name, attributes }: Resource) => [
-			prefix,
-			class_,
-			name,
-			attributes.VpcId,
-			attributes.GroupName,
-			attributes.Description,
-		].join('_'),
-		refresh: ({ GroupName }, key: string) => refreshByGroupName(key, GroupName),
-		upsert,
-	};
+		name,
+		attributes.VpcId,
+		attributes.GroupName,
+		attributes.Description,
+	].join('_'),
+	refresh: ({ GroupName }, key: string) => refreshByGroupName(key, GroupName),
+	upsert,
 };
+
+import { create } from "./warrior";
+
+export let createSecurityGroup = (name, f) => create(class_, name, f);
