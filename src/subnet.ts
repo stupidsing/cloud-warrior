@@ -3,6 +3,13 @@ import { AttributesInput, Class, Resource, Resource_ } from "./types";
 
 let class_ = 'subnet';
 
+type Attributes = {
+	AvailabilityZone: string,
+	CidrBlock: string,
+	MapPublicIpOnLaunch: boolean,
+	VpcId: string,
+};
+
 let delete_ = (state, key: string) => [
 	`aws ec2 delete-subnet \\`,
 	`  --subnet-id ${state.SubnetId} &&`,
@@ -16,7 +23,7 @@ let refreshById = (key, id) => [
 	`  | jq .Subnets[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource) => {
+let upsert = (state, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { AvailabilityZone, CidrBlock, VpcId } = attributes;
 	let commands = [];
@@ -69,13 +76,6 @@ export let subnetClass: Class = {
 };
 
 import { create } from "./warrior";
-
-type Attributes = {
-	AvailabilityZone: string,
-	CidrBlock: string,
-	MapPublicIpOnLaunch: boolean,
-	VpcId: string,
-};
 
 export let createSubnet = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

@@ -3,6 +3,12 @@ import { AttributesInput, Class, Resource, Resource_ } from "./types";
 
 let class_ = 'security-group';
 
+type Attributes = {
+	Description: string,
+	GroupName: string,
+	VpcId: string,
+};
+
 let delete_ = (state, key: string) => [
 	`aws ec2 delete-security-group \\`,
 	`  --group-id ${state.GroupId} &&`,
@@ -16,7 +22,7 @@ let refreshById = (key, id) => [
 	`  | jq .SecurityGroups[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource) => {
+let upsert = (state, resource: Resource_<Attributes>) => {
 	let { name, attributes: { Description, GroupName, VpcId }, key } = resource;
 	let commands = [];
 
@@ -56,12 +62,6 @@ export let securityGroupClass: Class = {
 };
 
 import { create } from "./warrior";
-
-type Attributes = {
-	Description: string,
-	GroupName: string,
-	VpcId: string,
-};
 
 export let createSecurityGroup = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

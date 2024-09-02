@@ -3,6 +3,13 @@ import { AttributesInput, Class, Resource, Resource_ } from "./types";
 
 let class_ = 'instance';
 
+type Attributes = {
+	ImageId: string,
+	InstanceType: string,
+	SecurityGroups: { GroupId: string }[],
+	SubnetId: string,
+};
+
 let delete_ = ({ InstanceId }, key: string) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${InstanceId} &&`,
@@ -17,7 +24,7 @@ let refreshById = (key, id) => [
 	`  | jq .Reservations[0].Instances[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource) => {
+let upsert = (state, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { ImageId, InstanceType, SecurityGroups, SubnetId } = attributes;
 	let commands = [];
@@ -65,6 +72,7 @@ export let instanceClass: Class = {
 		prefix,
 		class_,
 		name,
+		attributes.SubnetId,
 		attributes.InstanceType,
 		attributes.ImageId,
 	].join('_'),
@@ -73,13 +81,6 @@ export let instanceClass: Class = {
 };
 
 import { create } from "./warrior";
-
-type Attributes = {
-	ImageId: string,
-	InstanceType: string,
-	SecurityGroups: { GroupId: string }[],
-	SubnetId: string,
-};
 
 export let createInstance = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

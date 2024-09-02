@@ -3,6 +3,12 @@ import { AttributesInput, Class, Resource, Resource_ } from "./types";
 
 let class_ = 'vpc';
 
+type Attributes = {
+	CidrBlockAssociationSet: { CidrBlock: string }[],
+	EnableDnsHostnames: boolean,
+	EnableDnsSupport: boolean,
+};
+
 let delete_ = (state, key: string) => {
 	let stateFilename = getStateFilename(key);
 	return [
@@ -14,7 +20,7 @@ let delete_ = (state, key: string) => {
 	];
 };
 
-let upsert = (state, resource: Resource) => {
+let upsert = (state, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { CidrBlockAssociationSet } = attributes;
 	let commands = [];
@@ -108,12 +114,6 @@ export let vpcClass: Class = {
 };
 
 import { create } from "./warrior";
-
-type Attributes = {
-	CidrBlockAssociationSet: { CidrBlock: string }[],
-	EnableDnsHostnames: boolean,
-	EnableDnsSupport: boolean,
-};
 
 export let createVpc = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
