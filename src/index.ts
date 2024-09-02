@@ -37,6 +37,4 @@ run(() => {
 		SecurityGroups: [{ GroupId: get(securityGroup, 'GroupId') }],
 		SubnetId: get(subnetPrivate, 'SubnetId'),
 	}));
-
-	return [vpc, securityGroup, subnetPublic, subnetPrivate, instance];
 });

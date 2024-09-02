@@ -101,15 +101,17 @@ export let run = f => {
 		if (action !== 'down') {
 			let upserted = new Set<string>();
 
-			let _upsert = (resource: Resource) => {
+			let _upsert = (keys: string[], resource: Resource) => {
 				let { key } = resource;
+
+				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 				if (!upserted.has(key)) {
 					let [prefix, class_, name] = key.split('_');
 					let dependencies = dependenciesByClassName[class_ + '_' + name];
 					let dependers = dependersByKey[key] ?? [];
 
-					for (let dependency of dependencies ?? []) _upsert(dependency);
+					for (let dependency of dependencies ?? []) _upsert([key, ...keys], dependency);
 
 					let { upsert } = classes[class_];
 
@@ -124,13 +126,15 @@ export let run = f => {
 				}
 			};
 
-			for (let resource of Object.values(resourceByKey)) _upsert(resource);
+			for (let resource of Object.values(resourceByKey)) _upsert([], resource);
 		}
 
 		let deleted = new Set<string>();
 
-		let _delete = state => {
+		let _delete = (keys: string[], state) => {
 			let { key } = state;
+
+			if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 			if (!deleted.has(key)) {
 				let [prefix, class_, name] = key.split('_');
@@ -138,7 +142,7 @@ export let run = f => {
 
 				for (let depender of dependers ?? []) {
 					let state = stateByKey[depender];
-					if (state) _delete(state);
+					if (state) _delete([key, ...keys], state);
 				}
 
 				let { delete_ } = classes[class_];
@@ -156,7 +160,7 @@ export let run = f => {
 			}
 		};
 
-		for (let state of Object.values(stateByKey)) _delete(state);
+		for (let state of Object.values(stateByKey)) _delete([], state);
 	}
 
 	console.log(commands.join('\n'));
