@@ -5,13 +5,14 @@ let class_ = 'subnet';
 
 let delete_ = (state, key: string) => [
 	`aws ec2 delete-subnet \\`,
-	`  --subnet-id ${state.SubnetId}`,
+	`  --subnet-id ${state.SubnetId} &&`,
 	`rm -f ${getStateFilename(key)}`,
 ];
 
 let refreshById = (key, id) => [
+	`ID=${id}`,
 	`aws ec2 describe-subnets \\`,
-	`  --subnet-ids ${id} \\`,
+	`  --subnet-ids \${ID} \\`,
 	`  | jq .Subnets[0] | tee ${getStateFilename(key)}`,
 ];
 

@@ -6,10 +6,11 @@ let class_ = 'vpc';
 let delete_ = (state, key: string) => {
 	let stateFilename = getStateFilename(key);
 	return [
-		`aws ec2 delete-vpc --vpc-id ${state.VpcId}`,
-		`rm -f ${stateFilename}`,
-		`rm -f ${stateFilename}#EnableDnsHostnames`,
-		`rm -f ${stateFilename}#EnableDnsSupport`,
+		`aws ec2 delete-vpc --vpc-id ${state.VpcId} &&`,
+		`rm -f \\`,
+		`  ${stateFilename} \\`,
+		`  ${stateFilename}#EnableDnsHostnames \\`,
+		`  ${stateFilename}#EnableDnsSupport`,
 	];
 };
 
@@ -89,17 +90,18 @@ export let vpcClass: Class = {
 		name,
 	].join('_'),
 	refresh: ({ VpcId }, key: string) => [
+		`ID=${VpcId}`,
 		`aws ec2 describe-vpcs \\`,
-		`  --vpc-ids ${VpcId} \\`,
+		`  --vpc-ids \${ID} \\`,
 		`  | jq .Vpcs[0] | tee ${getStateFilename(key)}`,
 		`aws ec2 describe-vpc-attribute \\`,
 		`  --attribute enableDnsHostnames \\`,
-		`  --vpc-id ${VpcId} \\`,
-		`  | jq -r .EnableDnsHostnames.Value | tee ${getStateFilename(key)}.EnableDnsHostnames`,
+		`  --vpc-id \${ID} \\`,
+		`  | jq -r .EnableDnsHostnames.Value | tee ${getStateFilename(key)}#EnableDnsHostnames`,
 		`aws ec2 describe-vpc-attribute \\`,
 		`  --attribute enableDnsSupport \\`,
-		`  --vpc-id ${VpcId} \\`,
-		`  | jq -r .EnableDnsSupport.Value | tee ${getStateFilename(key)}.EnableDnsSupport`,
+		`  --vpc-id \${ID} \\`,
+		`  | jq -r .EnableDnsSupport.Value | tee ${getStateFilename(key)}#EnableDnsSupport`,
 	],
 	upsert,
 };

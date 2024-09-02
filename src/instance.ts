@@ -3,16 +3,17 @@ import { Class, Resource } from "./types";
 
 let class_ = 'instance';
 
-let delete_ = (state, key: string) => [
+let delete_ = ({ InstanceId }, key: string) => [
 	`aws ec2 terminate-instances \\`,
-	`  --instance-ids ${state.InstanceId}`,
+	`  --instance-ids ${InstanceId} &&`,
 	`rm -f ${getStateFilename(key)}`,
-	`# wait for instance to terminate`,
+	`aws ec2 wait instance-terminated --instance-id ${InstanceId}`,
 ];
 
 let refreshById = (key, id) => [
+	`ID=${id}`,
 	`aws ec2 describe-instances \\`,
-	`  --instance-ids ${id} \\`,
+	`  --instance-ids \${ID} \\`,
 	`  | jq .Reservations[0].Instances[0] | tee ${getStateFilename(key)}`,
 ];
 
@@ -24,7 +25,7 @@ let upsert = (state, resource: Resource) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 run-instances \\`,
-			...(SecurityGroups.length > 0 ? [`  --security-groups ${SecurityGroups.join(',')} \\`] : []),
+			...(SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.join(',')} \\`] : []),
 			`  --image-id ${ImageId} \\`,
 			`  --instance-type ${InstanceType} \\`,
 			`  --subnet-id ${SubnetId} \\`,
@@ -40,13 +41,14 @@ let upsert = (state, resource: Resource) => {
 
 	{
 		let prop = 'SecurityGroups';
-		if (state[prop] !== attributes[prop]) {
-			let values = attributes[prop];
-			if (values.length > 0)
+		let source = state[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(',');
+		let target = attributes[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(',');
+		if (source !== target) {
+			if (target.length > 0)
 				commands.push(
 					`aws ec2 modify-instance-attribute \\`,
-					...values.length > 0 ? [`  --groups ${values.join(',')} \\`] : [],
 					`  --instance-id ${InstanceId}`,
+					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
 					...refreshById(key, InstanceId),
 				);
 			}

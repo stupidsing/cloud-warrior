@@ -91,6 +91,7 @@ export let run = f => {
 			let dependers = dependersByKey[key] ?? [];
 
 			commands.push(
+				'',
 				...refresh(state, key),
 				...dependers.length > 0 ? [`echo '${JSON.stringify(dependers.map(r => r.key))}' > ${dependersDirectory}/${key}`] : [],
 			);
@@ -113,7 +114,7 @@ export let run = f => {
 
 					commands.push(
 						'',
-						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
+						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
 						...upsert(stateByKey[key], resource),
 						...dependers.length > 0 ? [`echo '${JSON.stringify(dependers.map(r => r.key))}' > ${dependersDirectory}/${key}`] : [],
 					);
@@ -144,7 +145,7 @@ export let run = f => {
 				if (action === 'down' || resourceByKey[key] == null) {
 					commands.push(
 						'',
-						`# delete ${name}`,
+						`# delete ${class_} ${name}`,
 						...dependers ? [`rm -f ${dependersDirectory}/${key}`] : [],
 						...delete_(state, key),
 					);

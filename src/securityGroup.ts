@@ -5,13 +5,14 @@ let class_ = 'security-group';
 
 let delete_ = (state, key: string) => [
 	`aws ec2 delete-security-group \\`,
-	`  --group-name ${state.GroupName}`,
+	`  --group-id ${state.GroupId} &&`,
 	`rm -f ${getStateFilename(key)}`,
 ];
 
-let refreshByGroupName = (key, groupName) => [
+let refreshById = (key, id) => [
+	`ID=${id}`,
 	`aws ec2 describe-security-groups \\`,
-	`  --group-names ${groupName} \\`,
+	`  --group-ids \${ID} \\`,
 	`  | jq .SecurityGroups[0] | tee ${getStateFilename(key)}`,
 ];
 
@@ -26,9 +27,9 @@ let upsert = (state, resource: Resource) => {
 			`  --group-name ${GroupName} \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'securityGroup', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}'`,
-			...refreshByGroupName(key, GroupName),
+				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+			])}' | tee ${getStateFilename(key)}`,
+			...refreshById(key, `$(cat ${getStateFilename(key)} | jq -r .GroupId)`),
 		);
 		state = { Description, GroupName, VpcId };
 	}
@@ -49,7 +50,7 @@ export let securityGroupClass: Class = {
 		attributes.GroupName,
 		attributes.Description,
 	].join('_'),
-	refresh: ({ GroupName }, key: string) => refreshByGroupName(key, GroupName),
+	refresh: ({ GroupId }, key: string) => refreshById(key, GroupId),
 	upsert,
 };
 
