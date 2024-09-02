@@ -1,5 +1,5 @@
 import { getStateFilename, prefix } from "./constants";
-import { Class, Resource, Resource_ } from "./types";
+import { AttributesInput, Class, Resource, Resource_ } from "./types";
 
 let class_ = 'security-group';
 
@@ -62,4 +62,10 @@ type Attributes = {
 	VpcId: string,
 };
 
-export let createSecurityGroup: (name: string, f: (get: (referredResource: Resource, prop: string) => string) => Attributes) => Resource_<Attributes> = (name, f) => create(class_, name, f) as Resource_<Attributes>;
+export let createSecurityGroup = (name: string, f: AttributesInput<Attributes>) => {
+	let resource = create(class_, name, f) as Resource_<Attributes>;
+	return {
+		...resource,
+		getSecurityGroupId: get => get(resource, 'GroupId'),
+	};
+};

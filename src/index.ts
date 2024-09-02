@@ -15,26 +15,26 @@ run(() => {
 		AvailabilityZone: 'ap-southeast-1a',
 		CidrBlock: '10.88.1.0/24',
 		MapPublicIpOnLaunch: true,
-		VpcId: get(vpc, 'VpcId'),
+		VpcId: vpc.getVpcId(get),
 	}));
 
 	let subnetPrivate = createSubnet('private', get => ({
 		AvailabilityZone: 'ap-southeast-1a',
 		CidrBlock: '10.88.2.0/24',
 		MapPublicIpOnLaunch: false,
-		VpcId: get(vpc, 'VpcId'),
+		VpcId: vpc.getVpcId(get),
 	}));
 
 	let securityGroup = createSecurityGroup('app', get => ({
 		Description: '-',
 		GroupName: 'app',
-		VpcId: get(vpc, 'VpcId'),
+		VpcId: vpc.getVpcId(get),
 	}));
 
 	let instance = createInstance('0', get => ({
 		ImageId: 'ami-05d6d0aae066c8d93', // aws ssm get-parameter --name /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id | jq -r .Parameter.Value
 		InstanceType: 't3.nano',
-		SecurityGroups: [{ GroupId: get(securityGroup, 'GroupId') }],
-		SubnetId: get(subnetPrivate, 'SubnetId'),
+		SecurityGroups: [{ GroupId: securityGroup.getSecurityGroupId(get) }],
+		SubnetId: subnetPrivate.getSubnetId(get),
 	}));
 });

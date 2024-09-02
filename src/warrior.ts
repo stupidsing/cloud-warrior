@@ -3,7 +3,7 @@ import { dependersDirectory, getStateFilename, stateDirectory } from './constant
 import { instanceClass } from './instance';
 import { securityGroupClass } from './securityGroup';
 import { subnetClass } from './subnet';
-import { Resource } from './types';
+import { AttributesInput, Resource } from './types';
 import { vpcClass } from './vpc';
 
 let readJsonIfExists = name => {
@@ -46,7 +46,7 @@ let addDependency = (referredResource: Resource, resource: Resource) => {
 		}
 }
 
-export let create = (class_: string, name: string, f: (get: (referredResource: Resource, prop: string) => string) => Record<string, any>) => {
+export let create = (class_: string, name: string, f: AttributesInput<Record<string, any>>) => {
 	let resource: Resource = { class_, name, attributes: undefined };
 	let { getKey } = classes[class_];
 

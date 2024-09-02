@@ -15,3 +15,5 @@ export type Resource_<Attributes> = {
 };
 
 export type Resource = Resource_<Record<string, any>>;
+
+export type AttributesInput<Attributes> = (get: (referredResource: Resource, prop: string) => string) => Attributes;
