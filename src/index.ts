@@ -1,6 +1,7 @@
 import { prefix } from './constants';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
+import { createLoadBalancer } from './LoadBalancer';
 import { createPolicy } from './policy';
 import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
@@ -85,5 +86,11 @@ run(() => {
 		InstanceType: 't3.nano',
 		SecurityGroups: [{ GroupId: securityGroup.getSecurityGroupId(get) }],
 		SubnetId: subnetPrivate.getSubnetId(get),
+	}));
+
+	let loadBalancer = createLoadBalancer('alb', get => ({
+		AvailabilityZone: [{ SubnetId: subnetPublic.getSubnetId(get) }],
+		Name: 'alb',
+		SecurityGroups: [securityGroup.getSecurityGroupId(get)],
 	}));
 });
