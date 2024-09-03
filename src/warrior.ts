@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
+import { bucketClass } from './bucket';
 import { dependenciesDirectory, getStateFilename, stateDirectory } from './constants';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
@@ -25,6 +26,7 @@ let readJsonIfExists = name => {
 };
 
 let classes = Object.fromEntries([
+	bucketClass,
 	instanceClass,
 	instanceProfileClass,
 	listenerClass,
@@ -147,7 +149,7 @@ export let run = f => {
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
 						...upsert(stateByKey[key], resource),
-						`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`,
+						...dependencies.length > 0 ? [`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`] : [],
 					);
 
 					upserted.add(key);

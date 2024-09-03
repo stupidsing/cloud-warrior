@@ -35,7 +35,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 run-instances \\`,
-			...(SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(',')} \\`] : []),
+			...SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(',')} \\`] : [],
 			`  --image-id ${ImageId} \\`,
 			`  --instance-type ${InstanceType} \\`,
 			`  --subnet-id ${SubnetId} \\`,

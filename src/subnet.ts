@@ -34,7 +34,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws ec2 create-subnet \\`,
 			`  --availability-zone ${AvailabilityZone} \\`,
-			...(CidrBlock ? [`  --cidr-block ${CidrBlock} \\`] : []),
+			...CidrBlock ? [`  --cidr-block ${CidrBlock} \\`] : [],
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,

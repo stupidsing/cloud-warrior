@@ -1,3 +1,4 @@
+import { createBucket } from './bucket';
 import { prefix } from './constants';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
@@ -46,6 +47,10 @@ run(() => {
 	let instanceProfile = createInstanceProfile('instance-profile-app', get => ({
 		InstanceProfileName: `${prefix}-instance-profile-app`,
 		Roles: [{ RoleName: role.getRoleName(get) }],
+	}));
+
+	let bucket = createBucket('bucket', get => ({
+		Name: 'npt-chat',
 	}));
 
 	let vpc = createVpc('vpc', get => ({
@@ -116,4 +121,12 @@ run(() => {
 		Target: { Id: instance.getInstanceId(get) },
 		TargetGroupArn: targetGroup.getArn(get),
 	}));
+
+	// s3
+	// ACM certificate
+	// HTTPS
+	// domain name
+	// cloudfront
+	// RDS
+	// ...
 });
