@@ -13,7 +13,9 @@ type Attributes = {
 let delete_ = (state, key: string) => [
 	`aws iam delete-policy \\`,
 	`  --policy-arn ${state.Arn} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \\`,
+	`  ${getStateFilename(key)} \\`,
+	`  ${getStateFilename(key)}#PolicyDocument`,
 ];
 
 let refreshByArn = (key, arn) => [
@@ -44,7 +46,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
 			`  | jq .Policy | tee ${getStateFilename(key)}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
-			`echo ${JSON.stringify(PolicyDocument)} | tee ${getStateFilename(key)}#PolicyDocument`,
+			`echo '${JSON.stringify(PolicyDocument)}' | tee ${getStateFilename(key)}#PolicyDocument`,
 		);
 		state = { Description, PolicyDocument, PolicyName };
 	}
