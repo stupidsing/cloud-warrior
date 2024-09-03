@@ -33,9 +33,9 @@ run(() => {
 					Principal: { AWS: 'arn:aws:iam::805876202485:user/ywsing' },
 				}
 			]
-			},
-		RoleName: `${prefix}-role-app`,
+		},
 		Policies: [policy.getPolicyName(get)],
+		RoleName: `${prefix}-role-app`,
 	}));
 
 	let instanceProfile = createInstanceProfile('instance-profile-app', get => ({
