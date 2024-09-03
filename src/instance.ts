@@ -49,13 +49,13 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 	}
 
 	{
-		let prop = 'InstanceProfile';
+		let prop = 'IamInstanceProfile';
 		let source = state[prop]?.Arn;
 		let target = attributes[prop]?.Arn;
 		if (source !== target) {
 			if (source != null) {
 				commands.push(
-					`aws ec2 disassciate-iam-instance-profile \\`,
+					`aws ec2 disassociate-iam-instance-profile \\`,
 					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} \\`,
 					`  | jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
 					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
@@ -65,8 +65,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 
 			if (target != null) {
 				commands.push(
-					`aws ec2 assciate-iam-instance-profile \\`,
-					`  --iam-instance-profile Arn:${target} \\`,
+					`aws ec2 associate-iam-instance-profile \\`,
+					`  --iam-instance-profile Arn=${target} \\`,
 					`  --instance-id ${InstanceId}`,
 					...refreshById(key, InstanceId),
 				);
