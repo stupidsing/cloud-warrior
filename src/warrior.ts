@@ -9,6 +9,7 @@ import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
 import { securityGroupRuleIngressClass } from './securityGroupRule';
 import { subnetClass } from './subnet';
+import { targetClass } from './Target';
 import { targetGroupClass } from './TargetGroup';
 import { AttributesInput, Resource } from './types';
 import { vpcClass } from './vpc';
@@ -33,6 +34,7 @@ let classes = Object.fromEntries([
 	securityGroupClass,
 	securityGroupRuleIngressClass,
 	subnetClass,
+	targetClass,
 	targetGroupClass,
 	vpcClass,
 ].map(c => [c.class_, c]));

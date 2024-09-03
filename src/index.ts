@@ -8,6 +8,7 @@ import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
 import { createSecurityGroupRuleIngress } from './securityGroupRule';
 import { createSubnet } from './subnet';
+import { createTarget } from './Target';
 import { createTargetGroup } from './TargetGroup';
 import { createVpc } from './vpc';
 import { run } from './warrior';
@@ -109,5 +110,10 @@ run(() => {
 		LoadBalancerArn: loadBalancer.getArn(get),
 		Port: 80,
 		Protocol: 'HTTP',
+	}));
+
+	let target = createTarget('target', get => ({
+		Target: { Id: instance.getInstanceId(get) },
+		TargetGroupArn: targetGroup.getArn(get),
 	}));
 });
