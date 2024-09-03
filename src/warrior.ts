@@ -101,7 +101,7 @@ export let run = f => {
 			commands.push(
 				'',
 				...refresh(state, key),
-				...dependers.length > 0 ? [`echo -n ${dependers.join(',')} | node -e "console.log(fs.readFileSync(0, 'utf8').split('\\n'))" > ${dependersDirectory}/${key}`] : [],
+				...dependers.length > 0 ? [`echo -n ${dependers.join(',')} | node -e "console.log(JSON.stringify(fs.readFileSync(0, 'utf8').split('\\n')))" > ${dependersDirectory}/${key}`] : [],
 			);
 		}
 	} else {
@@ -127,7 +127,7 @@ export let run = f => {
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
 						...upsert(stateByKey[key], resource),
-						...JSON.stringify(dependers0) !== JSON.stringify(dependers1) ? [`echo -n ${dependers1.join(',')} | node -e "console.log(fs.readFileSync(0, 'utf8').split('\\n'))" > ${dependersDirectory}/${key}`] : [],
+						...JSON.stringify(dependers0) !== JSON.stringify(dependers1) ? [`echo -n ${dependers1.join(',')} | node -e "console.log(JSON.stringify(fs.readFileSync(0, 'utf8').split('\\n')))" > ${dependersDirectory}/${key}`] : [],
 					);
 
 					upserted.add(key);
