@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
-import { dependersDirectory, getStateFilename, stateDirectory } from './constants';
+import { dependenciesDirectory, getStateFilename, stateDirectory } from './constants';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
 import { policyClass } from './policy';
@@ -33,24 +33,13 @@ let resourceByKey: { [key: string]: Resource };
 let stateByKey: { [key: string]: any };
 
 let dependenciesByClassName: { [className: string]: Resource[] } = {};
-let dependersByKey: { [key: string]: Resource[] } = {};
 
 let addDependency = (referredResource: Resource, resource: Resource) => {
-		let referredKey = referredResource.key;
-
-		{
-			let { class_, name } = resource;
-			let className = class_ + '_' + name;
-			let dependencies = dependenciesByClassName[className];
-			if (dependencies == null) dependencies = dependenciesByClassName[className] = [];
-			dependencies.push(referredResource);
-		}
-
-		{
-			let dependers = dependersByKey[referredKey];
-			if (dependers == null) dependers = dependersByKey[referredKey] = [];
-			dependers.push(resource);
-		}
+	let { class_, name } = resource;
+	let className = class_ + '_' + name;
+	let dependencies = dependenciesByClassName[className];
+	if (dependencies == null) dependencies = dependenciesByClassName[className] = [];
+	dependencies.push(referredResource);
 }
 
 export let create = (class_: string, name: string, f: AttributesInput<Record<string, any>>) => {
@@ -94,17 +83,39 @@ export let run = f => {
 
 	if (action === 'refresh') {
 		for (let [key, state] of Object.entries(stateByKey)) {
-			let [prefix, class_, name] = key.split('_');
+			let [prefix, class_, name] = key.split('_');	
 			let { refresh } = classes[class_];
-			let dependers = JSON.stringify((dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
 			commands.push(
 				'',
 				...refresh(state, key),
-				...dependers.length > 0 ? [`echo ${dependers} > ${dependersDirectory}/${key}`] : [],
+			);
+		}
+	} else if (action === 'refresh-dependencies') {
+		for (let [key, state] of Object.entries(stateByKey)) {
+			let [prefix, class_, name] = key.split('_');	
+			let className = class_ + '_' + name;
+			let dependencies = JSON.stringify((dependenciesByClassName[className] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
+
+			commands.push(
+				'',
+				`echo '${dependencies}' > ${dependenciesDirectory}/${key}`,
 			);
 		}
 	} else {
+		let dependersByKey = {};
+		let dependenciesFilenames = readdirSync(dependenciesDirectory);
+
+		for (let dependenciesFilename of dependenciesFilenames) {
+			let [key, subKey] = dependenciesFilename.split('#');
+			let dependencies = readJsonIfExists(`${dependenciesDirectory}/${dependenciesFilename}`);
+			for (let dependency of dependencies) {
+				let dependers = dependersByKey[dependency];
+				if (dependers == null) dependers = dependersByKey[dependency] = [];
+				dependers.push(key);
+			}
+		}
+
 		if (action !== 'down') {
 			let upserted = new Set<string>();
 
@@ -115,19 +126,18 @@ export let run = f => {
 
 				if (!upserted.has(key)) {
 					let [prefix, class_, name] = key.split('_');
-					let dependencies = dependenciesByClassName[class_ + '_' + name];
+					let className = class_ + '_' + name;
+					let dependencies = dependenciesByClassName[className] ?? [];
 
-					for (let dependency of dependencies ?? []) _upsert([key, ...keys], dependency);
+					for (let dependency of dependencies) _upsert([key, ...keys], dependency);
 
 					let { upsert } = classes[class_];
-					let dependers0 = JSON.stringify(readJsonIfExists(`${dependersDirectory}/${key}`));
-					let dependers1 = JSON.stringify((dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
 						...upsert(stateByKey[key], resource),
-						...dependers0 !== dependers1 ? [`echo ${dependers1} > ${dependersDirectory}/${key}`] : [],
+						`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`,
 					);
 
 					upserted.add(key);
@@ -146,9 +156,9 @@ export let run = f => {
 
 			if (!deleted.has(key)) {
 				let [prefix, class_, name] = key.split('_');
-				let dependers = readJsonIfExists(`${dependersDirectory}/${key}`);
+				let dependers = dependersByKey[key] ?? [];
 
-				for (let depender of dependers ?? []) {
+				for (let depender of dependers) {
 					let state = stateByKey[depender];
 					if (state) _delete([key, ...keys], state);
 				}
@@ -159,7 +169,7 @@ export let run = f => {
 					commands.push(
 						'',
 						`# delete ${class_} ${name}`,
-						...dependers ? [`rm -f ${dependersDirectory}/${key}`] : [],
+						`rm -f ${dependenciesDirectory}/${key}`,
 						...delete_(state, key),
 					);
 				}

@@ -1,6 +1,6 @@
 export let prefix = 'npt-cloud';
 
-export let dependersDirectory = '.warrior/dependers';
+export let dependenciesDirectory = '.warrior/dependencies';
 
 export let stateDirectory = `.warrior/states`;
 
