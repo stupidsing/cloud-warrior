@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { bucketClass } from './bucket';
 import { certificateClass } from './certificate';
-import { dependenciesDirectory, getStateFilename, stateDirectory } from './constants';
+import { dependenciesDirectory, getStateFilename, statesDirectory } from './constants';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
 import { listenerClass } from './Listener';
@@ -76,7 +76,7 @@ export let create = (class_: string, name: string, f: AttributesInput<Record<str
 };
 
 export let run = f => {
-	let stateFilenames = readdirSync(stateDirectory);
+	let stateFilenames = readdirSync(statesDirectory);
 	let action = process.env.ACTION ?? 'up';
 
 	resourceByKey = {};
@@ -84,7 +84,7 @@ export let run = f => {
 
 	for (let stateFilename of stateFilenames) {
 		let [key, subKey] = stateFilename.split('#');
-		let state = readJsonIfExists(`${stateDirectory}/${stateFilename}`);
+		let state = readJsonIfExists(`${statesDirectory}/${stateFilename}`);
 		if (state) {
 			if (subKey) state = { [subKey]: state };
 			stateByKey[key] = { ...stateByKey[key] ?? {}, key, ...state };
