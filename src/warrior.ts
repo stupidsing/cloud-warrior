@@ -2,12 +2,14 @@ import { existsSync, readdirSync, readFileSync } from 'fs';
 import { dependenciesDirectory, getStateFilename, stateDirectory } from './constants';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
+import { listenerClass } from './Listener';
 import { loadBalancerClass } from './LoadBalancer';
 import { policyClass } from './policy';
 import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
 import { securityGroupRuleIngressClass } from './securityGroupRule';
 import { subnetClass } from './subnet';
+import { targetGroupClass } from './TargetGroup';
 import { AttributesInput, Resource } from './types';
 import { vpcClass } from './vpc';
 
@@ -24,12 +26,14 @@ let readJsonIfExists = name => {
 let classes = Object.fromEntries([
 	instanceClass,
 	instanceProfileClass,
+	listenerClass,
 	loadBalancerClass,
 	policyClass,
 	roleClass,
 	securityGroupClass,
 	securityGroupRuleIngressClass,
 	subnetClass,
+	targetGroupClass,
 	vpcClass,
 ].map(c => [c.class_, c]));
 

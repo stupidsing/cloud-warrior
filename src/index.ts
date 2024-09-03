@@ -1,12 +1,14 @@
 import { prefix } from './constants';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
+import { createListener } from './Listener';
 import { createLoadBalancer } from './LoadBalancer';
 import { createPolicy } from './policy';
 import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
 import { createSecurityGroupRuleIngress } from './securityGroupRule';
 import { createSubnet } from './subnet';
+import { createTargetGroup } from './TargetGroup';
 import { createVpc } from './vpc';
 import { run } from './warrior';
 
@@ -92,5 +94,20 @@ run(() => {
 		AvailabilityZone: [{ SubnetId: subnetPublic.getSubnetId(get) }],
 		Name: 'alb',
 		SecurityGroups: [securityGroup.getSecurityGroupId(get)],
+	}));
+
+	let targetGroup = createTargetGroup('tg', get => ({
+		Name: `${prefix}-tg`,
+		Protocol: 'HTTP',
+		Port: 80,
+		TargetType: 'instance',
+		VpcId: vpc.getVpcId(get),
+	}));
+
+	let listener = createListener('listener', get => ({
+		DefaultActions: [{ TargetGroupArn: targetGroup.getArn(get), Type: 'forward' }],
+		LoadBalancerArn: loadBalancer.getArn(get),
+		Port: 80,
+		Protocol: 'HTTP',
 	}));
 });

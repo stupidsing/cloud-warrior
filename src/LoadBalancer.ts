@@ -9,9 +9,9 @@ type Attributes = {
 	SecurityGroups: string[],
 };
 
-let delete_ = ({ GroupId }, key: string) => [
+let delete_ = ({ LoadBalancerArn }, key: string) => [
 	`aws elbv2 delete-load-balancer \\`,
-	`  --group-id ${GroupId} &&`,
+	`  --load-balancer-arn ${LoadBalancerArn} &&`,
 	`rm -f ${getStateFilename(key)}`,
 ];
 
@@ -50,7 +50,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 		let target = attributes[prop].map(r => r.SubnetId).join(',');
 		if (source !== target) {
 			commands.push(
-				`aws ec2 set-subnets \\`,
+				`aws elbv2 set-subnets \\`,
 				`  --load-balancer-arns \${ARN} \\`,
 				`  --subnets ${target}`,
 				...refreshByArn(key, LoadBalancerArn),
@@ -64,8 +64,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 		let target = attributes[prop].join(',');
 		if (source !== target) {
 			commands.push(
-				`aws ec2 set-security-groups \\`,
-				`  --load-balancer-arns \${ARN} \\`,
+				`aws elbv2 set-security-groups \\`,
+				`  --load-balancer-arns ${LoadBalancerArn} \\`,
 				`  --security-groups ${target}`,
 				...refreshByArn(key, LoadBalancerArn),
 			);
