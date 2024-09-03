@@ -96,12 +96,12 @@ export let run = f => {
 		for (let [key, state] of Object.entries(stateByKey)) {
 		let [prefix, class_, name] = key.split('_');
 			let { refresh } = classes[class_];
-			let dependers = (dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b));
+			let dependers = JSON.stringify((dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
 			commands.push(
 				'',
 				...refresh(state, key),
-				...dependers.length > 0 ? [`echo -n ${dependers.join(',')} | node -e "console.log(JSON.stringify(fs.readFileSync(0, 'utf8').split('\\n')))" > ${dependersDirectory}/${key}`] : [],
+				...dependers.length > 0 ? [`echo ${dependers} > ${dependersDirectory}/${key}`] : [],
 			);
 		}
 	} else {
@@ -120,14 +120,14 @@ export let run = f => {
 					for (let dependency of dependencies ?? []) _upsert([key, ...keys], dependency);
 
 					let { upsert } = classes[class_];
-					let dependers0 = readJsonIfExists(`${dependersDirectory}/${key}`);
-					let dependers1 = (dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b));
+					let dependers0 = JSON.stringify(readJsonIfExists(`${dependersDirectory}/${key}`));
+					let dependers1 = JSON.stringify((dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
 						...upsert(stateByKey[key], resource),
-						...JSON.stringify(dependers0) !== JSON.stringify(dependers1) ? [`echo -n ${dependers1.join(',')} | node -e "console.log(JSON.stringify(fs.readFileSync(0, 'utf8').split('\\n')))" > ${dependersDirectory}/${key}`] : [],
+						...dependers0 !== dependers1 ? [`echo ${dependers1} > ${dependersDirectory}/${key}`] : [],
 					);
 
 					upserted.add(key);
