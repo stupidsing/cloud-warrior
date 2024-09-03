@@ -94,7 +94,7 @@ export let run = f => {
 
 	if (action === 'refresh') {
 		for (let [key, state] of Object.entries(stateByKey)) {
-		let [prefix, class_, name] = key.split('_');
+			let [prefix, class_, name] = key.split('_');
 			let { refresh } = classes[class_];
 			let dependers = JSON.stringify((dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
