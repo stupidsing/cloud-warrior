@@ -101,7 +101,7 @@ export let run = f => {
 			commands.push(
 				'',
 				...refresh(state, key),
-				...dependers.length > 0 ? [`echo '${JSON.stringify(dependers.map(r => r.key))}' > ${dependersDirectory}/${key}`] : [],
+				...dependers.length > 0 ? [`echo '${JSON.stringify(dependers.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependersDirectory}/${key}`] : [],
 			);
 		}
 	} else {
@@ -116,17 +116,18 @@ export let run = f => {
 				if (!upserted.has(key)) {
 					let [prefix, class_, name] = key.split('_');
 					let dependencies = dependenciesByClassName[class_ + '_' + name];
-					let dependers = dependersByKey[key] ?? [];
 
 					for (let dependency of dependencies ?? []) _upsert([key, ...keys], dependency);
 
 					let { upsert } = classes[class_];
+					let dependers0 = JSON.stringify(readJsonIfExists(`${dependersDirectory}/${key}`));
+					let dependers1 = JSON.stringify((dependersByKey[key] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
 						...upsert(stateByKey[key], resource),
-						...dependers.length > 0 ? [`echo '${JSON.stringify(dependers.map(r => r.key))}' > ${dependersDirectory}/${key}`] : [],
+						...dependers0 !== dependers1 ? [`echo '${JSON.stringify(dependers1)}' > ${dependersDirectory}/${key}`] : [],
 					);
 
 					upserted.add(key);
