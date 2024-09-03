@@ -9,10 +9,10 @@ type Attributes = {
 	EnableDnsSupport: boolean,
 };
 
-let delete_ = (state, key: string) => {
+let delete_ = ({ VpcId }, key: string) => {
 	let stateFilename = getStateFilename(key);
 	return [
-		`aws ec2 delete-vpc --vpc-id ${state.VpcId} &&`,
+		`aws ec2 delete-vpc --vpc-id ${VpcId} &&`,
 		`rm -f \\`,
 		`  ${stateFilename} \\`,
 		`  ${stateFilename}#EnableDnsHostnames \\`,

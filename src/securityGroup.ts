@@ -9,9 +9,9 @@ type Attributes = {
 	VpcId: string,
 };
 
-let delete_ = (state, key: string) => [
+let delete_ = ({ GroupId }, key: string) => [
 	`aws ec2 delete-security-group \\`,
-	`  --group-id ${state.GroupId} &&`,
+	`  --group-id ${GroupId} &&`,
 	`rm -f ${getStateFilename(key)}`,
 ];
 

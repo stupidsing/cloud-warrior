@@ -10,9 +10,9 @@ type Attributes = {
 	RoleName: string,
 };
 
-let delete_ = (state, key: string) => [
+let delete_ = ({ RoleName }, key: string) => [
 	`aws iam delete-role \\`,
-	`  --role-name ${state.RoleName} &&`,
+	`  --role-name ${RoleName} &&`,
 	`rm -f ${getStateFilename(key)}`,
 ];
 

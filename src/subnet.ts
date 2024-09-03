@@ -10,9 +10,9 @@ type Attributes = {
 	VpcId: string,
 };
 
-let delete_ = (state, key: string) => [
+let delete_ = ({ SubnetId }, key: string) => [
 	`aws ec2 delete-subnet \\`,
-	`  --subnet-id ${state.SubnetId} &&`,
+	`  --subnet-id ${SubnetId} &&`,
 	`rm -f ${getStateFilename(key)}`,
 ];
 
