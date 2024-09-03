@@ -5,6 +5,7 @@ import { instanceProfileClass } from './instanceProfile';
 import { policyClass } from './policy';
 import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
+import { securityGroupRuleIngressClass } from './securityGroupRule';
 import { subnetClass } from './subnet';
 import { AttributesInput, Resource } from './types';
 import { vpcClass } from './vpc';
@@ -25,6 +26,7 @@ let classes = Object.fromEntries([
 	policyClass,
 	roleClass,
 	securityGroupClass,
+	securityGroupRuleIngressClass,
 	subnetClass,
 	vpcClass,
 ].map(c => [c.class_, c]));
@@ -135,7 +137,7 @@ export let run = f => {
 
 					commands.push(
 						'',
-						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
+						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
 						...upsert(stateByKey[key], resource),
 						`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`,
 					);
@@ -168,7 +170,7 @@ export let run = f => {
 				if (action === 'down' || resourceByKey[key] == null) {
 					commands.push(
 						'',
-						`# delete ${class_} ${name}`,
+						`# delete ${name}`,
 						`rm -f ${dependenciesDirectory}/${key}`,
 						...delete_(state, key),
 					);

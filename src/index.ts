@@ -4,6 +4,7 @@ import { createInstanceProfile } from './instanceProfile';
 import { createPolicy } from './policy';
 import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
+import { createSecurityGroupRuleIngress } from './securityGroupRule';
 import { createSubnet } from './subnet';
 import { createVpc } from './vpc';
 import { run } from './warrior';
@@ -67,6 +68,15 @@ run(() => {
 		Description: '-',
 		GroupName: `${prefix}-sg-app`,
 		VpcId: vpc.getVpcId(get),
+	}));
+
+	let securityGroupRule = createSecurityGroupRuleIngress('sg-app-rule-ingress-80', get => ({
+		CidrIpv4: '10.88.0.0/16',
+		FromPort: 80,
+		GroupId: securityGroup.getSecurityGroupId(get),
+		IpProtocol: 'TCP',
+		// SourceGroup: securityGroup.getSecurityGroupId(get),
+		ToPort: 80,
 	}));
 
 	let instance = createInstance('instance-0', get => ({
