@@ -9,7 +9,35 @@ type Attributes = {
 	Roles: { RoleName: string }[],
 };
 
+let updateRoles = ({ InstanceProfileName }, roles0, roles1) => {
+	let source = new Set<string>(roles0.map(r => r.RoleName));
+	let target = new Set<string>(roles1.map(r => r.RoleName));
+	let commands = [];
+	let needRefresh = false;
+
+	difference(target, source).forEach(RoleName => {
+		commands.push(
+			`aws iam add-role-to-instance-profile \\`,
+			`  --instance-profile-name ${InstanceProfileName} \\`,
+			`  --role-name ${RoleName}`,
+		);
+		needRefresh = true;
+	});
+
+	difference(source, target).forEach(RoleName => {
+		commands.push(
+			`aws iam remove-role-from-instance-profile \\`,
+			`  --instance-profile-name ${InstanceProfileName} \\`,
+			`  --role-name ${RoleName}`,
+		);
+		needRefresh = true;
+	});
+
+	return { commands, needRefresh };
+};
+
 let delete_ = (state, key: string) => [
+	...updateRoles(state, state.Roles, []).commands,
 	`aws iam delete-instance-profile \\`,
 	`  --instance-profile-name ${state.InstanceProfileName} &&`,
 	`rm -f ${getStateFilename(key)}`,
@@ -40,27 +68,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 
 	{
 		let prop = 'Roles';
-		let source = new Set<string>(state[prop].map(r => r.RoleName));
-		let target = new Set<string>(attributes[prop].map(r => r.RoleName));
-		let needRefresh = false;
-
-		difference(target, source).forEach(RoleName => {
-			commands.push(
-				`aws iam add-role-to-instance-profile \\`,
-				`  --instance-profile-name ${InstanceProfileName} \\`,
-				`  --role-name ${RoleName}`,
-			);
-			needRefresh = true;
-		});
-
-		difference(source, target).forEach(RoleName => {
-			commands.push(
-				`aws iam remove-role-from-instance-profile \\`,
-				`  --instance-profile-name ${InstanceProfileName} \\`,
-				`  --role-name ${RoleName}`,
-			);
-			needRefresh = true;
-		});
+		let { commands, needRefresh } = updateRoles(attributes, state[prop], attributes[prop]);
 
 		if (needRefresh) {
 			commands.push(...refreshByName(key, InstanceProfileName));

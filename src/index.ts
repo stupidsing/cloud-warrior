@@ -1,3 +1,4 @@
+import { prefix } from './constants';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
 import { createPolicy } from './policy';
@@ -19,7 +20,7 @@ run(() => {
 				}
 			],
 		},
-		PolicyName: 'policy-app',
+		PolicyName: `${prefix}-policy-app`,
 	}));
 
 	let role = createRole('role-app', get => ({
@@ -33,12 +34,12 @@ run(() => {
 				}
 			]
 			},
-		RoleName: 'role-app',
+		RoleName: `${prefix}-role-app`,
 		Policies: [policy.getPolicyName(get)],
 	}));
 
 	let instanceProfile = createInstanceProfile('instance-profile-app', get => ({
-		InstanceProfileName: 'instance-profile-app',
+		InstanceProfileName: `${prefix}-instance-profile-app`,
 		Roles: [{ RoleName: role.getRoleName(get) }],
 	}));
 
@@ -64,7 +65,7 @@ run(() => {
 
 	let securityGroup = createSecurityGroup('app', get => ({
 		Description: '-',
-		GroupName: 'app',
+		GroupName: `${prefix}-sg-app`,
 		VpcId: vpc.getVpcId(get),
 	}));
 
