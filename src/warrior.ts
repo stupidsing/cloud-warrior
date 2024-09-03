@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { bucketClass } from './bucket';
+import { certificateClass } from './certificate';
 import { dependenciesDirectory, getStateFilename, stateDirectory } from './constants';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
@@ -27,6 +28,7 @@ let readJsonIfExists = name => {
 
 let classes = Object.fromEntries([
 	bucketClass,
+	certificateClass,
 	instanceClass,
 	instanceProfileClass,
 	listenerClass,

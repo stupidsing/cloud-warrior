@@ -59,6 +59,6 @@ export let createBucket = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		...resource,
-		getBucketId: get => get(resource, 'Bucket'),
+		getBucket: get => get(resource, 'Bucket'),
 	};
 };
