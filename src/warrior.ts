@@ -127,7 +127,7 @@ export let run = f => {
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${class_} ${name}`,
 						...upsert(stateByKey[key], resource),
-						...dependers0 !== dependers1 ? [`echo '${JSON.stringify(dependers1)}' > ${dependersDirectory}/${key}`] : [],
+						...dependers0 !== dependers1 ? [`echo '${dependers1}' > ${dependersDirectory}/${key}`] : [],
 					);
 
 					upserted.add(key);
