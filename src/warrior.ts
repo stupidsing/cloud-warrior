@@ -13,8 +13,8 @@ import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
 import { securityGroupRuleIngressClass } from './securityGroupRule';
 import { subnetClass } from './subnet';
-import { targetClass } from './Target';
-import { targetGroupClass } from './TargetGroup';
+import { targetClass } from './target';
+import { targetGroupClass } from './targetGroup';
 import { AttributesInput, Resource } from './types';
 import { vpcClass } from './vpc';
 

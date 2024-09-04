@@ -11,8 +11,8 @@ import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
 import { createSecurityGroupRuleIngress } from './securityGroupRule';
 import { createSubnet } from './subnet';
-import { createTarget } from './Target';
-import { createTargetGroup } from './TargetGroup';
+import { createTarget } from './target';
+import { createTargetGroup } from './targetGroup';
 import { createVpc } from './vpc';
 import { run } from './warrior';
 
