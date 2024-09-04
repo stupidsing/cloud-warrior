@@ -27,7 +27,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --assume-role-policy-document '${JSON.stringify(AssumeRolePolicyDocument)}' \\`,
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --role-name ${RoleName} \\`,
-			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
+			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | jq .Role | tee ${getStateFilename(key)}`,
 			`aws iam wait role-exists --role-name ${RoleName}`,
 		);

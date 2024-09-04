@@ -42,7 +42,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --policy-document '${JSON.stringify(PolicyDocument)}' \\`,
 			`  --policy-name ${PolicyName} \\`,
-			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
+			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | jq .Policy | tee ${getStateFilename(key)}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
 			`echo '${JSON.stringify(PolicyDocument)}' | tee ${getStateFilename(key)}#PolicyDocument`,
