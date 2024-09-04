@@ -38,8 +38,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --port ${Port} \\`,
 			`  --protocol ${Protocol} \\`,
 			`  --tags '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | tee ${getStateFilename(key)}`,
-			`aws elbv2 wait listener-exists --listener-arns ${ListenerArn}`,
+			`  | jq .Listeners[0] | tee ${getStateFilename(key)}`,
 		);
 		state = { DefaultActions, LoadBalancerArn, Port, Protocol };
 	}
@@ -96,7 +95,7 @@ export let listenerClass: Class = {
 		prefix,
 		class_,
 		name,
-		attributes.LoadBalancerArn,
+		attributes.LoadBalancerArn.replaceAll('/', ':'),
 	].join('_'),
 	refresh: ({ ListenerArn }, key: string) => refreshByArn(key, ListenerArn),
 	upsert,

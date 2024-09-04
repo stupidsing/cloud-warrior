@@ -4,7 +4,7 @@ import { AttributesInput, Class, Resource_ } from "./types";
 let class_ = 'load-balancer';
 
 type Attributes = {
-	AvailabilityZone: { SubnetId: string }[],
+	AvailabilityZones: { SubnetId: string }[],
 	Name: string,
 	SecurityGroups: string[],
 };
@@ -24,7 +24,7 @@ let refreshByArn = (key, arn) => [
 
 let upsert = (state, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
-	let { AvailabilityZone, Name, SecurityGroups } = attributes;
+	let { AvailabilityZones, Name, SecurityGroups } = attributes;
 	let commands = [];
 
 	let LoadBalancerArn = `$(cat ${getStateFilename(key)} | jq -r .LoadBalancerArn)`;
@@ -34,18 +34,18 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`aws elbv2 create-load-balancer \\`,
 			`  --name ${Name} \\`,
 			`  --security-groups ${SecurityGroups} \\`,
-			`  --subnets ${AvailabilityZone.map(r => r.SubnetId).join(' ')} \\`,
+			`  --subnets ${AvailabilityZones.map(r => r.SubnetId).join(' ')} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | tee ${getStateFilename(key)}`,
+			`  | jq .LoadBalancers[0] | tee ${getStateFilename(key)}`,
 			`aws elbv2 wait load-balancer-exists --load-balancer-arns ${LoadBalancerArn}`,
 		);
-		state = { AvailabilityZone, Name, SecurityGroups };
+		state = { AvailabilityZones, Name, SecurityGroups };
 	}
 
 	{
-		let prop = 'AvailabilityZone';
-		let source = state[prop].map(r => r.SubnetId).join(',');
-		let target = attributes[prop].map(r => r.SubnetId).join(',');
+		let prop = 'AvailabilityZones';
+		let source = state[prop].map(r => r.SubnetId).sort((a, b) => a.localeCompare(b)).join(' ');
+		let target = attributes[prop].map(r => r.SubnetId).sort((a, b) => a.localeCompare(b)).join(' ');
 		if (source !== target) {
 			commands.push(
 				`aws elbv2 set-subnets \\`,
@@ -58,8 +58,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 
 	{
 		let prop = 'SecurityGroups';
-		let source = state[prop].join(',');
-		let target = attributes[prop].join(',');
+		let source = state[prop].join(' ');
+		let target = attributes[prop].join(' ');
 		if (source !== target) {
 			commands.push(
 				`aws elbv2 set-security-groups \\`,

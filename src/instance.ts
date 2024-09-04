@@ -35,7 +35,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 run-instances \\`,
-			...SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(',')} \\`] : [],
+			...SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(' ')} \\`] : [],
 			`  --image-id ${ImageId} \\`,
 			`  --instance-type ${InstanceType} \\`,
 			`  --subnet-id ${SubnetId} \\`,
@@ -76,8 +76,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 
 	{
 		let prop = 'SecurityGroups';
-		let source = state[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(',');
-		let target = attributes[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(',');
+		let source = state[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(' ');
+		let target = attributes[prop].map(r => r.GroupId).sort((a, b) => a.localeCompare(b)).join(' ');
 		if (source !== target) {
 			if (target.length > 0) {
 				commands.push(

@@ -40,7 +40,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --tags '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  --target-type ${TargetType} \\`,
 			`  --vpc-id ${VpcId} \\`,
-			`  | tee ${getStateFilename(key)}`,
+			`  | jq .TargetGroups[0] | tee ${getStateFilename(key)}`,
 		);
 		state = { Name, Protocol, Port, TargetType, VpcId };
 	}

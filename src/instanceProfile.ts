@@ -68,10 +68,10 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 
 	{
 		let prop = 'Roles';
-		let { commands, needRefresh } = updateRoles(attributes, state[prop], attributes[prop]);
+		let { commands: commands_, needRefresh } = updateRoles(attributes, state[prop], attributes[prop]);
 
 		if (needRefresh) {
-			commands.push(...refreshByName(key, InstanceProfileName));
+			commands.push(...commands_, ...refreshByName(key, InstanceProfileName));
 		}
 	}
 

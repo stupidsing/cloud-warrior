@@ -4,6 +4,8 @@ import { certificateClass } from './certificate';
 import { dependenciesDirectory, getStateFilename, statesDirectory } from './constants';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
+import { internetGatewayClass } from './internetGateway';
+import { internetGatewayAttachmentClass } from './internetGatewayAttachment';
 import { listenerClass } from './Listener';
 import { loadBalancerClass } from './LoadBalancer';
 import { policyClass } from './policy';
@@ -31,6 +33,8 @@ let classes = Object.fromEntries([
 	certificateClass,
 	instanceClass,
 	instanceProfileClass,
+	internetGatewayClass,
+	internetGatewayAttachmentClass,
 	listenerClass,
 	loadBalancerClass,
 	policyClass,

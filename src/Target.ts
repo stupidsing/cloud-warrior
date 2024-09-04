@@ -31,8 +31,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws elbv2 register-targets \\`,
 			`  --target-group-arn ${TargetGroupArn} \\`,
-			`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} \\`,
-			`  | tee ${getStateFilename(key)}`,
+			`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``}`,
 			...refresh_(key, attributes),
 		);
 		state = { Target: { Id, Port }, TargetGroupArn };
@@ -48,7 +47,7 @@ export let targetClass: Class = {
 		prefix,
 		class_,
 		name,
-		attributes.TargetGroupArn,
+		attributes.TargetGroupArn.replaceAll('/', ':'),
 		attributes.Target.Id,
 		attributes.Target.Port,
 	].join('_'),

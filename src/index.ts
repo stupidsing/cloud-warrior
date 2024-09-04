@@ -2,6 +2,8 @@ import { createBucket } from './bucket';
 import { prefix } from './constants';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
+import { createInternetGateway } from './internetGateway';
+import { createInternetGatewayAttachment } from './internetGatewayAttachment';
 import { createListener } from './Listener';
 import { createLoadBalancer } from './LoadBalancer';
 import { createPolicy } from './policy';
@@ -80,6 +82,14 @@ run(process.env.ACTION ?? 'up', () => {
 		VpcId: vpc.getVpcId(get),
 	})));
 
+	let internetGateway = createInternetGateway('igw', get => ({
+	}));
+
+	let internetGatewayAttachment = createInternetGatewayAttachment('igw-a', get => ({
+		Attachments: [{ VpcId: vpc.getVpcId(get) }],
+		InternetGatewayId: internetGateway.getInternetGatewayId(get),
+	}));
+
 	let securityGroup = createSecurityGroup('sg-app', get => ({
 		Description: '-',
 		GroupName: `${prefix}-sg-app`,
@@ -104,7 +114,7 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let loadBalancer = createLoadBalancer('alb', get => ({
-		AvailabilityZone: publicSubnets.map(subnet => ({ SubnetId: subnet.getSubnetId(get) })),
+		AvailabilityZones: publicSubnets.map(subnet => ({ SubnetId: subnet.getSubnetId(get) })),
 		Name: 'alb',
 		SecurityGroups: [securityGroup.getSecurityGroupId(get)],
 	}));
