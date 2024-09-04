@@ -58,8 +58,10 @@ export let roleClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.RoleName,
-		createHash('sha256').update(attributes.Description ?? '').digest('hex').slice(0, 4),
+		createHash('sha256').update([
+			attributes.Description,
+			attributes.RoleName,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ RoleName }, key: string) => [
 		`NAME=${RoleName}`,

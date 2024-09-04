@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -67,8 +68,10 @@ export let subnetClass: Class = {
 		class_,
 		name,
 		attributes.VpcId,
-		attributes.AvailabilityZone,
-		attributes.CidrBlock.replaceAll('/', ':'),
+		createHash('sha256').update([
+			attributes.AvailabilityZone,
+			attributes.CidrBlock,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ SubnetId }, key: string) => refreshById(key, SubnetId),
 	upsert,

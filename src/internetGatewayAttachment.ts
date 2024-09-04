@@ -1,4 +1,4 @@
-import { getStateFilename, prefix } from "./constants";
+import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 import { difference } from "./utils";
 
@@ -74,7 +74,7 @@ export let internetGatewayAttachmentClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.InternetGatewayId,
+		attributes.InternetGatewayId.replaceAll('/', ':'),
 	].join('_'),
 	refresh: ({ InternetGatewayId }, key: string) => refreshById(key, InternetGatewayId),
 	upsert,

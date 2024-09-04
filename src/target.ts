@@ -1,4 +1,4 @@
-import { getStateFilename, prefix } from "./constants";
+import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'target';

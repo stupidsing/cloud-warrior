@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -55,10 +56,12 @@ export let targetGroupClass: Class = {
 		class_,
 		name,
 		attributes.VpcId,
-		attributes.Name,
-		attributes.Protocol,
-		attributes.Port,
-		attributes.TargetType,
+		createHash('sha256').update([
+			attributes.Name,
+			attributes.Port,
+			attributes.Protocol,
+			attributes.TargetType,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ TargetGroupArn }, key: string) => refreshByArn(key, TargetGroupArn),
 	upsert,

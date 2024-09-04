@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -57,11 +58,13 @@ export let securityGroupRuleIngressClass: Class = {
 		class_,
 		name,
 		attributes.GroupId,
-		attributes.CidrIpv4.replaceAll('/', ':'),
 		attributes.SourceGroup,
-		attributes.IpProtocol,
-		attributes.FromPort,
-		attributes.ToPort,
+		createHash('sha256').update([
+			attributes.CidrIpv4,
+			attributes.FromPort,
+			attributes.IpProtocol,
+			attributes.ToPort,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ SecurityGroupRuleId }, key: string) => refreshById(key, SecurityGroupRuleId),
 	upsert,

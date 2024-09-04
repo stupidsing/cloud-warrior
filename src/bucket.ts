@@ -1,4 +1,5 @@
-import { getStateFilename, prefix } from "./constants";
+import { createHash } from "crypto";
+import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'bucket';
@@ -47,7 +48,9 @@ export let bucketClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.Name,
+		createHash('sha256').update([
+			attributes.Name,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ Name }, key: string) => refreshByName(key, Name),
 	upsert,

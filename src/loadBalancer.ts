@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -79,7 +80,9 @@ export let loadBalancerClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.Name,
+		createHash('sha256').update([
+			attributes.Name,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ LoadBalancerArn }, key: string) => refreshByArn(key, LoadBalancerArn),
 	upsert,

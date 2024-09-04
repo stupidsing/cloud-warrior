@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -50,7 +51,9 @@ export let certificateClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.DomainName,
+		createHash('sha256').update([
+			attributes.DomainName,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ CertificateArn }, key: string) => refreshByArn(key, CertificateArn),
 	upsert,

@@ -78,8 +78,10 @@ export let policyClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.PolicyName,
-		createHash('sha256').update(attributes.Description ?? '').digest('hex').slice(0, 4),
+		createHash('sha256').update([
+			attributes.Description,
+			attributes.PolicyName,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ PolicyArn }, key: string) => refreshByArn(key, PolicyArn),
 	upsert,

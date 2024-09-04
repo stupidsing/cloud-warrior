@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -100,8 +101,10 @@ export let instanceClass: Class = {
 		class_,
 		name,
 		attributes.SubnetId,
-		attributes.InstanceType,
 		attributes.ImageId,
+		createHash('sha256').update([
+			attributes.InstanceType,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ InstanceId }, key: string) => refreshById(key, InstanceId),
 	upsert,
