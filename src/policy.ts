@@ -38,15 +38,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (state == null) {
 		commands.push(
-			`F=$(mktemp)`,
-			`echo '${JSON.stringify(PolicyDocument)}' > \${F}`,
 			`aws iam create-policy \\`,
 			...Description != null ? [`  --description ${Description} \\`] : [],
-			`  --policy-document file://\${F} \\`,
+			`  --policy-document '${JSON.stringify(PolicyDocument)}' \\`,
 			`  --policy-name ${PolicyName} \\`,
 			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
 			`  | jq .Policy | tee ${getStateFilename(key)}`,
-			`rm -f \${F}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
 			`echo '${JSON.stringify(PolicyDocument)}' | tee ${getStateFilename(key)}#PolicyDocument`,
 		);
@@ -62,13 +59,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws iam delete-policy-version \\`,
 				`  --policy-arn ${PolicyArn} \\`,
 				`  --version-id $(aws iam list-policy-version --policy-arn ${PolicyArn} | jq -r '.Versions | map(select(.IsDefaultVersion | not).VersionId)[0]')`,
-				`F=$(mktemp)`,
-				`echo '${target}' > \${F}`,
 				`aws iam create-policy-version \\`,
 				`  --policy-arn ${PolicyArn} \\`,
-				`  --policy-document file://\${F} \\`,
+				`  --policy-document '${target}' \\`,
 				`  --set-as-default`,
-				`rm -f \${F}`,
 				...refreshByArn(key, PolicyArn),
 			);
 		}
