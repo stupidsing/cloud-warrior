@@ -93,7 +93,7 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let natGateways = privateSubnets.map(subnet => createNatGateway('ngw', get => ({
-		SubnetId: subnet.getSubnetId(get)
+		SubnetId: subnet.getSubnetId(get),
 	})));
 
 	let securityGroup = createSecurityGroup('sg-app', get => ({
