@@ -1,5 +1,6 @@
 import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
+import { replace } from "./utils";
 
 let class_ = 'target';
 
@@ -47,7 +48,7 @@ export let targetClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.TargetGroupArn.replaceAll('/', ':'),
+		replace(attributes.TargetGroupArn),
 		attributes.Target.Id,
 		attributes.Target.Port,
 	].join('_'),

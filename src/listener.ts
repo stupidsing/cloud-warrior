@@ -1,5 +1,6 @@
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
+import { replace } from "./utils";
 
 let class_ = 'listener';
 
@@ -94,7 +95,7 @@ export let listenerClass: Class = {
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.LoadBalancerArn.replaceAll('/', ':'),
+		replace(attributes.LoadBalancerArn),
 	].join('_'),
 	refresh: ({ ListenerArn }, key: string) => refreshByArn(key, ListenerArn),
 	upsert,
