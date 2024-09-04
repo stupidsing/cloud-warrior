@@ -120,6 +120,7 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let targetGroup = createTargetGroup('tg', get => ({
+		Dummy: internetGatewayAttachment.getInternetGatewayId(get), // dependency
 		Name: `${prefix}-tg`,
 		Protocol: 'HTTP',
 		Port: 80,

@@ -83,7 +83,7 @@ export let policyClass: Class = {
 		attributes.PolicyName,
 		attributes.Description,
 	].join('_'),
-	refresh: ({ PolicyArn }, key: string) => refreshByArn(key, PolicyArn),
+	refresh: ({ Arn }, key: string) => refreshByArn(key, Arn),
 	upsert,
 };
 

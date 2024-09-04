@@ -87,5 +87,6 @@ export let createInternetGatewayAttachment = (name: string, f: AttributesInput<A
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		...resource,
+		getInternetGatewayId: get => get(resource, 'InternetGatewayId'),
 	};
 };

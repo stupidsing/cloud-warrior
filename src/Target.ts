@@ -8,11 +8,11 @@ type Attributes = {
 	TargetGroupArn: string,
 };
 
-let delete_ = ({ Id, Port, TargetGroupArn }, key: string) => [
+let delete_ = ({ Target: { Id, Port }, TargetGroupArn }, key: string) => [
 	`aws elbv2 deregister-targets \\`,
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f ${getStateFilename(key)} ${getStateFilename(key)}#TargetGroupArn`,
 ];
 
 let refresh_ = (key: string, { Target: { Id, Port }, TargetGroupArn }: Attributes) => [
@@ -20,6 +20,7 @@ let refresh_ = (key: string, { Target: { Id, Port }, TargetGroupArn }: Attribute
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} \\`,
 	`  | jq .TargetHealthDescriptions[0] | tee ${getStateFilename(key)}`,
+	`echo ${JSON.stringify(TargetGroupArn)} | tee ${getStateFilename(key)}#TargetGroupArn`,
 ];
 
 let upsert = (state, resource: Resource_<Attributes>) => {
