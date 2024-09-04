@@ -50,7 +50,7 @@ let refreshByName = (key, name) => [
 		`  | jq .InstanceProfile | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { InstanceProfileName } = attributes;
 	let commands = [];

@@ -21,7 +21,7 @@ let refreshByName = (key, name) => [
 	`  | jq .[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes: { Name, Region }, key } = resource;
 	let commands = [];
 
@@ -34,7 +34,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`aws s3api wait bucket-exists --bucket ${Name}`,
 			...refreshByName(key, Name),
 		);
-		state = { Name };
+		state = { Name, Region };
 	}
 
 	return commands;

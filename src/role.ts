@@ -16,7 +16,7 @@ let delete_ = ({ RoleName }, key: string) => [
 	`rm -f ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { AssumeRolePolicyDocument, Description, RoleName } = attributes;
 	let commands = [];

@@ -24,7 +24,7 @@ let refreshByArn = (key, arn) => [
 	`  | jq .TargetGroups[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { Name, Protocol, Port, TargetType, VpcId } = attributes;
 	let commands = [];

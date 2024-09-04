@@ -5,8 +5,8 @@ let class_ = 'vpc';
 
 type Attributes = {
 	CidrBlockAssociationSet: { CidrBlock: string }[],
-	EnableDnsHostnames: boolean,
-	EnableDnsSupport: boolean,
+	EnableDnsHostnames?: boolean,
+	EnableDnsSupport?: boolean,
 };
 
 let delete_ = ({ VpcId }, key: string) => {
@@ -20,7 +20,7 @@ let delete_ = ({ VpcId }, key: string) => {
 	];
 };
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { CidrBlockAssociationSet } = attributes;
 	let commands = [];

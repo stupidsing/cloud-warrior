@@ -25,7 +25,7 @@ let refreshById = (key, id) => [
 	`  | jq .Reservations[0].Instances[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { ImageId, InstanceType, SecurityGroups, SubnetId } = attributes;
 	let commands = [];
@@ -45,7 +45,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  | jq .Instances[0] | tee ${getStateFilename(key)}`,
 			`aws ec2 wait instance-exists --instance-id ${InstanceId}`,
 		);
-		state = { SecurityGroups };
+		state = { ImageId, InstanceType, SecurityGroups, SubnetId };
 	}
 
 	{

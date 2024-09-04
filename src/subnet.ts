@@ -5,8 +5,8 @@ let class_ = 'subnet';
 
 type Attributes = {
 	AvailabilityZone: string,
-	CidrBlock: string,
-	MapPublicIpOnLaunch: boolean,
+	CidrBlock?: string,
+	MapPublicIpOnLaunch?: boolean,
 	VpcId: string,
 };
 
@@ -23,7 +23,7 @@ let refreshById = (key, id) => [
 	`  | jq .Subnets[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { AvailabilityZone, CidrBlock, VpcId } = attributes;
 	let commands = [];
@@ -42,7 +42,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  | jq .Subnet | tee ${getStateFilename(key)}`,
 			`aws ec2 wait subnet-available --subnet-id ${SubnetId}`,
 		);
-		state = {};
+		state = { AvailabilityZone, CidrBlock, VpcId };
 	}
 
 	{

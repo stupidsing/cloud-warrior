@@ -29,7 +29,7 @@ let refreshByArn = (key, arn) => [
 	`  | jq .PolicyDocument | tee ${getStateFilename(key)}#PolicyDocument`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { Description, PolicyDocument, PolicyName } = attributes;
 	let commands = [];
@@ -83,7 +83,7 @@ export let policyClass: Class = {
 		attributes.PolicyName,
 		attributes.Description,
 	].join('_'),
-	refresh: ({ Arn }, key: string) => refreshByArn(key, Arn),
+	refresh: ({ PolicyArn }, key: string) => refreshByArn(key, PolicyArn),
 	upsert,
 };
 

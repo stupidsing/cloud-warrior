@@ -22,7 +22,7 @@ let refreshById = (key, id) => [
 	`  | jq .SecurityGroups[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes: { Description, GroupName, VpcId }, key } = resource;
 	let commands = [];
 

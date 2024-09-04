@@ -23,7 +23,7 @@ let refresh_ = (key: string, { Target: { Id, Port }, TargetGroupArn }: Attribute
 	`echo ${JSON.stringify(TargetGroupArn)} | tee ${getStateFilename(key)}#TargetGroupArn`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes, key } = resource;
 	let { Target: { Id, Port }, TargetGroupArn } = attributes;
 	let commands = [];

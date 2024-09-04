@@ -20,7 +20,7 @@ let refreshByArn = (key, arn) => [
 	`  | jq .Certificates[0] | tee ${getStateFilename(key)}`,
 ];
 
-let upsert = (state, resource: Resource_<Attributes>) => {
+let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes: { DomainName }, key } = resource;
 	let commands = [];
 
