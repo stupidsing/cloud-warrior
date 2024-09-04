@@ -7,6 +7,7 @@ import { createInternetGateway } from './internetGateway';
 import { createInternetGatewayAttachment } from './internetGatewayAttachment';
 import { createListener } from './listener';
 import { createLoadBalancer } from './loadBalancer';
+import { createNatGateway } from './natGateway';
 import { createPolicy } from './policy';
 import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
@@ -90,6 +91,10 @@ run(process.env.ACTION ?? 'up', () => {
 		Attachments: [{ VpcId: vpc.getVpcId(get) }],
 		InternetGatewayId: internetGateway.getInternetGatewayId(get),
 	}));
+
+	let natGateways = privateSubnets.map(subnet => createNatGateway('ngw', get => ({
+		SubnetId: subnet.getSubnetId(get)
+	})));
 
 	let securityGroup = createSecurityGroup('sg-app', get => ({
 		Description: '-',

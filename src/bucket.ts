@@ -22,7 +22,8 @@ let refreshByName = (key, name) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes: { Name, Region }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { Name, Region } = attributes;
 	let commands = [];
 
 	if (state == null) {

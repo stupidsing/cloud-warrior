@@ -27,7 +27,8 @@ let refreshById = (key, id) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes: { CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort } = attributes;
 	let commands = [];
 
 	let SecurityGroupRuleId = `$(cat ${getStateFilename(key)} | jq -r .SecurityGroupRuleId)`;

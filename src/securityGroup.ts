@@ -23,7 +23,8 @@ let refreshById = (key, id) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes: { Description, GroupName, VpcId }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { Description, GroupName, VpcId } = attributes;
 	let commands = [];
 
 	let GroupId = `$(cat ${getStateFilename(key)} | jq -r .GroupId)`;

@@ -21,7 +21,8 @@ let refreshByArn = (key, arn) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes: { DomainName }, key } = resource;
+	let { name, attributes, key } = resource;
+	let { DomainName } = attributes;
 	let commands = [];
 
 	let CertificateArn = `$(cat ${getStateFilename(key)} | jq -r .CertificateArn)`;

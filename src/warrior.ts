@@ -9,6 +9,7 @@ import { internetGatewayClass } from './internetGateway';
 import { internetGatewayAttachmentClass } from './internetGatewayAttachment';
 import { listenerClass } from './listener';
 import { loadBalancerClass } from './loadBalancer';
+import { natGatewayClass } from './natGateway';
 import { policyClass } from './policy';
 import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
@@ -39,6 +40,7 @@ let classes = Object.fromEntries([
 	internetGatewayAttachmentClass,
 	listenerClass,
 	loadBalancerClass,
+	natGatewayClass,
 	policyClass,
 	roleClass,
 	securityGroupClass,
