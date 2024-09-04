@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { PolicyDocument } from "./aws";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
@@ -58,7 +59,7 @@ export let roleClass: Class = {
 		class_,
 		name,
 		attributes.RoleName,
-		attributes.Description,
+		createHash('sha256').update(attributes.Description ?? '').digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ RoleName }, key: string) => [
 		`NAME=${RoleName}`,

@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { PolicyDocument } from "./aws";
 import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
@@ -78,7 +79,7 @@ export let policyClass: Class = {
 		class_,
 		name,
 		attributes.PolicyName,
-		attributes.Description,
+		createHash('sha256').update(attributes.Description ?? '').digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ PolicyArn }, key: string) => refreshByArn(key, PolicyArn),
 	upsert,
