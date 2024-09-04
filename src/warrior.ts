@@ -75,9 +75,8 @@ export let create = (class_: string, name: string, f: AttributesInput<Record<str
 	return resourceByKey[key] = resource;
 };
 
-export let run = f => {
+export let run = (action: string, f: () => void) => {
 	let stateFilenames = readdirSync(statesDirectory);
-	let action = process.env.ACTION ?? 'up';
 
 	resourceByKey = {};
 	stateByKey = {};

@@ -14,7 +14,7 @@ import { createTargetGroup } from './TargetGroup';
 import { createVpc } from './vpc';
 import { run } from './warrior';
 
-run(() => {
+run(process.env.ACTION ?? 'up', () => {
 	let policy = createPolicy('policy-app', get => ({
 		PolicyDocument: {
 			Version: '2012-10-17',
