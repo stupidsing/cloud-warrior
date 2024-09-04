@@ -23,9 +23,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (state == null) {
 		commands.push(
-			`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > /tmp/assume_role_policy_document_${key}.json`,
+			`F=$(mktemp)`,
+			`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > \${F}`,
 			`aws iam create-role \\`,
-			`  --assume-role-policy-document file:///tmp/assume_role_policy_document_${key}.json \\`,
+			`  --assume-role-policy-document file://\${F} \\`,
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --role-name ${RoleName} \\`,
 			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
@@ -41,9 +42,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		let target = JSON.stringify(attributes[prop]);
 		if (source !== target) {
 			commands.push(
-				`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > /tmp/assume_role_policy_document_${key}.json`,
+				`F=$(mktemp)`,
+				`echo '${JSON.stringify(AssumeRolePolicyDocument)}' > \${F}`,
 				`aws iam update-assume-role-policy \\`,
-				`  --policy-document file:///tmp/assume_role_policy_document_${key}.json`,
+				`  --policy-document file://\${F}`,
 				`  --role-name ${RoleName} \\`,
 				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`,
 			);
