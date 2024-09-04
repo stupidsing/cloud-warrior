@@ -34,10 +34,8 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`aws elbv2 create-load-balancer \\`,
 			`  --name ${Name} \\`,
 			`  --security-groups ${SecurityGroups} \\`,
-			`  --subnets ${AvailabilityZone.map(r => r.SubnetId).join(',')} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'load-balancer', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' \\`,
+			`  --subnets ${AvailabilityZone.map(r => r.SubnetId).join(' ')} \\`,
+			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | tee ${getStateFilename(key)}`,
 			`aws elbv2 wait load-balancer-exists --load-balancer-arns ${LoadBalancerArn}`,
 		);

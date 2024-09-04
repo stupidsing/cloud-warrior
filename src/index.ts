@@ -51,6 +51,7 @@ run(process.env.ACTION ?? 'up', () => {
 
 	let bucket = createBucket('bucket', get => ({
 		Name: 'npt-chat',
+		Region: 'ap-southeast-1',
 	}));
 
 	let vpc = createVpc('vpc', get => ({
@@ -59,19 +60,25 @@ run(process.env.ACTION ?? 'up', () => {
 		EnableDnsSupport: true,
 	}));
 
-	let subnetPublic = createSubnet('subnet-public', get => ({
-		AvailabilityZone: 'ap-southeast-1a',
-		CidrBlock: '10.88.1.0/24',
+	let publicSubnets = [
+		{ AvailabilityZone: 'ap-southeast-1a', CidrBlock: '10.88.11.0/24' },
+		{ AvailabilityZone: 'ap-southeast-1b', CidrBlock: '10.88.12.0/24' },
+	].map(({ AvailabilityZone, CidrBlock }) => createSubnet('subnet-public', get => ({
+		AvailabilityZone,
+		CidrBlock,
 		MapPublicIpOnLaunch: true,
 		VpcId: vpc.getVpcId(get),
-	}));
+	})));
 
-	let subnetPrivate = createSubnet('subnet-private', get => ({
-		AvailabilityZone: 'ap-southeast-1a',
-		CidrBlock: '10.88.2.0/24',
+	let privateSubnets = [
+		{ AvailabilityZone: 'ap-southeast-1a', CidrBlock: '10.88.21.0/24' },
+		{ AvailabilityZone: 'ap-southeast-1b', CidrBlock: '10.88.22.0/24' },
+	].map(({ AvailabilityZone, CidrBlock }) => createSubnet('subnet-private', get => ({
+		AvailabilityZone,
+		CidrBlock,
 		MapPublicIpOnLaunch: false,
 		VpcId: vpc.getVpcId(get),
-	}));
+	})));
 
 	let securityGroup = createSecurityGroup('sg-app', get => ({
 		Description: '-',
@@ -93,11 +100,11 @@ run(process.env.ACTION ?? 'up', () => {
 		ImageId: 'ami-05d6d0aae066c8d93', // aws ssm get-parameter --name /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id | jq -r .Parameter.Value
 		InstanceType: 't3.nano',
 		SecurityGroups: [{ GroupId: securityGroup.getSecurityGroupId(get) }],
-		SubnetId: subnetPrivate.getSubnetId(get),
+		SubnetId: privateSubnets[0].getSubnetId(get),
 	}));
 
 	let loadBalancer = createLoadBalancer('alb', get => ({
-		AvailabilityZone: [{ SubnetId: subnetPublic.getSubnetId(get) }],
+		AvailabilityZone: publicSubnets.map(subnet => ({ SubnetId: subnet.getSubnetId(get) })),
 		Name: 'alb',
 		SecurityGroups: [securityGroup.getSecurityGroupId(get)],
 	}));

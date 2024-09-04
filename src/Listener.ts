@@ -37,9 +37,7 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --load-balancer-arn ${LoadBalancerArn} \\`,
 			`  --port ${Port} \\`,
 			`  --protocol ${Protocol} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'listener', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' \\`,
+			`  --tags '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | tee ${getStateFilename(key)}`,
 			`aws elbv2 wait listener-exists --listener-arns ${ListenerArn}`,
 		);

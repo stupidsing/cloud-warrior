@@ -37,13 +37,10 @@ let upsert = (state, resource: Resource_<Attributes>) => {
 			`  --name ${Name} \\`,
 			`  --protocol ${Protocol} \\`,
 			`  --port ${Port} \\`,
+			`  --tags '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  --target-type ${TargetType} \\`,
 			`  --vpc-id ${VpcId} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'target-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' \\`,
 			`  | tee ${getStateFilename(key)}`,
-			`aws elbv2 wait target-group-exists --target-group-arns ${TargetGroupArn}`,
 		);
 		state = { Name, Protocol, Port, TargetType, VpcId };
 	}

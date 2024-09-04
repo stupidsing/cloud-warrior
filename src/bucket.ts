@@ -5,6 +5,7 @@ let class_ = 'bucket';
 
 type Attributes = {
 	Name: string,
+	Region: string,
 };
 
 let delete_ = ({ Name }, key: string) => [
@@ -16,22 +17,21 @@ let delete_ = ({ Name }, key: string) => [
 let refreshByName = (key, name) => [
 	`NAME=${name}`,
 	`aws s3api list-buckets \\`,
-	`  --query "[?Name == '\${NAME}']" \\`,
+	`  --query "Buckets[?Name == '\${NAME}']" \\`,
 	`  | jq .[0] | tee ${getStateFilename(key)}`,
 ];
 
 let upsert = (state, resource: Resource_<Attributes>) => {
-	let { name, attributes: { Name }, key } = resource;
+	let { name, attributes: { Name, Region }, key } = resource;
 	let commands = [];
 
 	if (state == null) {
 		commands.push(
 			`aws s3api create-bucket \\`,
 			`  --bucket ${Name} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'bucket', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}'`,
-			`aws s3api wait bucket-exists --buckets ${Name}`,
+			`  --create-bucket-configuration LocationConstraint=${Region} \\`,
+			`  --region ${Region}`,
+			`aws s3api wait bucket-exists --bucket ${Name}`,
 			...refreshByName(key, Name),
 		);
 		state = { Name };
