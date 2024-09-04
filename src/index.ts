@@ -142,8 +142,10 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let distribution = createDistribution('dist', get => ({
-		DefaultRootObject: 'index.html',
-		Origins: { Items: [{ DomainName: 'npt.com' }]},
+		DistributionConfig: {
+			DefaultRootObject: 'index.html',
+			Origins: { Items: [{ DomainName: 'npt.com' }]},
+		},
 	}));
 
 	// s3
