@@ -1,5 +1,6 @@
 import { createBucket } from './bucket';
 import { prefix } from './constants';
+import { createDistribution } from './distribution';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
 import { createInternetGateway } from './internetGateway';
@@ -138,6 +139,11 @@ run(process.env.ACTION ?? 'up', () => {
 	let target = createTarget('target', get => ({
 		Target: { Id: instance.getInstanceId(get) },
 		TargetGroupArn: targetGroup.getArn(get),
+	}));
+
+	let distribution = createDistribution('dist', get => ({
+		DefaultRootObject: 'index.html',
+		Origins: { Items: [{ DomainName: 'npt.com' }]},
 	}));
 
 	// s3
