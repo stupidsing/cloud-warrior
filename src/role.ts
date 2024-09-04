@@ -31,6 +31,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --role-name ${RoleName} \\`,
 			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
 			`  | jq .Role | tee ${getStateFilename(key)}`,
+			`rm -f \${F}`,
 			`aws iam wait role-exists --role-name ${RoleName}`,
 		);
 		state = { AssumeRolePolicyDocument, Description, RoleName };
@@ -47,6 +48,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws iam update-assume-role-policy \\`,
 				`  --policy-document file://\${F}`,
 				`  --role-name ${RoleName} \\`,
+				`rm -f \${F}`,
 				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`,
 			);
 		}

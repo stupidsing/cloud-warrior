@@ -46,6 +46,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --policy-name ${PolicyName} \\`,
 			`  --tags Key=Name,Value='${prefix}-${name}' \\`,
 			`  | jq .Policy | tee ${getStateFilename(key)}`,
+			`rm -f \${F}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
 			`echo '${JSON.stringify(PolicyDocument)}' | tee ${getStateFilename(key)}#PolicyDocument`,
 		);
@@ -67,6 +68,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`  --policy-arn ${PolicyArn} \\`,
 				`  --policy-document file://\${F} \\`,
 				`  --set-as-default`,
+				`rm -f \${F}`,
 				...refreshByArn(key, PolicyArn),
 			);
 		}
