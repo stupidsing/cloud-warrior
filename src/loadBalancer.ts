@@ -77,7 +77,6 @@ export let loadBalancerClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name, attributes }: Resource_<Attributes>) => [
-		prefix,
 		class_,
 		name,
 		attributes.Name,

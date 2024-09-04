@@ -96,7 +96,6 @@ export let vpcClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name }: Resource_<Attributes>) => [
-		prefix,
 		class_,
 		name,
 	].join('_'),

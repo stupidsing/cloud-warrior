@@ -102,7 +102,7 @@ export let run = (action: string, f: () => void) => {
 
 	if (action === 'refresh') {
 		for (let [key, state] of Object.entries(stateByKey)) {
-			let [prefix, class_, name] = key.split('_');	
+			let [class_, name] = key.split('_');	
 			let { refresh } = classes[class_];
 
 			commands.push(
@@ -112,7 +112,7 @@ export let run = (action: string, f: () => void) => {
 		}
 	} else if (action === 'refresh-dependencies') {
 		for (let [key, state] of Object.entries(stateByKey)) {
-			let [prefix, class_, name] = key.split('_');	
+			let [class_, name] = key.split('_');	
 			let className = class_ + '_' + name;
 			let dependencies = JSON.stringify((dependenciesByClassName[className] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
 
@@ -144,7 +144,7 @@ export let run = (action: string, f: () => void) => {
 				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 				if (!upserted.has(key)) {
-					let [prefix, class_, name] = key.split('_');
+					let [class_, name] = key.split('_');
 					let className = class_ + '_' + name;
 					let dependencies = dependenciesByClassName[className] ?? [];
 
@@ -174,7 +174,7 @@ export let run = (action: string, f: () => void) => {
 			if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 			if (!deleted.has(key)) {
-				let [prefix, class_, name] = key.split('_');
+				let [class_, name] = key.split('_');
 				let dependers = dependersByKey[key] ?? [];
 
 				for (let depender of dependers) {
