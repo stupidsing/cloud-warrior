@@ -188,8 +188,8 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# delete ${name}`,
-						`rm -f ${dependenciesDirectory}/${key}`,
 						...delete_(state, key),
+						`rm -f ${dependenciesDirectory}/${key}`,
 					);
 				}
 
