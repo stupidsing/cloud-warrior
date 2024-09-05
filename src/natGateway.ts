@@ -58,6 +58,6 @@ import { create } from "./warrior";
 export let createNatGateway = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getNatNatGatewayId: get => get(resource, 'NatGatewayId'),
+		getNatGatewayId: get => get(resource, 'NatGatewayId'),
 	};
 };
