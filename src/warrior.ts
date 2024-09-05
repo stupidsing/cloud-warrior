@@ -126,7 +126,8 @@ export let run = (action: string, f: () => void) => {
 
 			commands.push(
 				'',
-				`STATE_${hash}=${getStateFilename(key)} STATE=\${STATE_${hash}}`,
+				`STATE_${hash}=${getStateFilename(key)}`,
+				`STATE=\${STATE_${hash}}`,
 				...refresh(state, key),
 			);
 		}
@@ -139,8 +140,10 @@ export let run = (action: string, f: () => void) => {
 
 			commands.push(
 				'',
-				`echo -n > ${dependenciesDirectory}/${key}`,
-				...dependencyKeys.map(k => `echo ${k} >> ${dependenciesDirectory}/${key}`),
+				`(`,
+				`  echo -n`,
+				...dependencyKeys.map(k => `  echo ${k}`),
+				`) > ${dependenciesDirectory}/${key}`,
 			);
 		}
 	} else {
@@ -178,10 +181,13 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
-						`STATE_${hash}=${getStateFilename(key)} STATE=\${STATE_${hash}}`,
+						`STATE_${hash}=${getStateFilename(key)}`,
+						`STATE=\${STATE_${hash}}`,
 						...upsert(stateByKey[key], resource),
-						`echo -n > ${dependenciesDirectory}/${key}`,
-						...dependencyKeys.map(k => `echo ${k} >> ${dependenciesDirectory}/${key}`),
+						`(`,
+						`  echo -n`,
+						...dependencyKeys.map(k => `  echo ${k}`),
+						`) > ${dependenciesDirectory}/${key}`,
 					);
 
 					upserted.add(key);
@@ -213,7 +219,8 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# delete ${name}`,
-						`STATE_${hash}=${getStateFilename(key)} STATE=\${STATE_${hash}}`,
+						`STATE_${hash}=${getStateFilename(key)}`,
+						`STATE=\${STATE_${hash}}`,
 						...delete_(state, key),
 						`rm -f ${dependenciesDirectory}/${key}`,
 					);
