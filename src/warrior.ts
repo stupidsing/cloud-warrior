@@ -33,6 +33,16 @@ let readJsonIfExists = name => {
 	}
 };
 
+let readTextIfExists = name => {
+	let filename = name;
+	if (existsSync(filename)) {
+		let text = readFileSync(filename, 'ascii');
+		return text ? text.split('\n').filter(line => line) : null;
+	} else {
+		return null;
+	}
+};
+
 let classes = Object.fromEntries([
 	bucketClass,
 	certificateClass,
@@ -124,11 +134,13 @@ export let run = (action: string, f: () => void) => {
 		for (let [key, state] of Object.entries(stateByKey)) {
 			let [class_, name] = key.split('_');	
 			let className = class_ + '_' + name;
-			let dependencies = JSON.stringify((dependenciesByClassName[className] ?? []).map(r => r.key).sort((a, b) => a.localeCompare(b)));
+			let dependencies = dependenciesByClassName[className] ?? [];
+			let dependencyKeys = dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b));
 
 			commands.push(
 				'',
-				`echo '${dependencies}' > ${dependenciesDirectory}/${key}`,
+				`echo -n > ${dependenciesDirectory}/${key}`,
+				...dependencyKeys.map(k => `echo ${k} >> ${dependenciesDirectory}/${key}`),
 			);
 		}
 	} else {
@@ -137,7 +149,7 @@ export let run = (action: string, f: () => void) => {
 
 		for (let dependenciesFilename of dependenciesFilenames) {
 			let [key, subKey] = dependenciesFilename.split('#');
-			let dependencies = readJsonIfExists(`${dependenciesDirectory}/${dependenciesFilename}`);
+			let dependencies = readTextIfExists(`${dependenciesDirectory}/${dependenciesFilename}`);
 			for (let dependency of dependencies) {
 				let dependers = dependersByKey[dependency];
 				if (dependers == null) dependers = dependersByKey[dependency] = [];
@@ -157,6 +169,7 @@ export let run = (action: string, f: () => void) => {
 					let [class_, _] = key.split('_');
 					let className = class_ + '_' + name;
 					let dependencies = dependenciesByClassName[className] ?? [];
+					let dependencyKeys = dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b));
 
 					for (let dependency of dependencies) _upsert([key, ...keys], dependency);
 
@@ -167,7 +180,8 @@ export let run = (action: string, f: () => void) => {
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
 						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=\${STATE_${hash}}`,
 						...upsert(stateByKey[key], resource),
-						...dependencies.length > 0 ? [`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`] : [],
+						`echo -n > ${dependenciesDirectory}/${key}`,
+						...dependencyKeys.map(k => `echo ${k} >> ${dependenciesDirectory}/${key}`),
 					);
 
 					upserted.add(key);
