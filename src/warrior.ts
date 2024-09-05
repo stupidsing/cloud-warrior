@@ -116,7 +116,7 @@ export let run = (action: string, f: () => void) => {
 
 			commands.push(
 				'',
-				`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=STATE_${hash}`,
+				`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=\${STATE_${hash}}`,
 				...refresh(state, key),
 			);
 		}
@@ -165,7 +165,7 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
-						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=STATE_${hash}`,
+						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=\${STATE_${hash}}`,
 						...upsert(stateByKey[key], resource),
 						...dependencies.length > 0 ? [`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`] : [],
 					);
@@ -199,7 +199,7 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# delete ${name}`,
-						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=STATE_${hash}`,
+						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=\${STATE_${hash}}`,
 						...delete_(state, key),
 						`rm -f ${dependenciesDirectory}/${key}`,
 					);
