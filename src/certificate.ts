@@ -53,7 +53,7 @@ export let certificateClass: Class = {
 		name,
 		createHash('sha256').update([
 			attributes.DomainName,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ CertificateArn }, key: string) => refreshByArn(key, CertificateArn),
 	upsert,

@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { bucketClass } from './bucket';
 import { certificateClass } from './certificate';
@@ -69,7 +70,8 @@ let addDependency = (referredResource: Resource, resource: Resource) => {
 }
 
 export let create = (class_: string, name: string, f: AttributesInput<Record<string, any>>) => {
-	let resource: Resource = { class_, name, attributes: undefined };
+	let nameHash = createHash('sha256').update(name).digest('hex').slice(0, 4);
+	let resource: Resource = { class_, name, nameHash, attributes: undefined };
 	let { getKey } = classes[class_];
 
 	let get = (referredResource: Resource, prop: string) => {
@@ -77,7 +79,7 @@ export let create = (class_: string, name: string, f: AttributesInput<Record<str
 
 		let key = referredResource.key;
 		let state = stateByKey[key];
-		let value: string = state ? state[prop] : `$(cat ${getStateFilename(key)} | jq -r .${prop})`;
+		let value: string = state ? state[prop] : `$(cat \${STATE_${referredResource.nameHash}} | jq -r .${prop})`;
 		return value;
 	};
 
@@ -109,11 +111,12 @@ export let run = (action: string, f: () => void) => {
 	if (action === 'refresh') {
 		for (let [key, state] of Object.entries(stateByKey)) {
 			let [class_, name] = key.split('_');	
+			let nameHash = createHash('sha256').update(name).digest('hex').slice(0, 4);
 			let { refresh } = classes[class_];
 
 			commands.push(
 				'',
-				`STATE=${getStateFilename(key)}`,
+				`STATE_${nameHash}=${getStateFilename(`\${KEY_${nameHash}}`)} STATE=STATE_${nameHash}`,
 				...refresh(state, key),
 			);
 		}
@@ -146,12 +149,12 @@ export let run = (action: string, f: () => void) => {
 			let upserted = new Set<string>();
 
 			let _upsert = (keys: string[], resource: Resource) => {
-				let { key } = resource;
+				let { key, name, nameHash } = resource;
 
 				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 				if (!upserted.has(key)) {
-					let [class_, name] = key.split('_');
+					let [class_, _] = key.split('_');
 					let className = class_ + '_' + name;
 					let dependencies = dependenciesByClassName[className] ?? [];
 
@@ -162,7 +165,7 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
-						`STATE=${getStateFilename(key)}`,
+						`STATE_${nameHash}=${getStateFilename(`\${KEY_${nameHash}}`)} STATE=STATE_${nameHash}`,
 						...upsert(stateByKey[key], resource),
 						...dependencies.length > 0 ? [`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`] : [],
 					);
@@ -177,12 +180,12 @@ export let run = (action: string, f: () => void) => {
 		let deleted = new Set<string>();
 
 		let _delete = (keys: string[], state) => {
-			let { key } = state;
+			let { key, name, nameHash } = state;
 
 			if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 			if (!deleted.has(key)) {
-				let [class_, name] = key.split('_');
+				let [class_, _] = key.split('_');
 				let dependers = dependersByKey[key] ?? [];
 
 				for (let depender of dependers) {
@@ -196,7 +199,7 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# delete ${name}`,
-						`STATE=${getStateFilename(key)}`,
+						`STATE_${nameHash}=${getStateFilename(`\${KEY_${nameHash}}`)} STATE=STATE_${nameHash}`,
 						...delete_(state, key),
 						`rm -f ${dependenciesDirectory}/${key}`,
 					);

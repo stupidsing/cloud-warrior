@@ -104,7 +104,7 @@ export let instanceClass: Class = {
 		attributes.ImageId,
 		createHash('sha256').update([
 			attributes.InstanceType,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ InstanceId }, key: string) => refreshById(key, InstanceId),
 	upsert,

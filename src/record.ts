@@ -84,7 +84,7 @@ export let recordClass: Class = {
 			attributes.ResourceRecords.map(r => r.Value).join(':'),
 			attributes.TTL,
 			attributes.Type,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ HostedZoneId, ResourceRecords, Type }, key: string) => refreshByHostedZoneId(key, HostedZoneId, ResourceRecords, Type),
 	upsert,

@@ -61,7 +61,7 @@ export let targetGroupClass: Class = {
 			attributes.Port,
 			attributes.Protocol,
 			attributes.TargetType,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ TargetGroupArn }, key: string) => refreshByArn(key, TargetGroupArn),
 	upsert,

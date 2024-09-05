@@ -61,7 +61,7 @@ export let roleClass: Class = {
 		createHash('sha256').update([
 			attributes.Description,
 			attributes.RoleName,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ RoleName }, key: string) => [
 		`NAME=${RoleName}`,

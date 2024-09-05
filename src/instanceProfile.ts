@@ -87,7 +87,7 @@ export let instanceProfileClass: Class = {
 		name,
 		createHash('sha256').update([
 			attributes.InstanceProfileName,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ InstanceProfileName }, key: string) => refreshByName(key, InstanceProfileName),
 	upsert,

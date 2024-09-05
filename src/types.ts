@@ -9,6 +9,7 @@ export type Class = {
 export type Resource_<Attributes> = {
 	class_: string;
 	name: string;
+	nameHash: string;
 	attributes: Attributes;
 
 	key?: string;

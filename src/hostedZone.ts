@@ -50,7 +50,7 @@ export let hostedZoneClass: Class = {
 		createHash('sha256').update([
 			attributes.CallerReference,
 			attributes.Name,
-		].join('_')).digest('base64').slice(0, 4),
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ HostedZoneId }, key: string) => refreshById(key, HostedZoneId),
 	upsert,
