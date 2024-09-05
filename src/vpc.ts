@@ -49,8 +49,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			if (!map1.hasOwnProperty(CidrBlock)) {
 				commands.push(
 					`aws ec2 disassociate-vpc-cidr-block \\`,
-					`  --association-id ${AssociationId}`,
-					`  --vpc-id ${VpcId} \\`,
+					`  --association-id ${AssociationId} \\`,
+					`  --vpc-id ${VpcId}`,
 				);
 			}
 		}
@@ -58,8 +58,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			if (!map0.hasOwnProperty(CidrBlock)) {
 				commands.push(
 					`aws ec2 associate-vpc-cidr-block\\`,
-					`  --cidr-block ${CidrBlock}`,
-					`  --vpc-id ${VpcId}\\`,
+					`  --cidr-block ${CidrBlock} \\`,
+					`  --vpc-id ${VpcId}`,
 				);
 			}
 		}
