@@ -5,15 +5,21 @@ export let difference = (a: Set<string>, b: Set<string>) => {
 };
 
 export let replace = (s: string) => {
+	if (s.startsWith('$(') && s.endsWith(')')) {
+		s = s.substring(0, s.length - 1) + ' | tr / :' + s.substring(s.length - 1, s.length);
+	}
+
 	let t = '';
 	let q = 0;
 	for (let c of s) {
-		if (c === '{') q++;
-		else if (c === '}') q--;
-		if (c === '/') {
+		if (c === '(') q++;
+		else if (c === ')') q--;
+		if (q === 0 && c === '/') {
 			t = t + ':';
 		} else {
 			t = t + c;
 		}
 	}
+
+	return t;
 };
