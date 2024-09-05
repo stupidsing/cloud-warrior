@@ -1,6 +1,8 @@
+import { createReadStream } from 'fs';
 import { createBucket } from './bucket';
 import { prefix } from './constants';
 import { createDistribution } from './distribution';
+import { createHostedZone } from './hostedZone';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
 import { createInternetGateway } from './internetGateway';
@@ -17,6 +19,7 @@ import { createTarget } from './target';
 import { createTargetGroup } from './targetGroup';
 import { createVpc } from './vpc';
 import { run } from './warrior';
+import { createRecord } from './record';
 
 run(process.env.ACTION ?? 'up', () => {
 	let policy = createPolicy('policy-app', get => ({
@@ -151,6 +154,19 @@ run(process.env.ACTION ?? 'up', () => {
 			DefaultRootObject: 'index.html',
 			Origins: { Items: [{ DomainName: 'npt.com' }]},
 		},
+	}));
+
+	let hostedZone = createHostedZone('zone', get => ({
+		Name: 'npt.com',
+		CallerReference: '862c3944-6b5a-11ef-8195-7f23c933da52',
+	}));
+
+	let record = createRecord('record', get => ({
+		HostedZoneId: hostedZone.getId(get),
+		Name: 'rec',
+		TTL: 300,
+		Type: 'TXT',
+		Value: 'abcdef',
 	}));
 
 	// s3

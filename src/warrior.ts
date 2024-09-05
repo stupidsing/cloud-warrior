@@ -3,6 +3,7 @@ import { bucketClass } from './bucket';
 import { certificateClass } from './certificate';
 import { dependenciesDirectory, getStateFilename, statesDirectory } from './constants';
 import { distributionClass } from './distribution';
+import { hostedZoneClass } from './hostedZone';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
 import { internetGatewayClass } from './internetGateway';
@@ -11,6 +12,7 @@ import { listenerClass } from './listener';
 import { loadBalancerClass } from './loadBalancer';
 import { natGatewayClass } from './natGateway';
 import { policyClass } from './policy';
+import { recordClass } from './record';
 import { roleClass } from './role';
 import { securityGroupClass } from './securityGroup';
 import { securityGroupRuleIngressClass } from './securityGroupRule';
@@ -38,10 +40,12 @@ let classes = Object.fromEntries([
 	instanceProfileClass,
 	internetGatewayClass,
 	internetGatewayAttachmentClass,
+	hostedZoneClass,
 	listenerClass,
 	loadBalancerClass,
 	natGatewayClass,
 	policyClass,
+	recordClass,
 	roleClass,
 	securityGroupClass,
 	securityGroupRuleIngressClass,
