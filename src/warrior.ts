@@ -70,8 +70,8 @@ let addDependency = (referredResource: Resource, resource: Resource) => {
 }
 
 export let create = (class_: string, name: string, f: AttributesInput<Record<string, any>>) => {
-	let nameHash = createHash('sha256').update(name).digest('hex').slice(0, 4);
-	let resource: Resource = { class_, name, nameHash, attributes: undefined };
+	let hash = createHash('sha256').update(name).digest('hex').slice(0, 4);
+	let resource: Resource = { class_, name, hash, attributes: undefined };
 	let { getKey } = classes[class_];
 
 	let get = (referredResource: Resource, prop: string) => {
@@ -79,7 +79,7 @@ export let create = (class_: string, name: string, f: AttributesInput<Record<str
 
 		let key = referredResource.key;
 		let state = stateByKey[key];
-		let value: string = state ? state[prop] : `$(cat \${STATE_${referredResource.nameHash}} | jq -r .${prop})`;
+		let value: string = state ? state[prop] : `$(cat \${STATE_${referredResource.hash}} | jq -r .${prop})`;
 		return value;
 	};
 
@@ -111,12 +111,12 @@ export let run = (action: string, f: () => void) => {
 	if (action === 'refresh') {
 		for (let [key, state] of Object.entries(stateByKey)) {
 			let [class_, name] = key.split('_');	
-			let nameHash = createHash('sha256').update(name).digest('hex').slice(0, 4);
+			let hash = createHash('sha256').update(name).digest('hex').slice(0, 4);
 			let { refresh } = classes[class_];
 
 			commands.push(
 				'',
-				`STATE_${nameHash}=${getStateFilename(`\${KEY_${nameHash}}`)} STATE=STATE_${nameHash}`,
+				`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=STATE_${hash}`,
 				...refresh(state, key),
 			);
 		}
@@ -149,7 +149,7 @@ export let run = (action: string, f: () => void) => {
 			let upserted = new Set<string>();
 
 			let _upsert = (keys: string[], resource: Resource) => {
-				let { key, name, nameHash } = resource;
+				let { key, name, hash } = resource;
 
 				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
@@ -165,7 +165,7 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
-						`STATE_${nameHash}=${getStateFilename(`\${KEY_${nameHash}}`)} STATE=STATE_${nameHash}`,
+						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=STATE_${hash}`,
 						...upsert(stateByKey[key], resource),
 						...dependencies.length > 0 ? [`echo '${JSON.stringify(dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b)))}' > ${dependenciesDirectory}/${key}`] : [],
 					);
@@ -180,7 +180,7 @@ export let run = (action: string, f: () => void) => {
 		let deleted = new Set<string>();
 
 		let _delete = (keys: string[], state) => {
-			let { key, name, nameHash } = state;
+			let { key, name, hash } = state;
 
 			if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
@@ -199,7 +199,7 @@ export let run = (action: string, f: () => void) => {
 					commands.push(
 						'',
 						`# delete ${name}`,
-						`STATE_${nameHash}=${getStateFilename(`\${KEY_${nameHash}}`)} STATE=STATE_${nameHash}`,
+						`STATE_${hash}=${getStateFilename(`\${KEY_${hash}}`)} STATE=STATE_${hash}`,
 						...delete_(state, key),
 						`rm -f ${dependenciesDirectory}/${key}`,
 					);
