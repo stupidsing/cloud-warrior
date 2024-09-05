@@ -64,7 +64,7 @@ export let securityGroupRuleIngressClass: Class = {
 			attributes.FromPort,
 			attributes.IpProtocol,
 			attributes.ToPort,
-		].join('_')).digest('hex').slice(0, 4),
+		].join('_')).digest('base64').slice(0, 4),
 	].join('_'),
 	refresh: ({ SecurityGroupRuleId }, key: string) => refreshById(key, SecurityGroupRuleId),
 	upsert,

@@ -82,7 +82,7 @@ export let loadBalancerClass: Class = {
 		name,
 		createHash('sha256').update([
 			attributes.Name,
-		].join('_')).digest('hex').slice(0, 4),
+		].join('_')).digest('base64').slice(0, 4),
 	].join('_'),
 	refresh: ({ LoadBalancerArn }, key: string) => refreshByArn(key, LoadBalancerArn),
 	upsert,

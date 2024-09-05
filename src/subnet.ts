@@ -71,7 +71,7 @@ export let subnetClass: Class = {
 		createHash('sha256').update([
 			attributes.AvailabilityZone,
 			attributes.CidrBlock,
-		].join('_')).digest('hex').slice(0, 4),
+		].join('_')).digest('base64').slice(0, 4),
 	].join('_'),
 	refresh: ({ SubnetId }, key: string) => refreshById(key, SubnetId),
 	upsert,

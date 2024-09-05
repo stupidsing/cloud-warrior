@@ -59,7 +59,7 @@ export let securityGroupClass: Class = {
 		createHash('sha256').update([
 			attributes.Description,
 			attributes.GroupName,
-		].join('_')).digest('hex').slice(0, 4),
+		].join('_')).digest('base64').slice(0, 4),
 	].join('_'),
 	refresh: ({ GroupId }, key: string) => refreshById(key, GroupId),
 	upsert,
