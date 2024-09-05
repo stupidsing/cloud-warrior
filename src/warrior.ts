@@ -70,7 +70,7 @@ let addDependency = (referredResource: Resource, resource: Resource) => {
 }
 
 export let create = (class_: string, name: string, f: AttributesInput<Record<string, any>>) => {
-	let hash = createHash('sha256').update(name).digest('hex').slice(0, 4);
+	let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
 	let resource: Resource = { class_, name, hash, attributes: undefined };
 	let { getKey } = classes[class_];
 
@@ -111,7 +111,7 @@ export let run = (action: string, f: () => void) => {
 	if (action === 'refresh') {
 		for (let [key, state] of Object.entries(stateByKey)) {
 			let [class_, name] = key.split('_');	
-			let hash = createHash('sha256').update(name).digest('hex').slice(0, 4);
+			let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
 			let { refresh } = classes[class_];
 
 			commands.push(
