@@ -1,4 +1,3 @@
-import { getStateFilename, prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'distribution';
@@ -143,14 +142,14 @@ type Attributes = {
 let delete_ = ({ Id }, key: string) => [
 	`aws cloudfront delete-distribution \\`,
 	`  --id ${Id} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshById = (key, id) => [
 	`ID=${id}`,
 	`aws cloudfront get-distribution \\`,
 	`  --ids \${ID} \\`,
-	`  | jq .Distribution | tee ${getStateFilename(key)}`,
+	`  | jq .Distribution | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -158,7 +157,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { DistributionConfig: { DefaultRootObject, Origins } } = attributes;
 	let commands = [];
 
-	let DistributionId = `$(cat ${getStateFilename(key)} | jq -r .Id)`;
+	let DistributionId = `$(cat \${STATE} | jq -r .Id)`;
 
 	if (state == null) {
 		let originDomainName = Origins.Items[0].DomainName;
@@ -166,7 +165,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws cloudfront create-distribution \\`,
 			`  --default-root-object ${DefaultRootObject} \\`,
 			`  --origin-domain-name ${originDomainName} \\`,
-			`  | jq .Distribution | tee ${getStateFilename(key)}`,
+			`  | jq .Distribution | tee \${STATE}`,
 			`aws cloudfront wait distribution-exists --ids ${DistributionId}`,
 			...refreshById(key, DistributionId),
 		);
@@ -182,7 +181,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws cloudfront update-distribution \\`,
 				`  --distribution-config ${target} \\`,
 				`  --id ${DistributionId} \\`,
-				`  | jq .Distribution | tee ${getStateFilename(key)}`,
+				`  | jq .Distribution | tee \${STATE}`,
 			);
 		}
 	}

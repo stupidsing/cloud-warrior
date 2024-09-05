@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 import { difference } from "./utils";
 
@@ -41,14 +41,14 @@ let delete_ = (state, key: string) => [
 	...updateRoles(state, state.Roles, []).commands,
 	`aws iam delete-instance-profile \\`,
 	`  --instance-profile-name ${state.InstanceProfileName} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshByName = (key, name) => [
 		`NAME=${name}`,
 		`aws iam get-instance-profile \\`,
 		`  --instance-profile-name \${NAME} \\`,
-		`  | jq .InstanceProfile | tee ${getStateFilename(key)}`,
+		`  | jq .InstanceProfile | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -61,7 +61,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws iam create-instance-profile \\`,
 			`  --instance-profile-name ${InstanceProfileName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
-			`  | jq .InstanceProfile | tee ${getStateFilename(key)}`,
+			`  | jq .InstanceProfile | tee \${STATE}`,
 			`aws iam wait instance-profile-exists --instance-profile-name ${InstanceProfileName}`,
 		);
 		state = { InstanceProfileName, Roles: [] };

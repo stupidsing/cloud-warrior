@@ -1,5 +1,4 @@
 import { createHash } from "crypto";
-import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 import { replace } from "./utils";
 
@@ -31,14 +30,14 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }, key: string) 
 	`  --hosted-zone-id ${HostedZoneId} \\`,
 	`  | jq -r .ChangeInfo.Id) &&`,
 	`aws route53 wait resource-record-sets-changed --id \${CHANGE_ID}`,
-	`rm -f ${getStateFilename(key)} ${getStateFilename(key)}#HostedZoneId`,
+	`rm -f \${STATE} \${STATE}#HostedZoneId`,
 ];
 
 let refreshByHostedZoneId = (key, HostedZoneId, Type, Name) => [
 	`aws route53 list-resource-record-sets \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
-	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee ${getStateFilename(key)}`,
-	`echo ${JSON.stringify(HostedZoneId)} > ${getStateFilename(key)}#HostedZoneId`,
+	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee \${STATE}`,
+	`echo ${JSON.stringify(HostedZoneId)} > \${STATE}#HostedZoneId`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

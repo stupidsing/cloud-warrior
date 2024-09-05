@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'certificate';
@@ -11,14 +11,14 @@ type Attributes = {
 let delete_ = ({ CertificateArn }, key: string) => [
 	`aws acm delete-certificate \\`,
 	`  --certificate-arn ${CertificateArn} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshByArn = (key, arn) => [
 	`ARN=${arn}`,
 	`aws acm describe-certificate \\`,
 	`  --certificate-arn \${ARN} \\`,
-	`  | jq .Certificates[0] | tee ${getStateFilename(key)}`,
+	`  | jq .Certificates[0] | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -26,7 +26,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { DomainName } = attributes;
 	let commands = [];
 
-	let CertificateArn = `$(cat ${getStateFilename(key)} | jq -r .CertificateArn)`;
+	let CertificateArn = `$(cat \${STATE} | jq -r .CertificateArn)`;
 
 	if (state == null) {
 		commands.push(
@@ -34,7 +34,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --domain-name ${DomainName} \\`,
 			`  --validation-method DNS \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
-			`  | tee ${getStateFilename(key)}`,
+			`  | tee \${STATE}`,
 			// TODO add CNAME to route53 hosted znoe
 			`aws acm wait certificate-validated --certificate-arn ${CertificateArn}`,
 			...refreshByArn(key, CertificateArn),

@@ -1,5 +1,4 @@
 import { createHash } from "crypto";
-import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'hostedZone';
@@ -12,14 +11,14 @@ type Attributes = {
 let delete_ = ({ Id }, key: string) => [
 	`aws route53 delete-hosted-zone \\`,
 	`  --id ${Id} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshById = (key, id) => [
 	`ID=${id}`,
 	`aws route53 get-hosted-zone \\`,
 	`  --id \${ID} \\`,
-	`  | jq .HostedZone | tee ${getStateFilename(key)}`,
+	`  | jq .HostedZone | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -27,14 +26,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { CallerReference, Name } = attributes;
 	let commands = [];
 
-	let HostedZoneId = `$(cat ${getStateFilename(key)} | jq -r .Id)`;
+	let HostedZoneId = `$(cat \${STATE} | jq -r .Id)`;
 
 	if (state == null) {
 		commands.push(
 			`aws route53 create-hosted-zone \\`,
 			`  --caller-reference ${CallerReference} \\`,
 			`  --name ${Name} \\`,
-			`  | jq .HostedZone | tee ${getStateFilename(key)}`,
+			`  | jq .HostedZone | tee \${STATE}`,
 		);
 		state = { CallerReference, Name };
 	}

@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'load-balancer';
@@ -13,14 +13,14 @@ type Attributes = {
 let delete_ = ({ LoadBalancerArn }, key: string) => [
 	`aws elbv2 delete-load-balancer \\`,
 	`  --load-balancer-arn ${LoadBalancerArn} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshByArn = (key, arn) => [
 	`ARN=${arn}`,
 	`aws elbv2 describe-load-balancers \\`,
 	`  --load-balancer-arns \${ARN} \\`,
-	`  | jq .LoadBalancers[0] | tee ${getStateFilename(key)}`,
+	`  | jq .LoadBalancers[0] | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -28,7 +28,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { AvailabilityZones, Name, SecurityGroups } = attributes;
 	let commands = [];
 
-	let LoadBalancerArn = `$(cat ${getStateFilename(key)} | jq -r .LoadBalancerArn)`;
+	let LoadBalancerArn = `$(cat \${STATE} | jq -r .LoadBalancerArn)`;
 
 	if (state == null) {
 		commands.push(
@@ -37,7 +37,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --security-groups ${SecurityGroups} \\`,
 			`  --subnets ${AvailabilityZones.map(r => r.SubnetId).join(' ')} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | jq .LoadBalancers[0] | tee ${getStateFilename(key)}`,
+			`  | jq .LoadBalancers[0] | tee \${STATE}`,
 			`aws elbv2 wait load-balancer-exists --load-balancer-arns ${LoadBalancerArn}`,
 		);
 		state = { AvailabilityZones, Name, SecurityGroups };

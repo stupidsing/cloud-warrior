@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'target-group';
@@ -15,14 +15,14 @@ type Attributes = {
 let delete_ = ({ TargetGroupArn }, key: string) => [
 	`aws elbv2 delete-target-group \\`,
 	`  --target-group-arn ${TargetGroupArn} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshByArn = (key, arn) => [
 	`ARN=${arn}`,
 	`aws elbv2 describe-target-groups \\`,
 	`  --target-group-arns \${ARN} \\`,
-	`  | jq .TargetGroups[0] | tee ${getStateFilename(key)}`,
+	`  | jq .TargetGroups[0] | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -30,7 +30,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { Name, Protocol, Port, TargetType, VpcId } = attributes;
 	let commands = [];
 
-	let TargetGroupArn = `$(cat ${getStateFilename(key)} | jq -r .TargetGroupArn)`;
+	let TargetGroupArn = `$(cat \${STATE} | jq -r .TargetGroupArn)`;
 
 	if (state == null) {
 		commands.push(
@@ -41,7 +41,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tags '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  --target-type ${TargetType} \\`,
 			`  --vpc-id ${VpcId} \\`,
-			`  | jq .TargetGroups[0] | tee ${getStateFilename(key)}`,
+			`  | jq .TargetGroups[0] | tee \${STATE}`,
 		);
 		state = { Name, Protocol, Port, TargetType, VpcId };
 	}

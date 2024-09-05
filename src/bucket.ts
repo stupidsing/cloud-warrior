@@ -1,5 +1,4 @@
 import { createHash } from "crypto";
-import { getStateFilename } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'bucket';
@@ -12,14 +11,14 @@ type Attributes = {
 let delete_ = ({ Name }, key: string) => [
 	`aws s3api delete-bucket \\`,
 	`  --bucket ${Name} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshByName = (key, name) => [
 	`NAME=${name}`,
 	`aws s3api list-buckets \\`,
 	`  --query "Buckets[?Name == '\${NAME}']" \\`,
-	`  | jq .[0] | tee ${getStateFilename(key)}`,
+	`  | jq .[0] | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'subnet';
@@ -14,14 +14,14 @@ type Attributes = {
 let delete_ = ({ SubnetId }, key: string) => [
 	`aws ec2 delete-subnet \\`,
 	`  --subnet-id ${SubnetId} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshById = (key, id) => [
 	`ID=${id}`,
 	`aws ec2 describe-subnets \\`,
 	`  --subnet-ids \${ID} \\`,
-	`  | jq .Subnets[0] | tee ${getStateFilename(key)}`,
+	`  | jq .Subnets[0] | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -29,7 +29,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { AvailabilityZone, CidrBlock, VpcId } = attributes;
 	let commands = [];
 
-	let SubnetId = `$(cat ${getStateFilename(key)} | jq -r .SubnetId)`;
+	let SubnetId = `$(cat \${STATE} | jq -r .SubnetId)`;
 
 	if (state == null) {
 		commands.push(
@@ -40,7 +40,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
-			`  | jq .Subnet | tee ${getStateFilename(key)}`,
+			`  | jq .Subnet | tee \${STATE}`,
 			`aws ec2 wait subnet-available --subnet-id ${SubnetId}`,
 		);
 		state = { AvailabilityZone, CidrBlock, VpcId };

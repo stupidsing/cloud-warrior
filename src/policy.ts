@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import { PolicyDocument } from "./aws";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'policy';
@@ -14,20 +14,18 @@ type Attributes = {
 let delete_ = ({ Arn }, key: string) => [
 	`aws iam delete-policy \\`,
 	`  --policy-arn ${Arn} &&`,
-	`rm -f \\`,
-	`  ${getStateFilename(key)} \\`,
-	`  ${getStateFilename(key)}#PolicyDocument`,
+	`rm -f \${STATE} \${STATE}#PolicyDocument`,
 ];
 
 let refreshByArn = (key, arn) => [
 	`ARN=${arn}`,
 	`aws iam get-policy \\`,
 	`  --policy-arn \${ARN} \\`,
-	`  | jq .Policy | tee ${getStateFilename(key)}`,
+	`  | jq .Policy | tee \${STATE}`,
 	`aws iam get-policy-version \\`,
 	`  --policy-arn \${ARN} \\`,
 	`  --version-id $(aws iam list-policy-version --policy-arn \${ARN} | jq -r '.Versions | map(select(.IsDefaultVersion).VersionId)[0]') \\`,
-	`  | jq .PolicyDocument | tee ${getStateFilename(key)}#PolicyDocument`,
+	`  | jq .PolicyDocument | tee \${STATE}#PolicyDocument`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -35,7 +33,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { Description, PolicyDocument, PolicyName } = attributes;
 	let commands = [];
 
-	let PolicyArn = `$(cat ${getStateFilename(key)} | jq -r .Arn)`;
+	let PolicyArn = `$(cat \${STATE} | jq -r .Arn)`;
 
 	if (state == null) {
 		commands.push(
@@ -44,9 +42,9 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --policy-document '${JSON.stringify(PolicyDocument)}' \\`,
 			`  --policy-name ${PolicyName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
-			`  | jq .Policy | tee ${getStateFilename(key)}`,
+			`  | jq .Policy | tee \${STATE}`,
 			`aws iam wait policy-exists --policy-arn ${PolicyArn}`,
-			`echo '${JSON.stringify(PolicyDocument)}' | tee ${getStateFilename(key)}#PolicyDocument`,
+			`echo '${JSON.stringify(PolicyDocument)}' | tee \${STATE}#PolicyDocument`,
 		);
 		state = { Description, PolicyDocument, PolicyName };
 	}

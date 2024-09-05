@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import { PolicyDocument } from "./aws";
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'role';
@@ -14,7 +14,7 @@ type Attributes = {
 let delete_ = ({ RoleName }, key: string) => [
 	`aws iam delete-role \\`,
 	`  --role-name ${RoleName} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -29,7 +29,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...Description != null ? [`  --description ${Description} \\`] : [],
 			`  --role-name ${RoleName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
-			`  | jq .Role | tee ${getStateFilename(key)}`,
+			`  | jq .Role | tee \${STATE}`,
 			`aws iam wait role-exists --role-name ${RoleName}`,
 		);
 		state = { AssumeRolePolicyDocument, Description, RoleName };
@@ -44,7 +44,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws iam update-assume-role-policy \\`,
 				`  --policy-document '${JSON.stringify(AssumeRolePolicyDocument)}'`,
 				`  --role-name ${RoleName}`,
-				`echo ${attributes[prop]} | tee ${getStateFilename(key)}#${prop}`,
+				`echo ${attributes[prop]} | tee \${STATE}#${prop}`,
 			);
 		}
 	}
@@ -67,7 +67,7 @@ export let roleClass: Class = {
 		`NAME=${RoleName}`,
 		`aws iam get-role \\`,
 		`  --role-name \${NAME} \\`,
-		`  | jq .Role | tee ${getStateFilename(key)}`,
+		`  | jq .Role | tee \${STATE}`,
 	],
 	upsert,
 };

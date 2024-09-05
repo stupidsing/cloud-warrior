@@ -1,4 +1,4 @@
-import { getStateFilename, prefix } from "./constants";
+import { prefix } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 import { replace } from "./utils";
 
@@ -14,14 +14,14 @@ type Attributes = {
 let delete_ = ({ ListenerArn }, key: string) => [
 	`aws elbv2 delete-listener \\`,
 	`  --listener-arn ${ListenerArn} &&`,
-	`rm -f ${getStateFilename(key)}`,
+	`rm -f \${STATE}`,
 ];
 
 let refreshByArn = (key, arn) => [
 	`ARN=${arn}`,
 	`aws elbv2 describe-listeners \\`,
 	`  --listener-arns \${ARN} \\`,
-	`  | jq .Listeners[0] | tee ${getStateFilename(key)}`,
+	`  | jq .Listeners[0] | tee \${STATE}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -29,7 +29,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { DefaultActions, LoadBalancerArn, Protocol, Port } = attributes;
 	let commands = [];
 
-	let ListenerArn = `$(cat ${getStateFilename(key)} | jq -r .ListenerArn)`;
+	let ListenerArn = `$(cat \${STATE} | jq -r .ListenerArn)`;
 
 	if (state == null) {
 		commands.push(
@@ -39,7 +39,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --port ${Port} \\`,
 			`  --protocol ${Protocol} \\`,
 			`  --tags '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | jq .Listeners[0] | tee ${getStateFilename(key)}`,
+			`  | jq .Listeners[0] | tee \${STATE}`,
 		);
 		state = { DefaultActions, LoadBalancerArn, Port, Protocol };
 	}
@@ -53,7 +53,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws elbv2 modify-listener \\`,
 				`  --default-actions ${target} \\`,
 				`  --listener-arns ${ListenerArn} \\`,
-				`  | jq .Listeners[0] | tee ${getStateFilename(key)}`,
+				`  | jq .Listeners[0] | tee \${STATE}`,
 			);
 		}
 	}
@@ -67,7 +67,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws elbv2 modify-listener \\`,
 				`  --port ${target} \\`,
 				`  --listener-arns ${ListenerArn} \\`,
-				`  | jq .Listeners[0] | tee ${getStateFilename(key)}`,
+				`  | jq .Listeners[0] | tee \${STATE}`,
 			);
 		}
 	}
@@ -81,7 +81,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws elbv2 modify-listener \\`,
 				`  --protocol ${target} \\`,
 				`  --listener-arns ${ListenerArn} \\`,
-				`  | jq .Listeners[0] | tee ${getStateFilename(key)}`,
+				`  | jq .Listeners[0] | tee \${STATE}`,
 			);
 		}
 	}
