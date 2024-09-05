@@ -152,7 +152,7 @@ export let run = (action: string, f: () => void) => {
 
 		for (let dependenciesFilename of dependenciesFilenames) {
 			let [key, subKey] = dependenciesFilename.split('#');
-			let dependencies = readTextIfExists(`${dependenciesDirectory}/${dependenciesFilename}`);
+			let dependencies = readTextIfExists(`${dependenciesDirectory}/${dependenciesFilename}`) ?? [];
 			for (let dependency of dependencies) {
 				let dependers = dependersByKey[dependency];
 				if (dependers == null) dependers = dependersByKey[dependency] = [];
@@ -194,23 +194,22 @@ export let run = (action: string, f: () => void) => {
 				}
 			};
 
-			for (let resource of Object.values(resourceByKey)) _upsert([], resource);
+			for (let [key, resource] of Object.entries(resourceByKey)) _upsert([], resource);
 		}
 
 		let deleted = new Set<string>();
 
-		let _delete = (keys: string[], state) => {
-			let { key, name, hash } = state;
-
+		let _delete = (keys: string[], key, state) => {
 			if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
 			if (!deleted.has(key)) {
-				let [class_, _] = key.split('_');
+				let [class_, name] = key.split('_');
+				let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
 				let dependers = dependersByKey[key] ?? [];
 
 				for (let depender of dependers) {
 					let state = stateByKey[depender];
-					if (state) _delete([key, ...keys], state);
+					if (state) _delete([key, ...keys], depender, state);
 				}
 
 				let { delete_ } = classes[class_];
@@ -230,7 +229,7 @@ export let run = (action: string, f: () => void) => {
 			}
 		};
 
-		for (let state of Object.values(stateByKey)) _delete([], state);
+		for (let [key, state] of Object.entries(stateByKey)) _delete([], key, state);
 	}
 
 	console.log(commands.join('\n'));
