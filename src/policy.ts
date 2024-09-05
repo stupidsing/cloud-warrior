@@ -92,7 +92,6 @@ import { create } from "./warrior";
 export let createPolicy = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		...resource,
 		getArn: get => get(resource, 'Arn'),
 		getPolicyName: get => get(resource, 'PolicyName'),
 	};

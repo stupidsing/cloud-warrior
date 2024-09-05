@@ -54,7 +54,6 @@ import { create } from "./warrior";
 export let createInternetGateway = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		...resource,
 		getInternetGatewayId: get => get(resource, 'InternetGatewayId'),
 	};
 };

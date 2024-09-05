@@ -93,7 +93,6 @@ import { create } from "./warrior";
 export let createLoadBalancer = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		...resource,
 		getArn: get => get(resource, 'LoadBalancerArn'),
 	};
 };

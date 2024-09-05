@@ -75,7 +75,6 @@ import { create } from "./warrior";
 export let createSecurityGroupRuleIngress = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		...resource,
 		getSecurityGroupRuleId: get => get(resource, 'SecurityGroupRuleId'),
 	};
 };

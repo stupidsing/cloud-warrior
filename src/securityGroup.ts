@@ -70,7 +70,6 @@ import { create } from "./warrior";
 export let createSecurityGroup = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		...resource,
 		getSecurityGroupId: get => get(resource, 'GroupId'),
 	};
 };
