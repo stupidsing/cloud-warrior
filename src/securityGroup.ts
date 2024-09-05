@@ -40,7 +40,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | tee \${STATE}`,
-			`aws ec2 wait security-group-exists --group-ids ${GroupId}`,
+			`aws ec2 wait \\`,
+			`  security-group-exists --group-ids ${GroupId}`,
 			...refreshById(key, GroupId),
 		);
 		state = { Description, GroupName, VpcId };

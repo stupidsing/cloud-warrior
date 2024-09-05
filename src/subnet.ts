@@ -41,7 +41,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  | jq .Subnet | tee \${STATE}`,
-			`aws ec2 wait subnet-available --subnet-id ${SubnetId}`,
+			`aws ec2 wait \\`,
+			`  subnet-available --subnet-id ${SubnetId}`,
 		);
 		state = { AvailabilityZone, CidrBlock, VpcId };
 	}

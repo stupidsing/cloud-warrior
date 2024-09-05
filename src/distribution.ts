@@ -166,7 +166,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --default-root-object ${DefaultRootObject} \\`,
 			`  --origin-domain-name ${originDomainName} \\`,
 			`  | jq .Distribution | tee \${STATE}`,
-			`aws cloudfront wait distribution-exists --ids ${DistributionId}`,
+			`aws cloudfront wait distribution-exists \\`,
+			`  --ids ${DistributionId}`,
 			...refreshById(key, DistributionId),
 		);
 		state = { DistributionConfig: { DefaultRootObject, Origins: { Items: [{ DomainName: originDomainName }]} } };

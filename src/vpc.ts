@@ -35,7 +35,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .Vpc | tee \${STATE}`,
-			`aws ec2 wait vpc-available --vpc-id ${VpcId}`,
+			`aws ec2 wait \\`,
+			`  vpc-available --vpc-id ${VpcId}`,
 		);
 		state = { CidrBlockAssociationSet: [{ CidrBlock: attributes['CidrBlockAssociationSet'][0]['CidrBlock'] }] };
 	}

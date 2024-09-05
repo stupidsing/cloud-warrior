@@ -30,7 +30,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --role-name ${RoleName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | jq .Role | tee \${STATE}`,
-			`aws iam wait role-exists --role-name ${RoleName}`,
+			`aws iam wait \\`,
+			`  role-exists --role-name ${RoleName}`,
 		);
 		state = { AssumeRolePolicyDocument, Description, RoleName };
 	}

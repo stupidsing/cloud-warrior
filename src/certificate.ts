@@ -36,7 +36,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | tee \${STATE}`,
 			// TODO add CNAME to route53 hosted znoe
-			`aws acm wait certificate-validated --certificate-arn ${CertificateArn}`,
+			`aws acm wait certificate-validated \\`,
+			`  --certificate-arn ${CertificateArn}`,
 			...refreshByArn(key, CertificateArn),
 		);
 		state = { DomainName };

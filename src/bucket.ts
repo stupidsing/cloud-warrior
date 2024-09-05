@@ -32,7 +32,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --bucket ${Name} \\`,
 			`  --create-bucket-configuration LocationConstraint=${Region} \\`,
 			`  --region ${Region}`,
-			`aws s3api wait bucket-exists --bucket ${Name}`,
+			`aws s3api wait bucket-exists \\`,
+			`  --bucket ${Name}`,
 			...refreshByName(key, Name),
 		);
 		state = { Name, Region };

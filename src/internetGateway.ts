@@ -25,7 +25,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: 'internet-gateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .InternetGateways[0] | tee \${STATE}`,
-			`aws ec2 wait internet-gateway-exists --internet-gateway-ids ${InternetGatewayId}`,
+			`aws ec2 wait internet-gateway-exists \\`,
+			`  --internet-gateway-ids ${InternetGatewayId}`,
 		);
 		state = {};
 	}

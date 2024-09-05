@@ -28,7 +28,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: 'nat-gateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .NatGateway | tee \${STATE}`,
-			`aws ec2 wait nat-gateway-available --nat-gateway-ids ${NatGatewayId}`,
+			`aws ec2 wait nat-gateway-available \\`,
+			`  --nat-gateway-ids ${NatGatewayId}`,
 		);
 		state = { SubnetId };
 	}

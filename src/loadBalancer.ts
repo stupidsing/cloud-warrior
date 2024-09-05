@@ -38,7 +38,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --subnets ${AvailabilityZones.map(r => r.SubnetId).join(' ')} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | jq .LoadBalancers[0] | tee \${STATE}`,
-			`aws elbv2 wait load-balancer-exists --load-balancer-arns ${LoadBalancerArn}`,
+			`aws elbv2 wait load-balancer-exists \\`,
+			`  --load-balancer-arns ${LoadBalancerArn}`,
 		);
 		state = { AvailabilityZones, Name, SecurityGroups };
 	}

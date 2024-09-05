@@ -29,7 +29,8 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }, key: string) 
 	})}' \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
 	`  | jq -r .ChangeInfo.Id) &&`,
-	`aws route53 wait resource-record-sets-changed --id \${CHANGE_ID}`,
+	`aws route53 wait resource-record-sets-changed \\`,
+			`  --id \${CHANGE_ID}`,
 	`rm -f \${STATE} \${STATE}#HostedZoneId`,
 ];
 
@@ -63,7 +64,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			})}'\\`,
 			`  --hosted-zone-id ${HostedZoneId} \\`,
 			`  | jq -r .ChangeInfo.Id) &&`,
-			`aws route53 wait resource-record-sets-changed --id \${CHANGE_ID}`,
+			`aws route53 wait \\`,
+			`  resource-record-sets-changed --id \${CHANGE_ID}`,
 			...refreshByHostedZoneId(key, HostedZoneId, Type, Name),
 		);
 		state = { HostedZoneId, Name, ResourceRecords, TTL, Type };

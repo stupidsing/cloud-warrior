@@ -62,7 +62,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --instance-profile-name ${InstanceProfileName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | jq .InstanceProfile | tee \${STATE}`,
-			`aws iam wait instance-profile-exists --instance-profile-name ${InstanceProfileName}`,
+			`aws iam wait instance-profile-exists \\`,
+			`  --instance-profile-name ${InstanceProfileName}`,
 		);
 		state = { InstanceProfileName, Roles: [] };
 	}

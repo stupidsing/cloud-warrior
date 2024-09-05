@@ -16,7 +16,8 @@ let delete_ = ({ InstanceId }, key: string) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${InstanceId} &&`,
 	`rm -f \${STATE}`,
-	`aws ec2 wait instance-terminated --instance-id ${InstanceId}`,
+	`aws ec2 wait  instance-terminated \\`,
+	`  --instance-id ${InstanceId}`,
 ];
 
 let refreshById = (key, id) => [
@@ -44,7 +45,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: 'instance', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .Instances[0] | tee \${STATE}`,
-			`aws ec2 wait instance-exists --instance-id ${InstanceId}`,
+			`aws ec2 wait instance-exists \\`,
+			`  --instance-id ${InstanceId}`,
 		);
 		state = { ImageId, InstanceType, SecurityGroups, SubnetId };
 	}
