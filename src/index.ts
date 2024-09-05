@@ -1,4 +1,3 @@
-import { createReadStream } from 'fs';
 import { createBucket } from './bucket';
 import { prefix } from './constants';
 import { createDistribution } from './distribution';
@@ -11,6 +10,7 @@ import { createListener } from './listener';
 import { createLoadBalancer } from './loadBalancer';
 import { createNatGateway } from './natGateway';
 import { createPolicy } from './policy';
+import { createRecord } from './record';
 import { createRole } from './role';
 import { createSecurityGroup } from './securityGroup';
 import { createSecurityGroupRuleIngress } from './securityGroupRule';
@@ -19,7 +19,6 @@ import { createTarget } from './target';
 import { createTargetGroup } from './targetGroup';
 import { createVpc } from './vpc';
 import { run } from './warrior';
-import { createRecord } from './record';
 
 run(process.env.ACTION ?? 'up', () => {
 	let policy = createPolicy('policy-app', get => ({
@@ -163,10 +162,10 @@ run(process.env.ACTION ?? 'up', () => {
 
 	let record = createRecord('record', get => ({
 		HostedZoneId: hostedZone.getId(get),
-		Name: 'rec',
+		Name: 'rec.npt.com.',
+		ResourceRecords: [{ Value: '"abcdef"' }],
 		TTL: 300,
 		Type: 'TXT',
-		Value: 'abcdef',
 	}));
 
 	// s3
