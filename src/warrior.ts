@@ -181,11 +181,23 @@ export let run = (action: string, f: () => void) => {
 						`KEY_${hash}=\${KEY}`,
 						`STATE_${hash}=${statesDirectory}/\${KEY}`,
 						...action === 'up' ? upsert(stateByKey[key], resource) : [],
-						`(`,
-						`  echo -n`,
-						...dependencyHashes_.map(dependencyHash => `  echo \${KEY_${dependencyHash}}`),
-						`) > ${dependenciesDirectory}/\${KEY}`,
 					);
+
+					if (dependencyHashes_.length === 0) {
+						commands.push(
+							`echo -n > ${dependenciesDirectory}/\${KEY}`,
+						);
+					} else if (dependencyHashes_.length === 1) {
+						commands.push(
+							`echo \${KEY_${dependencyHashes_[0]}} > ${dependenciesDirectory}/\${KEY}`,
+						);
+					} else {
+						commands.push(
+							`(`,
+							...dependencyHashes_.map(dependencyHash => `  echo \${KEY_${dependencyHash}}`),
+							`) > ${dependenciesDirectory}/\${KEY}`,
+						);
+					}
 
 					upserted.add(key);
 				}
