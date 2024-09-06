@@ -15,7 +15,7 @@ let delete_ = ({ Target: { Id, Port }, TargetGroupArn }) => [
 	`rm -f \${STATE} \${STATE}#TargetGroupArn`,
 ];
 
-let refresh_ = (key: string, { Target: { Id, Port }, TargetGroupArn }: Attributes) => [
+let refresh = ({ Target: { Id, Port }, TargetGroupArn }: Attributes) => [
 	`aws elbv2 describe-target-health \\`,
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} \\`,
@@ -33,7 +33,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws elbv2 register-targets \\`,
 			`  --target-group-arn ${TargetGroupArn} \\`,
 			`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``}`,
-			...refresh_(key, attributes),
+			...refresh(attributes),
 		);
 		state = { Target: { Id, Port }, TargetGroupArn };
 	}
@@ -51,7 +51,7 @@ export let targetClass: Class = {
 		attributes.Target.Id,
 		attributes.Target.Port,
 	].join('_'),
-	refresh: (state: any, key: string) => refresh_(key, state),
+	refresh,
 	upsert,
 };
 

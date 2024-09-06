@@ -130,7 +130,7 @@ export let run = (action: string, f: () => void) => {
 				`KEY_${hash}=\${KEY}`,
 				`STATE=${getStateFilename('${KEY}')}`,
 				`STATE_${hash}=\${STATE}`,
-				...refresh(state, key),
+				...refresh(state),
 			);
 		}
 	} else if (action === 'refresh-dependencies') {

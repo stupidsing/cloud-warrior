@@ -64,7 +64,7 @@ export let roleClass: Class = {
 			attributes.RoleName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ RoleName }, key: string) => [
+	refresh: ({ RoleName }) => [
 		`NAME=${RoleName}`,
 		`aws iam get-role \\`,
 		`  --role-name \${NAME} \\`,

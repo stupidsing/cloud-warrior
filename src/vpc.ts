@@ -99,7 +99,7 @@ export let vpcClass: Class = {
 		class_,
 		name,
 	].join('_'),
-	refresh: ({ VpcId }, key: string) => [
+	refresh: ({ VpcId }) => [
 		`ID=${VpcId}`,
 		`aws ec2 describe-vpcs \\`,
 		`  --vpc-ids \${ID} \\`,

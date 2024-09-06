@@ -45,7 +45,7 @@ export let natGatewayClass: Class = {
 		name,
 		attributes.SubnetId,
 	].join('_'),
-	refresh: ({ NatGatewayId }, key: string) => [
+	refresh: ({ NatGatewayId }) => [
 		`ID=${NatGatewayId}`,
 		`aws ec2 describe-nat-gateways \\`,
 		`  --nat-gateway-ids \${ID} \\`,

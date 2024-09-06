@@ -14,7 +14,7 @@ let delete_ = ({ CertificateArn }) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshByArn = (key, arn) => [
+let refreshByArn = arn => [
 	`ARN=${arn}`,
 	`aws acm describe-certificate \\`,
 	`  --certificate-arn \${ARN} \\`,
@@ -38,7 +38,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			// TODO add CNAME to route53 hosted znoe
 			`aws acm wait certificate-validated \\`,
 			`  --certificate-arn ${CertificateArn}`,
-			...refreshByArn(key, CertificateArn),
+			...refreshByArn(CertificateArn),
 		);
 		state = { DomainName };
 	}
@@ -56,7 +56,7 @@ export let certificateClass: Class = {
 			attributes.DomainName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ CertificateArn }, key: string) => refreshByArn(key, CertificateArn),
+	refresh: ({ CertificateArn }) => refreshByArn(CertificateArn),
 	upsert,
 };
 

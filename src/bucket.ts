@@ -14,7 +14,7 @@ let delete_ = ({ Name }) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshByName = (key, name) => [
+let refreshByName = name => [
 	`NAME=${name}`,
 	`aws s3api list-buckets \\`,
 	`  --query "Buckets[?Name == '\${NAME}']" \\`,
@@ -34,7 +34,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --region ${Region}`,
 			`aws s3api wait bucket-exists \\`,
 			`  --bucket ${Name}`,
-			...refreshByName(key, Name),
+			...refreshByName(Name),
 		);
 		state = { Name, Region };
 	}
@@ -52,7 +52,7 @@ export let bucketClass: Class = {
 			attributes.Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ Name }, key: string) => refreshByName(key, Name),
+	refresh: ({ Name }) => refreshByName(Name),
 	upsert,
 };
 

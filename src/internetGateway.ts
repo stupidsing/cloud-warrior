@@ -41,7 +41,7 @@ export let internetGatewayClass: Class = {
 		class_,
 		name,
 	].join('_'),
-	refresh: ({ InternetGatewayId }, key: string) => [
+	refresh: ({ InternetGatewayId }) => [
 		`ID=${InternetGatewayId}`,
 		`aws ec2 describe-internet-gateways \\`,
 		`  --internet-gateway-ids \${ID} \\`,

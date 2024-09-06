@@ -17,7 +17,7 @@ let delete_ = ({ SubnetId }) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshById = (key, id) => [
+let refreshById = id => [
 	`ID=${id}`,
 	`aws ec2 describe-subnets \\`,
 	`  --subnet-ids \${ID} \\`,
@@ -54,7 +54,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-subnet-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}map-public-ip-on-launch \\`,
 				`  --subnet-id ${SubnetId}`,
-				...refreshById(key, SubnetId),
+				...refreshById(SubnetId),
 			);
 		}
 	}
@@ -74,7 +74,7 @@ export let subnetClass: Class = {
 			attributes.CidrBlock,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ SubnetId }, key: string) => refreshById(key, SubnetId),
+	refresh: ({ SubnetId }) => refreshById(SubnetId),
 	upsert,
 };
 

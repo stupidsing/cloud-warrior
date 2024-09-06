@@ -14,7 +14,7 @@ let delete_ = ({ Id }) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshById = (key, id) => [
+let refreshById = id => [
 	`ID=${id}`,
 	`aws route53 get-hosted-zone \\`,
 	`  --id \${ID} \\`,
@@ -52,7 +52,7 @@ export let hostedZoneClass: Class = {
 			attributes.Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ HostedZoneId }, key: string) => refreshById(key, HostedZoneId),
+	refresh: ({ HostedZoneId }) => refreshById(HostedZoneId),
 	upsert,
 };
 

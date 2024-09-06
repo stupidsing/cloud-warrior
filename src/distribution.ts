@@ -145,7 +145,7 @@ let delete_ = ({ Id }) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshById = (key, id) => [
+let refreshById = id => [
 	`ID=${id}`,
 	`aws cloudfront get-distribution \\`,
 	`  --ids \${ID} \\`,
@@ -168,7 +168,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  | jq .Distribution | tee \${STATE}`,
 			`aws cloudfront wait distribution-exists \\`,
 			`  --ids ${DistributionId}`,
-			...refreshById(key, DistributionId),
+			...refreshById(DistributionId),
 		);
 		state = { DistributionConfig: { DefaultRootObject, Origins: { Items: [{ DomainName: originDomainName }]} } };
 	}
@@ -197,7 +197,7 @@ export let distributionClass: Class = {
 		class_,
 		name,
 	].join('_'),
-	refresh: ({ Id }, key: string) => refreshById(key, Id),
+	refresh: ({ Id }) => refreshById(Id),
 	upsert,
 };
 

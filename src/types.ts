@@ -2,7 +2,7 @@ export type Class = {
 	class_: string;
 	delete_: (state: any) => string[];
 	getKey: (resource: Resource) => string;
-	refresh: (state: any, key: string) => string[];
+	refresh: (state: any) => string[];
 	upsert: (state: any, resource: Resource) => string[];
 };
 

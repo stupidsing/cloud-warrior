@@ -44,7 +44,7 @@ let delete_ = (state) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshByName = (key, name) => [
+let refreshByName = name => [
 		`NAME=${name}`,
 		`aws iam get-instance-profile \\`,
 		`  --instance-profile-name \${NAME} \\`,
@@ -73,7 +73,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		let { commands: commands_, needRefresh } = updateRoles(attributes, state[prop], attributes[prop]);
 
 		if (needRefresh) {
-			commands.push(...commands_, ...refreshByName(key, InstanceProfileName));
+			commands.push(...commands_, ...refreshByName(InstanceProfileName));
 		}
 	}
 
@@ -90,7 +90,7 @@ export let instanceProfileClass: Class = {
 			attributes.InstanceProfileName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ InstanceProfileName }, key: string) => refreshByName(key, InstanceProfileName),
+	refresh: ({ InstanceProfileName }) => refreshByName(InstanceProfileName),
 	upsert,
 };
 

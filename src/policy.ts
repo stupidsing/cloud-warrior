@@ -17,7 +17,7 @@ let delete_ = ({ Arn }) => [
 	`rm -f \${STATE} \${STATE}#PolicyDocument`,
 ];
 
-let refreshByArn = (key, arn) => [
+let refreshByArn = arn => [
 	`ARN=${arn}`,
 	`aws iam get-policy \\`,
 	`  --policy-arn \${ARN} \\`,
@@ -63,7 +63,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`  --policy-arn ${PolicyArn} \\`,
 				`  --policy-document '${target}' \\`,
 				`  --set-as-default`,
-				...refreshByArn(key, PolicyArn),
+				...refreshByArn(PolicyArn),
 			);
 		}
 	}
@@ -82,7 +82,7 @@ export let policyClass: Class = {
 			attributes.PolicyName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ PolicyArn }, key: string) => refreshByArn(key, PolicyArn),
+	refresh: ({ PolicyArn }) => refreshByArn(PolicyArn),
 	upsert,
 };
 

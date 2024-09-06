@@ -34,7 +34,7 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`rm -f \${STATE} \${STATE}#HostedZoneId`,
 ];
 
-let refreshByHostedZoneId = (key, HostedZoneId, Type, Name) => [
+let refreshByHostedZoneId = (HostedZoneId, Type, Name) => [
 	`aws route53 list-resource-record-sets \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
 	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee \${STATE}`,
@@ -66,7 +66,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  | jq -r .ChangeInfo.Id) &&`,
 			`aws route53 wait \\`,
 			`  resource-record-sets-changed --id \${CHANGE_ID}`,
-			...refreshByHostedZoneId(key, HostedZoneId, Type, Name),
+			...refreshByHostedZoneId(HostedZoneId, Type, Name),
 		);
 		state = { HostedZoneId, Name, ResourceRecords, TTL, Type };
 	}
@@ -88,7 +88,7 @@ export let recordClass: Class = {
 			attributes.Type,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ HostedZoneId, ResourceRecords, Type }, key: string) => refreshByHostedZoneId(key, HostedZoneId, ResourceRecords, Type),
+	refresh: ({ HostedZoneId, ResourceRecords, Type }) => refreshByHostedZoneId(HostedZoneId, ResourceRecords, Type),
 	upsert,
 };
 

@@ -18,7 +18,7 @@ let delete_ = ({ TargetGroupArn }) => [
 	`rm -f \${STATE}`,
 ];
 
-let refreshByArn = (key, arn) => [
+let refreshByArn = arn => [
 	`ARN=${arn}`,
 	`aws elbv2 describe-target-groups \\`,
 	`  --target-group-arns \${ARN} \\`,
@@ -63,7 +63,7 @@ export let targetGroupClass: Class = {
 			attributes.TargetType,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ TargetGroupArn }, key: string) => refreshByArn(key, TargetGroupArn),
+	refresh: ({ TargetGroupArn }) => refreshByArn(TargetGroupArn),
 	upsert,
 };
 

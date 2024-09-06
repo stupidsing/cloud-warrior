@@ -20,7 +20,7 @@ let delete_ = ({ InstanceId }) => [
 	`  --instance-id ${InstanceId}`,
 ];
 
-let refreshById = (key, id) => [
+let refreshById = id => [
 	`ID=${id}`,
 	`aws ec2 describe-instances \\`,
 	`  --instance-ids \${ID} \\`,
@@ -62,7 +62,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} \\`,
 					`  | jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
 					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
-					...refreshById(key, InstanceId),
+					...refreshById(InstanceId),
 				);
 			}
 
@@ -71,7 +71,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`aws ec2 associate-iam-instance-profile \\`,
 					`  --iam-instance-profile Arn=${target} \\`,
 					`  --instance-id ${InstanceId}`,
-					...refreshById(key, InstanceId),
+					...refreshById(InstanceId),
 				);
 			}
 		}
@@ -87,7 +87,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`aws ec2 modify-instance-attribute \\`,
 					`  --instance-id ${InstanceId}`,
 					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
-					...refreshById(key, InstanceId),
+					...refreshById(InstanceId),
 				);
 			}
 		}
@@ -108,7 +108,7 @@ export let instanceClass: Class = {
 			attributes.InstanceType,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ InstanceId }, key: string) => refreshById(key, InstanceId),
+	refresh: ({ InstanceId }) => refreshById(InstanceId),
 	upsert,
 };
 
