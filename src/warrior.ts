@@ -161,6 +161,17 @@ export let run = (action: string, f: () => void) => {
 
 					for (let dependency of dependencies) _upsert([key, ...keys], dependency);
 
+					let dependencyHashes = dependencies.map(r => r.hash).sort((a, b) => a.localeCompare(b));
+					let dependencyHashes_ = [];
+					let set = new Set<string>();
+
+					for (let dependencyHash of dependencyHashes) {
+						if (!set.has(dependencyHash)) {
+							set.add(dependencyHash);
+							dependencyHashes_.push(dependencyHash);
+						}
+					}
+
 					let { upsert } = classes[class_];
 
 					commands.push(
@@ -172,7 +183,7 @@ export let run = (action: string, f: () => void) => {
 						...action === 'up' ? upsert(stateByKey[key], resource) : [],
 						`(`,
 						`  echo -n`,
-						...dependencies.map(dependency => `  echo \${KEY_${dependency.hash}}`),
+						...dependencyHashes_.map(dependencyHash => `  echo \${KEY_${dependencyHash}}`),
 						`) > ${dependenciesDirectory}/\${KEY}`,
 					);
 
