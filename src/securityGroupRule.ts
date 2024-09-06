@@ -54,16 +54,16 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let securityGroupRuleIngressClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.GroupId,
-		attributes.SourceGroup,
+		GroupId,
+		SourceGroup,
 		createHash('sha256').update([
-			attributes.CidrIpv4,
-			attributes.FromPort,
-			attributes.IpProtocol,
-			attributes.ToPort,
+			CidrIpv4,
+			FromPort,
+			IpProtocol,
+			ToPort,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ SecurityGroupRuleId }) => refreshById(SecurityGroupRuleId),

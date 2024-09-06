@@ -95,7 +95,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let vpcClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: {} }: Resource_<Attributes>) => [
 		class_,
 		name,
 	].join('_'),

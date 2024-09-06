@@ -99,13 +99,13 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let instanceClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { ImageId, InstanceType, SubnetId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.SubnetId,
-		attributes.ImageId,
+		SubnetId,
+		ImageId,
 		createHash('sha256').update([
-			attributes.InstanceType,
+			InstanceType,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ InstanceId }) => refreshById(InstanceId),

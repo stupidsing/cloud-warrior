@@ -77,15 +77,15 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let recordClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { HostedZoneId, Name, ResourceRecords, TTL, Type } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		replace(attributes.HostedZoneId),
+		replace(HostedZoneId),
 		createHash('sha256').update([
-			attributes.Name,
-			attributes.ResourceRecords.map(r => r.Value).join(':'),
-			attributes.TTL,
-			attributes.Type,
+			Name,
+			ResourceRecords.map(r => r.Value).join(':'),
+			TTL,
+			Type,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ HostedZoneId, ResourceRecords, Type }) => refreshByHostedZoneId(HostedZoneId, ResourceRecords, Type),

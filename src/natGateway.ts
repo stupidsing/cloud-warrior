@@ -40,10 +40,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let natGatewayClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { SubnetId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.SubnetId,
+		SubnetId,
 	].join('_'),
 	refresh: ({ NatGatewayId }) => [
 		`ID=${NatGatewayId}`,

@@ -70,10 +70,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let internetGatewayAttachmentClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { InternetGatewayId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		replace(attributes.InternetGatewayId),
+		replace(InternetGatewayId),
 	].join('_'),
 	refresh: ({ InternetGatewayId }) => refreshById(InternetGatewayId),
 	upsert,

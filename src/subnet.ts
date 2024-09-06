@@ -65,13 +65,13 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let subnetClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { AvailabilityZone, CidrBlock, VpcId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.VpcId,
+		VpcId,
 		createHash('sha256').update([
-			attributes.AvailabilityZone,
-			attributes.CidrBlock,
+			AvailabilityZone,
+			CidrBlock,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ SubnetId }) => refreshById(SubnetId),

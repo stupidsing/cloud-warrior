@@ -74,12 +74,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let policyClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Description, PolicyName } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
-			attributes.Description,
-			attributes.PolicyName,
+			Description,
+			PolicyName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ PolicyArn }) => refreshByArn(PolicyArn),

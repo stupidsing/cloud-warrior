@@ -44,12 +44,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let hostedZoneClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { CallerReference, Name } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
-			attributes.CallerReference,
-			attributes.Name,
+			CallerReference,
+			Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ HostedZoneId }) => refreshById(HostedZoneId),

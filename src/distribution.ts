@@ -193,7 +193,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let distributionClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: {} }: Resource_<Attributes>) => [
 		class_,
 		name,
 	].join('_'),

@@ -49,11 +49,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let certificateClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { DomainName } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
-			attributes.DomainName,
+			DomainName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ CertificateArn }) => refreshByArn(CertificateArn),

@@ -92,10 +92,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let listenerClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { LoadBalancerArn } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		replace(attributes.LoadBalancerArn),
+		replace(LoadBalancerArn),
 	].join('_'),
 	refresh: ({ ListenerArn }) => refreshByArn(ListenerArn),
 	upsert,

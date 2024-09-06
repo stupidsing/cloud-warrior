@@ -52,15 +52,15 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let targetGroupClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Name, Port, Protocol, TargetType, VpcId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		attributes.VpcId,
+		VpcId,
 		createHash('sha256').update([
-			attributes.Name,
-			attributes.Port,
-			attributes.Protocol,
-			attributes.TargetType,
+			Name,
+			Port,
+			Protocol,
+			TargetType,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ TargetGroupArn }) => refreshByArn(TargetGroupArn),

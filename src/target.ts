@@ -44,12 +44,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let targetClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Target: { Id, Port }, TargetGroupArn } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		replace(attributes.TargetGroupArn),
-		attributes.Target.Id,
-		attributes.Target.Port,
+		replace(TargetGroupArn),
+		Id,
+		Port,
 	].join('_'),
 	refresh,
 	upsert,

@@ -78,11 +78,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let loadBalancerClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Name } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
-			attributes.Name,
+			Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ LoadBalancerArn }) => refreshByArn(LoadBalancerArn),
