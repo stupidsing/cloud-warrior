@@ -132,21 +132,6 @@ export let run = (action: string, f: () => void) => {
 				...refresh(state),
 			);
 		}
-	} else if (action === 'refresh-dependencies') {
-		for (let [key, state] of Object.entries(stateByKey)) {
-			let [class_, name] = key.split('_');	
-			let className = class_ + '_' + name;
-			let dependencies = dependenciesByClassName[className] ?? [];
-			let dependencyKeys = dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b));
-
-			commands.push(
-				'',
-				`(`,
-				`  echo -n`,
-				...dependencyKeys.map(k => `  echo ${k}`),
-				`) > \${KEY}`,
-			);
-		}
 	} else {
 		let dependersByKey = {};
 		let dependenciesFilenames = readdirSync(dependenciesDirectory);
@@ -161,7 +146,7 @@ export let run = (action: string, f: () => void) => {
 			}
 		}
 
-		if (action !== 'down') {
+		if (['refresh-dependencies', 'up'].includes(action)) {
 			let upserted = new Set<string>();
 
 			let _upsert = (keys: string[], resource: Resource) => {
@@ -184,7 +169,7 @@ export let run = (action: string, f: () => void) => {
 						`KEY=${key}`,
 						`KEY_${hash}=\${KEY}`,
 						`STATE_${hash}=${statesDirectory}/\${KEY}`,
-						...upsert(stateByKey[key], resource),
+						...action === 'up' ? upsert(stateByKey[key], resource) : [],
 						`(`,
 						`  echo -n`,
 						...dependencies.map(dependency => `  echo \${KEY_${dependency.hash}}`),
@@ -198,40 +183,42 @@ export let run = (action: string, f: () => void) => {
 			for (let [key, resource] of Object.entries(resourceByKey)) _upsert([], resource);
 		}
 
-		let deleted = new Set<string>();
+		if (['down', 'up'].includes(action)) {
+			let deleted = new Set<string>();
 
-		let _delete = (keys: string[], key, state) => {
-			if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
+			let _delete = (keys: string[], key, state) => {
+				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
 
-			if (!deleted.has(key)) {
-				let [class_, name] = key.split('_');
-				let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
-				let dependers = dependersByKey[key] ?? [];
+				if (!deleted.has(key)) {
+					let [class_, name] = key.split('_');
+					let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
+					let dependers = dependersByKey[key] ?? [];
 
-				for (let depender of dependers) {
-					let state = stateByKey[depender];
-					if (state) _delete([key, ...keys], depender, state);
+					for (let depender of dependers) {
+						let state = stateByKey[depender];
+						if (state) _delete([key, ...keys], depender, state);
+					}
+
+					let { delete_ } = classes[class_];
+
+					if (action === 'down' || resourceByKey[key] == null) {
+						commands.push(
+							'',
+							`# delete ${name}`,
+							`KEY=${key}`,
+							`KEY_${hash}=\${KEY}`,
+							`STATE_${hash}=${statesDirectory}/\${KEY}`,
+							...delete_(state),
+							`rm -f \${KEY}`,
+						);
+					}
+
+					deleted.add(key);
 				}
+			};
 
-				let { delete_ } = classes[class_];
-
-				if (action === 'down' || resourceByKey[key] == null) {
-					commands.push(
-						'',
-						`# delete ${name}`,
-						`KEY=${key}`,
-						`KEY_${hash}=\${KEY}`,
-						`STATE_${hash}=${statesDirectory}/\${KEY}`,
-						...delete_(state),
-						`rm -f \${KEY}`,
-					);
-				}
-
-				deleted.add(key);
-			}
-		};
-
-		for (let [key, state] of Object.entries(stateByKey)) _delete([], key, state);
+			for (let [key, state] of Object.entries(stateByKey)) _delete([], key, state);
+		}
 	}
 
 	console.log(commands.join('\n'));
