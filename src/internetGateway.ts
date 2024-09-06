@@ -6,7 +6,7 @@ let class_ = 'internet-gateway';
 type Attributes = {
 };
 
-let delete_ = ({ InternetGatewayId }, key: string) => [
+let delete_ = ({ InternetGatewayId }) => [
 	`aws ec2 delete-internet-gateway \\`,
 	`  --internet-gateway-id ${InternetGatewayId} &&`,
 	`rm -f \${STATE}`,

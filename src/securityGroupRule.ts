@@ -13,7 +13,7 @@ type Attributes = {
 	ToPort: number,
 };
 
-let delete_ = ({ GroupId, SecurityGroupRuleId }, key: string) => [
+let delete_ = ({ GroupId, SecurityGroupRuleId }) => [
 	`aws ec2 revoke-security-group-ingress \\`,
 	`  --group-id ${GroupId} \\`,
 	`  --security-group-rule-ids ${SecurityGroupRuleId} &&`,

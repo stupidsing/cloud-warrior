@@ -8,7 +8,7 @@ type Attributes = {
 	TargetGroupArn: string,
 };
 
-let delete_ = ({ Target: { Id, Port }, TargetGroupArn }, key: string) => [
+let delete_ = ({ Target: { Id, Port }, TargetGroupArn }) => [
 	`aws elbv2 deregister-targets \\`,
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} &&`,

@@ -139,7 +139,7 @@ type Attributes = {
 	},
 };
 
-let delete_ = ({ Id }, key: string) => [
+let delete_ = ({ Id }) => [
 	`aws cloudfront delete-distribution \\`,
 	`  --id ${Id} &&`,
 	`rm -f \${STATE}`,

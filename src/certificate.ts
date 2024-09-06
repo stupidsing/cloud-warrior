@@ -8,7 +8,7 @@ type Attributes = {
 	DomainName: string,
 };
 
-let delete_ = ({ CertificateArn }, key: string) => [
+let delete_ = ({ CertificateArn }) => [
 	`aws acm delete-certificate \\`,
 	`  --certificate-arn ${CertificateArn} &&`,
 	`rm -f \${STATE}`,

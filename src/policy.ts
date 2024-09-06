@@ -11,7 +11,7 @@ type Attributes = {
 	PolicyName: string,
 };
 
-let delete_ = ({ Arn }, key: string) => [
+let delete_ = ({ Arn }) => [
 	`aws iam delete-policy \\`,
 	`  --policy-arn ${Arn} &&`,
 	`rm -f \${STATE} \${STATE}#PolicyDocument`,

@@ -12,7 +12,7 @@ type Attributes = {
 	Type: string,
 };
 
-let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }, key: string) => [
+let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`CHANGE_ID=$(aws route53 change-resource-record-sets \\`,
 	`  --change-batch '${JSON.stringify({
 		Changes: [

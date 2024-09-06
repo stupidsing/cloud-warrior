@@ -8,7 +8,7 @@ type Attributes = {
 	Region: string,
 };
 
-let delete_ = ({ Name }, key: string) => [
+let delete_ = ({ Name }) => [
 	`aws s3api delete-bucket \\`,
 	`  --bucket ${Name} &&`,
 	`rm -f \${STATE}`,

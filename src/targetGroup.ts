@@ -12,7 +12,7 @@ type Attributes = {
 	VpcId: string,
 };
 
-let delete_ = ({ TargetGroupArn }, key: string) => [
+let delete_ = ({ TargetGroupArn }) => [
 	`aws elbv2 delete-target-group \\`,
 	`  --target-group-arn ${TargetGroupArn} &&`,
 	`rm -f \${STATE}`,

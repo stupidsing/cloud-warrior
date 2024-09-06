@@ -10,7 +10,7 @@ type Attributes = {
 	SecurityGroups: string[],
 };
 
-let delete_ = ({ LoadBalancerArn }, key: string) => [
+let delete_ = ({ LoadBalancerArn }) => [
 	`aws elbv2 delete-load-balancer \\`,
 	`  --load-balancer-arn ${LoadBalancerArn} &&`,
 	`rm -f \${STATE}`,

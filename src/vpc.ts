@@ -9,7 +9,7 @@ type Attributes = {
 	EnableDnsSupport?: boolean,
 };
 
-let delete_ = ({ VpcId }, key: string) => {
+let delete_ = ({ VpcId }) => {
 	return [
 		`aws ec2 delete-vpc --vpc-id ${VpcId} &&`,
 		`rm -f \\`,

@@ -226,7 +226,7 @@ export let run = (action: string, f: () => void) => {
 						`KEY_${hash}=\${KEY}`,
 						`STATE=${getStateFilename('${KEY}')}`,
 						`STATE_${hash}=\${STATE}`,
-						...delete_(state, key),
+						...delete_(state),
 						`rm -f \${KEY}`,
 					);
 				}

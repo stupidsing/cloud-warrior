@@ -7,7 +7,7 @@ type Attributes = {
 	SubnetId: string,
 };
 
-let delete_ = ({ NatGatewayId }, key: string) => [
+let delete_ = ({ NatGatewayId }) => [
 	`aws ec2 delete-nat-gateway \\`,
 	`  --nat-gateway-id ${NatGatewayId} &&`,
 	`rm -f \${STATE}`,

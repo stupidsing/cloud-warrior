@@ -8,7 +8,7 @@ type Attributes = {
 	Name: string,
 };
 
-let delete_ = ({ Id }, key: string) => [
+let delete_ = ({ Id }) => [
 	`aws route53 delete-hosted-zone \\`,
 	`  --id ${Id} &&`,
 	`rm -f \${STATE}`,

@@ -11,7 +11,7 @@ type Attributes = {
 	Protocol: string,
 };
 
-let delete_ = ({ ListenerArn }, key: string) => [
+let delete_ = ({ ListenerArn }) => [
 	`aws elbv2 delete-listener \\`,
 	`  --listener-arn ${ListenerArn} &&`,
 	`rm -f \${STATE}`,

@@ -35,7 +35,7 @@ let updateAttachments = ({ InternetGatewayId }, attachments0, attachments1) => {
 	return { commands, needRefresh };
 };
 
-let delete_ = (state: { Attachments, InternetGatewayId }, key: string) => [
+let delete_ = (state: { Attachments, InternetGatewayId }) => [
 	...updateAttachments(state, state.Attachments, []).commands,
 	`rm -f \${STATE}`,
 ];

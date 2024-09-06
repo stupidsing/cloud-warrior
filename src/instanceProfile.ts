@@ -37,7 +37,7 @@ let updateRoles = ({ InstanceProfileName }, roles0, roles1) => {
 	return { commands, needRefresh };
 };
 
-let delete_ = (state, key: string) => [
+let delete_ = (state) => [
 	...updateRoles(state, state.Roles, []).commands,
 	`aws iam delete-instance-profile \\`,
 	`  --instance-profile-name ${state.InstanceProfileName} &&`,

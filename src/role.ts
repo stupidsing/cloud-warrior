@@ -11,7 +11,7 @@ type Attributes = {
 	RoleName: string,
 };
 
-let delete_ = ({ RoleName }, key: string) => [
+let delete_ = ({ RoleName }) => [
 	`aws iam delete-role \\`,
 	`  --role-name ${RoleName} &&`,
 	`rm -f \${STATE}`,

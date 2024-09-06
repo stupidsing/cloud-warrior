@@ -12,7 +12,7 @@ type Attributes = {
 	SubnetId: string,
 };
 
-let delete_ = ({ InstanceId }, key: string) => [
+let delete_ = ({ InstanceId }) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${InstanceId} &&`,
 	`rm -f \${STATE}`,
