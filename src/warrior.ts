@@ -173,7 +173,6 @@ export let run = (action: string, f: () => void) => {
 					let [class_, _] = key.split('_');
 					let className = class_ + '_' + name;
 					let dependencies = dependenciesByClassName[className] ?? [];
-					let dependencyKeys = dependencies.map(r => r.key).sort((a, b) => a.localeCompare(b));
 
 					for (let dependency of dependencies) _upsert([key, ...keys], dependency);
 
