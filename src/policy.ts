@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import { PolicyDocument } from "./aws";
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'policy';
@@ -14,18 +14,18 @@ type Attributes = {
 let delete_ = ({ Arn }) => [
 	`aws iam delete-policy \\`,
 	`  --policy-arn ${Arn} &&`,
-	`rm -f \${STATE} \${STATE}#PolicyDocument`,
+	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#PolicyDocument`,
 ];
 
 let refreshByArn = arn => [
 	`ARN=${arn}`,
 	`aws iam get-policy \\`,
 	`  --policy-arn \${ARN} \\`,
-	`  | jq .Policy | tee \${STATE}`,
+	`  | jq .Policy | tee ${statesDirectory}/\${KEY}`,
 	`aws iam get-policy-version \\`,
 	`  --policy-arn \${ARN} \\`,
 	`  --version-id $(aws iam list-policy-version --policy-arn \${ARN} | jq -r '.Versions | map(select(.IsDefaultVersion).VersionId)[0]') \\`,
-	`  | jq .PolicyDocument | tee \${STATE}#PolicyDocument`,
+	`  | jq .PolicyDocument | tee ${statesDirectory}/\${KEY}#PolicyDocument`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -33,7 +33,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { Description, PolicyDocument, PolicyName } = attributes;
 	let commands = [];
 
-	let PolicyArn = `$(cat \${STATE} | jq -r .Arn)`;
+	let PolicyArn = `$(cat ${statesDirectory}/\${KEY} | jq -r .Arn)`;
 
 	if (state == null) {
 		commands.push(
@@ -42,10 +42,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --policy-document '${JSON.stringify(PolicyDocument)}' \\`,
 			`  --policy-name ${PolicyName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
-			`  | jq .Policy | tee \${STATE}`,
+			`  | jq .Policy | tee ${statesDirectory}/\${KEY}`,
 			`aws iam wait policy-exists \\`,
 			`  --policy-arn ${PolicyArn}`,
-			`echo '${JSON.stringify(PolicyDocument)}' | tee \${STATE}#PolicyDocument`,
+			`echo '${JSON.stringify(PolicyDocument)}' | tee ${statesDirectory}/\${KEY}#PolicyDocument`,
 		);
 		state = { Description, PolicyDocument, PolicyName };
 	}

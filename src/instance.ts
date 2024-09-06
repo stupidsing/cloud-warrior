@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'instance';
@@ -15,7 +15,7 @@ type Attributes = {
 let delete_ = ({ InstanceId }) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${InstanceId} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 	`aws ec2 wait  instance-terminated \\`,
 	`  --instance-id ${InstanceId}`,
 ];
@@ -24,7 +24,7 @@ let refreshById = id => [
 	`ID=${id}`,
 	`aws ec2 describe-instances \\`,
 	`  --instance-ids \${ID} \\`,
-	`  | jq .Reservations[0].Instances[0] | tee \${STATE}`,
+	`  | jq .Reservations[0].Instances[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -32,7 +32,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { ImageId, InstanceType, SecurityGroups, SubnetId } = attributes;
 	let commands = [];
 
-	let InstanceId = `$(cat \${STATE} | jq -r .InstanceId)`;
+	let InstanceId = `$(cat ${statesDirectory}/\${KEY} | jq -r .InstanceId)`;
 
 	if (state == null) {
 		commands.push(
@@ -44,7 +44,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'instance', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | jq .Instances[0] | tee \${STATE}`,
+			`  | jq .Instances[0] | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait instance-exists \\`,
 			`  --instance-id ${InstanceId}`,
 		);

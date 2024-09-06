@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'subnet';
@@ -14,14 +14,14 @@ type Attributes = {
 let delete_ = ({ SubnetId }) => [
 	`aws ec2 delete-subnet \\`,
 	`  --subnet-id ${SubnetId} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshById = id => [
 	`ID=${id}`,
 	`aws ec2 describe-subnets \\`,
 	`  --subnet-ids \${ID} \\`,
-	`  | jq .Subnets[0] | tee \${STATE}`,
+	`  | jq .Subnets[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

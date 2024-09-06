@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { bucketClass } from './bucket';
 import { certificateClass } from './certificate';
-import { dependenciesDirectory, getStateFilename, statesDirectory } from './constants';
+import { dependenciesDirectory, statesDirectory } from './constants';
 import { distributionClass } from './distribution';
 import { hostedZoneClass } from './hostedZone';
 import { instanceClass } from './instance';
@@ -128,8 +128,7 @@ export let run = (action: string, f: () => void) => {
 				'',
 				`KEY=${key}`,
 				`KEY_${hash}=\${KEY}`,
-				`STATE=${getStateFilename('${KEY}')}`,
-				`STATE_${hash}=\${STATE}`,
+				`STATE_${hash}=${statesDirectory}/\${KEY}`,
 				...refresh(state),
 			);
 		}
@@ -185,8 +184,7 @@ export let run = (action: string, f: () => void) => {
 						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
 						`KEY=${key}`,
 						`KEY_${hash}=\${KEY}`,
-						`STATE=${getStateFilename('${KEY}')}`,
-						`STATE_${hash}=\${STATE}`,
+						`STATE_${hash}=${statesDirectory}/\${KEY}`,
 						...upsert(stateByKey[key], resource),
 						`(`,
 						`  echo -n`,
@@ -224,8 +222,7 @@ export let run = (action: string, f: () => void) => {
 						`# delete ${name}`,
 						`KEY=${key}`,
 						`KEY_${hash}=\${KEY}`,
-						`STATE=${getStateFilename('${KEY}')}`,
-						`STATE_${hash}=\${STATE}`,
+						`STATE_${hash}=${statesDirectory}/\${KEY}`,
 						...delete_(state),
 						`rm -f \${KEY}`,
 					);

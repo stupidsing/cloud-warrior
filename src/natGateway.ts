@@ -1,4 +1,4 @@
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'nat-gateway';
@@ -10,7 +10,7 @@ type Attributes = {
 let delete_ = ({ NatGatewayId }) => [
 	`aws ec2 delete-nat-gateway \\`,
 	`  --nat-gateway-id ${NatGatewayId} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -18,7 +18,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { SubnetId } = attributes;
 	let commands = [];
 
-	let NatGatewayId = `$(cat \${STATE} | jq -r .NatGatewayId)`;
+	let NatGatewayId = `$(cat ${statesDirectory}/\${KEY} | jq -r .NatGatewayId)`;
 
 	if (state == null) {
 		commands.push(
@@ -27,7 +27,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'nat-gateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | jq .NatGateway | tee \${STATE}`,
+			`  | jq .NatGateway | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait nat-gateway-available \\`,
 			`  --nat-gateway-ids ${NatGatewayId}`,
 		);
@@ -49,7 +49,7 @@ export let natGatewayClass: Class = {
 		`ID=${NatGatewayId}`,
 		`aws ec2 describe-nat-gateways \\`,
 		`  --nat-gateway-ids \${ID} \\`,
-		`  | jq .NatGateways[0] | tee \${STATE}`,
+		`  | jq .NatGateways[0] | tee ${statesDirectory}/\${KEY}`,
 	],
 	upsert,
 };

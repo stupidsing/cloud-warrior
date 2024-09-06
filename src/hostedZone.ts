@@ -11,14 +11,14 @@ type Attributes = {
 let delete_ = ({ Id }) => [
 	`aws route53 delete-hosted-zone \\`,
 	`  --id ${Id} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshById = id => [
 	`ID=${id}`,
 	`aws route53 get-hosted-zone \\`,
 	`  --id \${ID} \\`,
-	`  | jq .HostedZone | tee \${STATE}`,
+	`  | jq .HostedZone | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -26,14 +26,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { CallerReference, Name } = attributes;
 	let commands = [];
 
-	let HostedZoneId = `$(cat \${STATE} | jq -r .Id)`;
+	let HostedZoneId = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
 
 	if (state == null) {
 		commands.push(
 			`aws route53 create-hosted-zone \\`,
 			`  --caller-reference ${CallerReference} \\`,
 			`  --name ${Name} \\`,
-			`  | jq .HostedZone | tee \${STATE}`,
+			`  | jq .HostedZone | tee ${statesDirectory}/\${KEY}`,
 		);
 		state = { CallerReference, Name };
 	}
@@ -56,6 +56,7 @@ export let hostedZoneClass: Class = {
 	upsert,
 };
 
+import { statesDirectory } from "./constants";
 import { create } from "./warrior";
 
 export let createHostedZone = (name: string, f: AttributesInput<Attributes>) => {

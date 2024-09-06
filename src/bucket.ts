@@ -11,14 +11,14 @@ type Attributes = {
 let delete_ = ({ Name }) => [
 	`aws s3api delete-bucket \\`,
 	`  --bucket ${Name} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshByName = name => [
 	`NAME=${name}`,
 	`aws s3api list-buckets \\`,
 	`  --query "Buckets[?Name == '\${NAME}']" \\`,
-	`  | jq .[0] | tee \${STATE}`,
+	`  | jq .[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -57,6 +57,7 @@ export let bucketClass: Class = {
 };
 
 import { create } from "./warrior";
+import { statesDirectory } from "./constants";
 
 export let createBucket = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

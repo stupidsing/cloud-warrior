@@ -1,3 +1,4 @@
+import { statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 import { difference, replace } from "./utils";
 
@@ -37,13 +38,13 @@ let updateAttachments = ({ InternetGatewayId }, attachments0, attachments1) => {
 
 let delete_ = (state: { Attachments, InternetGatewayId }) => [
 	...updateAttachments(state, state.Attachments, []).commands,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshById = internetGatewayId => [
 	`aws ec2 describe-internet-gateways \\`,
 	`  --internet-gateway-id ${internetGatewayId} \\`,
-	`  | jq .InternetGateways[0] | tee \${STATE}`,
+	`  | jq .InternetGateways[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

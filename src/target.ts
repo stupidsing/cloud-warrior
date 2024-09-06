@@ -1,3 +1,4 @@
+import { statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 import { replace } from "./utils";
 
@@ -12,15 +13,15 @@ let delete_ = ({ Target: { Id, Port }, TargetGroupArn }) => [
 	`aws elbv2 deregister-targets \\`,
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} &&`,
-	`rm -f \${STATE} \${STATE}#TargetGroupArn`,
+	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#TargetGroupArn`,
 ];
 
 let refresh = ({ Target: { Id, Port }, TargetGroupArn }: Attributes) => [
 	`aws elbv2 describe-target-health \\`,
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} \\`,
-	`  | jq .TargetHealthDescriptions[0] | tee \${STATE}`,
-	`echo ${JSON.stringify(TargetGroupArn)} | tee \${STATE}#TargetGroupArn`,
+	`  | jq .TargetHealthDescriptions[0] | tee ${statesDirectory}/\${KEY}`,
+	`echo ${JSON.stringify(TargetGroupArn)} | tee ${statesDirectory}/\${KEY}#TargetGroupArn`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

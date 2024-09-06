@@ -31,14 +31,14 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`  | jq -r .ChangeInfo.Id) &&`,
 	`aws route53 wait resource-record-sets-changed \\`,
 			`  --id \${CHANGE_ID}`,
-	`rm -f \${STATE} \${STATE}#HostedZoneId`,
+	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#HostedZoneId`,
 ];
 
 let refreshByHostedZoneId = (HostedZoneId, Type, Name) => [
 	`aws route53 list-resource-record-sets \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
-	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee \${STATE}`,
-	`echo ${JSON.stringify(HostedZoneId)} > \${STATE}#HostedZoneId`,
+	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee ${statesDirectory}/\${KEY}`,
+	`echo ${JSON.stringify(HostedZoneId)} > ${statesDirectory}/\${KEY}#HostedZoneId`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -93,6 +93,7 @@ export let recordClass: Class = {
 };
 
 import { create } from "./warrior";
+import { statesDirectory } from "./constants";
 
 export let createRecord = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
