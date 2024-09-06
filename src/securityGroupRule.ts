@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'security-group-rule-ingress';
@@ -17,14 +17,14 @@ let delete_ = ({ GroupId, SecurityGroupRuleId }) => [
 	`aws ec2 revoke-security-group-ingress \\`,
 	`  --group-id ${GroupId} \\`,
 	`  --security-group-rule-ids ${SecurityGroupRuleId} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshById = id => [
 	`ID=${id}`,
 	`aws ec2 describe-security-group-rules \\`,
 	`  --security-group-rule-ids \${ID} \\`,
-	`  | jq .SecurityGroupRules[0] | tee \${STATE}`,
+	`  | jq .SecurityGroupRules[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -32,7 +32,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort } = attributes;
 	let commands = [];
 
-	let SecurityGroupRuleId = `$(cat \${STATE} | jq -r .SecurityGroupRuleId)`;
+	let SecurityGroupRuleId = `$(cat ${statesDirectory}/\${KEY} | jq -r .SecurityGroupRuleId)`;
 
 	if (state == null) {
 		commands.push(
@@ -42,7 +42,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'security-group-rule', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | jq .SecurityGroupRules[0] | tee \${STATE}`,
+			`  | jq .SecurityGroupRules[0] | tee ${statesDirectory}/\${KEY}`,
 			...refreshById(SecurityGroupRuleId),
 		);
 		state = {  CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort };

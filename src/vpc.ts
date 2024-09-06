@@ -1,4 +1,4 @@
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'vpc';
@@ -13,9 +13,9 @@ let delete_ = ({ VpcId }) => {
 	return [
 		`aws ec2 delete-vpc --vpc-id ${VpcId} &&`,
 		`rm -f \\`,
-		`  \${STATE} \\`,
-		`  \${STATE}#EnableDnsHostnames \\`,
-		`  \${STATE}#EnableDnsSupport`,
+		`  ${statesDirectory}/\${KEY} \\`,
+		`  ${statesDirectory}/\${KEY}#EnableDnsHostnames \\`,
+		`  ${statesDirectory}/\${KEY}#EnableDnsSupport`,
 	];
 };
 
@@ -25,7 +25,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let commands = [];
 
 	// let VpcId = `$(aws ec2 describe-vpcs --filter Name:${name} | jq -r .Vpcs[0].VpcId)`;
-	let VpcId = `$(cat \${STATE} | jq -r .VpcId)`;
+	let VpcId = `$(cat ${statesDirectory}/\${KEY} | jq -r .VpcId)`;
 
 	if (state == null) {
 		commands.push(
@@ -34,7 +34,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | jq .Vpc | tee \${STATE}`,
+			`  | jq .Vpc | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait \\`,
 			`  vpc-available --vpc-id ${VpcId}`,
 		);
@@ -72,7 +72,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-hostnames \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee \${STATE}#${prop}`,
+				`echo ${attributes[prop]} | tee ${statesDirectory}/\${KEY}#${prop}`,
 			);
 		}
 	}
@@ -84,7 +84,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-support \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee \${STATE}#${prop}`,
+				`echo ${attributes[prop]} | tee ${statesDirectory}/\${KEY}#${prop}`,
 			);
 		}
 	}
@@ -103,15 +103,15 @@ export let vpcClass: Class = {
 		`ID=${VpcId}`,
 		`aws ec2 describe-vpcs \\`,
 		`  --vpc-ids \${ID} \\`,
-		`  | jq .Vpcs[0] | tee \${STATE}`,
+		`  | jq .Vpcs[0] | tee ${statesDirectory}/\${KEY}`,
 		`aws ec2 describe-vpc-attribute \\`,
 		`  --attribute enableDnsHostnames \\`,
 		`  --vpc-id \${ID} \\`,
-		`  | jq -r .EnableDnsHostnames.Value | tee \${STATE}#EnableDnsHostnames`,
+		`  | jq -r .EnableDnsHostnames.Value | tee ${statesDirectory}/\${KEY}#EnableDnsHostnames`,
 		`aws ec2 describe-vpc-attribute \\`,
 		`  --attribute enableDnsSupport \\`,
 		`  --vpc-id \${ID} \\`,
-		`  | jq -r .EnableDnsSupport.Value | tee \${STATE}#EnableDnsSupport`,
+		`  | jq -r .EnableDnsSupport.Value | tee ${statesDirectory}/\${KEY}#EnableDnsSupport`,
 	],
 	upsert,
 };

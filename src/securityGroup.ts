@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { prefix } from "./constants";
+import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'security-group';
@@ -13,14 +13,14 @@ type Attributes = {
 let delete_ = ({ GroupId }) => [
 	`aws ec2 delete-security-group \\`,
 	`  --group-id ${GroupId} &&`,
-	`rm -f \${STATE}`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshById = id => [
 	`ID=${id}`,
 	`aws ec2 describe-security-groups \\`,
 	`  --group-ids \${ID} \\`,
-	`  | jq .SecurityGroups[0] | tee \${STATE}`,
+	`  | jq .SecurityGroups[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -28,7 +28,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { Description, GroupName, VpcId } = attributes;
 	let commands = [];
 
-	let GroupId = `$(cat \${STATE} | jq -r .GroupId)`;
+	let GroupId = `$(cat ${statesDirectory}/\${KEY} | jq -r .GroupId)`;
 
 	if (state == null) {
 		commands.push(
@@ -39,7 +39,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | tee \${STATE}`,
+			`  | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait \\`,
 			`  security-group-exists --group-ids ${GroupId}`,
 			...refreshById(GroupId),

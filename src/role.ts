@@ -68,7 +68,7 @@ export let roleClass: Class = {
 		`NAME=${RoleName}`,
 		`aws iam get-role \\`,
 		`  --role-name \${NAME} \\`,
-		`  | jq .Role | tee \${STATE}`,
+		`  | jq .Role | tee ${statesDirectory}/\${KEY}`,
 	],
 	upsert,
 };

@@ -29,7 +29,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { AvailabilityZone, CidrBlock, VpcId } = attributes;
 	let commands = [];
 
-	let SubnetId = `$(cat \${STATE} | jq -r .SubnetId)`;
+	let SubnetId = `$(cat ${statesDirectory}/\${KEY} | jq -r .SubnetId)`;
 
 	if (state == null) {
 		commands.push(
@@ -40,7 +40,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
-			`  | jq .Subnet | tee \${STATE}`,
+			`  | jq .Subnet | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait \\`,
 			`  subnet-available --subnet-id ${SubnetId}`,
 		);
