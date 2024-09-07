@@ -5,7 +5,9 @@ import { AttributesInput, Class, Resource_ } from "./types";
 let class_ = 'function';
 
 type Attributes = {
-	Environment?: Record<string, string>,
+	Description?: string,
+	Environment?: { Variables: Record<string, string> },
+	FileSystemConfigs?: { Arn: string, LocalMountPath: string }[],
 	FunctionName: string,
 	Handler?: string,
 	ImageConfigResponse?: { ImageConfig: {
@@ -48,7 +50,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	let updates = Object
 	.entries({
+		Description: r => [`--description ${r}`],
 		Environment: r => [`--environment ${JSON.stringify(r ?? {})}`],
+		FileSystemConfigs: r => r != null
+			? [`--file-system-configs ${r.map(({ Arn, LocalMountPath }) => `Arn=${Arn},LocalMountPath=${LocalMountPath}`).join(',')}`]
+			: [],
 		Handler: r => [`--handler ${r}`],
 		ImageConfigResponse: r => r != null
 			? [`--image-config '${JSON.stringify(r.ImageConfig)}'`]
