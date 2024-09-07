@@ -8,6 +8,11 @@ type Attributes = {
 	Environment?: Record<string, string>,
 	FunctionName: string,
 	Handler?: string,
+	ImageConfigResponse?: { ImageConfig: {
+		Command: string[],
+		EntryPoint: string,
+		WorkingDirectory: string,
+	} },
 	MemorySize?: number,
 	Role: string,
 	Runtime?: string,
@@ -41,24 +46,29 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		state = { FunctionName, Role };
 	}
 
-	let updates = Object.entries({
-		Environment: r => [`--environment ${JSON.stringify(r ?? {})}`],
-		Handler: r => [`--handler ${r}`],
-		MemorySize: r => [`--memory-size ${r}`],
-		Role: r => [`--role ${r}`],
-		Runtime: r => [`--runtime ${r}`],
-		Timeout: r => [`--timeout ${r}`],
-		VpcConfig: r => r => r != null
-			? [`  --vpc-config SubnetIds=${r.SubnetIds.join(',')},SecurityGroupIds=${r.SecurityGroupIds.join(',')} \n`]
+	let updates = Object
+	.entries({
+		Environment: r => [`  --environment ${JSON.stringify(r ?? {})} \\`],
+		Handler: r => [`  --handler ${r} \\`],
+		ImageConfigResponse: r => r != null
+			? [`  --image-config '${JSON.stringify(r.ImageConfig)}' \\`]
 			: [],
-	}).flatMap(([prop, transform]) => {
+		MemorySize: r => [`  --memory-size ${r} \\`],
+		Role: r => [`  --role ${r} \\`],
+		Runtime: r => [`  --runtime ${r} \\`],
+		Timeout: r => [`  --timeout ${r} \\`],
+		VpcConfig: r => r != null
+			? [`  --vpc-config SecurityGroupIds=${r.SecurityGroupIds.join(',')},SubnetIds=${r.SubnetIds.join(',')} \\`]
+			: [],
+	})
+	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
 		let target = transform(attributes[prop]);
 		let same = source.length === target.length;
 		if (same) {
 			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
-		return !same ? transform : [];
+		return !same ? transform(target) : [];
 	});
 
 	if (updates.length > 0) {

@@ -57,7 +57,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		for (let [CidrBlock, AssociationId] of Object.entries(map1)) {
 			if (!map0.hasOwnProperty(CidrBlock)) {
 				commands.push(
-					`aws ec2 associate-vpc-cidr-block\\`,
+					`aws ec2 associate-vpc-cidr-block \\`,
 					`  --cidr-block ${CidrBlock} \\`,
 					`  --vpc-id ${VpcId}`,
 				);
