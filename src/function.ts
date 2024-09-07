@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { prefix, statesDirectory } from "./constants";
 import { AttributesInput, Class, Resource_ } from "./types";
 
@@ -66,9 +67,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let functionClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: {} }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { FunctionName } }: Resource_<Attributes>) => [
 		class_,
 		name,
+		createHash('sha256').update([
+			FunctionName,
+		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ FunctionName }) => [
 		`NAME=${FunctionName}`,
