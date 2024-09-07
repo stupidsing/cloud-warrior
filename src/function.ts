@@ -5,9 +5,13 @@ import { AttributesInput, Class, Resource_ } from "./types";
 let class_ = 'function';
 
 type Attributes = {
+	Environment?: Record<string, string>,
 	FunctionName: string,
+	Handler?: string,
+	MemorySize?: number,
 	Role: string,
 	Runtime?: string,
+	Timeout?: number,
 };
 
 let delete_ = ({ FunctionName }) => [
@@ -18,7 +22,7 @@ let delete_ = ({ FunctionName }) => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { FunctionName, Role, Runtime } = attributes;
+	let { FunctionName, Role } = attributes;
 	let commands = [];
 
 	if (state == null) {
@@ -26,7 +30,6 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws function create-function \\`,
 			`  --function-name ${FunctionName} \\`,
 			`  --role ${Role} \\`,
-			...Runtime != null ? [`  --runtime ${Runtime}`] : [],
 			`  --tags '${JSON.stringify([
 				{ Key: 'Name', Value: `${prefix}-${name}` },
 			])}' \\`,
@@ -34,31 +37,39 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws function wait function-exists \\`,
 			`  --function-name ${FunctionName}`,
 		);
-		state = { FunctionName, Role, Runtime };
+		state = { FunctionName, Role };
 	}
 
-	{
-		let prop = 'Role';
+	let updates = Object.entries({
+		Handler: 'handler',
+		MemorySize: 'memory-size',
+		Role: 'role',
+		Runtime: 'runtime',
+		Timeout: 'timeout',
+	}).flatMap(([prop, arg]) => {
 		if (state[prop] !== attributes[prop]) {
-			commands.push(
-				`aws function update-function-configuration \\`,
-				`  --function-name ${FunctionName} \\`,
-				`  --role ${attributes[prop]} \\`,
-				`  | tee ${statesDirectory}/\${KEY}`,
-			);
+			return [`  --${arg} ${attributes[prop]} \\`];
+		} else {
+			return [];
+		}
+	});
+
+	{
+		let prop = 'Environment';
+		let source = JSON.stringify(state[prop] ?? {});
+		let target = JSON.stringify(attributes[prop] ?? {});
+		if (source !== target) {
+			updates.push(`  --environment ${target} \\`);
 		}
 	}
 
-	{
-		let prop = 'Runtime';
-		if (state[prop] !== attributes[prop]) {
-			commands.push(
-				`aws function update-function-configuration \\`,
-				`  --function-name ${FunctionName} \\`,
-				`  --runtime ${attributes[prop]} \\`,
-				`  | tee ${statesDirectory}/\${KEY}`,
-			);
-		}
+	if (updates.length > 0) {
+		updates.push(`  --function-name ${FunctionName} \\`);
+		commands.push(
+			`aws function update-function-configuration \\`,
+			...updates.sort((a, b) => a.localeCompare(b)),
+			`  | tee ${statesDirectory}/\${KEY}`,
+		);
 	}
 
 	return commands;
