@@ -12,6 +12,7 @@ type Attributes = {
 	Role: string,
 	Runtime?: string,
 	Timeout?: number,
+	VpcConfig?: { SecurityGroupIds: string[], SubnetIds: string[] },
 };
 
 let delete_ = ({ FunctionName }) => [
@@ -41,27 +42,24 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	}
 
 	let updates = Object.entries({
-		Handler: 'handler',
-		MemorySize: 'memory-size',
-		Role: 'role',
-		Runtime: 'runtime',
-		Timeout: 'timeout',
-	}).flatMap(([prop, arg]) => {
-		if (state[prop] !== attributes[prop]) {
-			return [`  --${arg} ${attributes[prop]} \\`];
-		} else {
-			return [];
+		Environment: r => [`--environment ${JSON.stringify(r ?? {})}`],
+		Handler: r => [`--handler ${r}`],
+		MemorySize: r => [`--memory-size ${r}`],
+		Role: r => [`--role ${r}`],
+		Runtime: r => [`--runtime ${r}`],
+		Timeout: r => [`--timeout ${r}`],
+		VpcConfig: r => r => r != null
+			? [`  --vpc-config SubnetIds=${r.SubnetIds.join(',')},SecurityGroupIds=${r.SecurityGroupIds.join(',')} \n`]
+			: [],
+	}).flatMap(([prop, transform]) => {
+		let source = transform(state[prop]);
+		let target = transform(attributes[prop]);
+		let same = source.length === target.length;
+		if (same) {
+			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
+		return !same ? transform : [];
 	});
-
-	{
-		let prop = 'Environment';
-		let source = JSON.stringify(state[prop] ?? {});
-		let target = JSON.stringify(attributes[prop] ?? {});
-		if (source !== target) {
-			updates.push(`  --environment ${target} \\`);
-		}
-	}
 
 	if (updates.length > 0) {
 		updates.push(`  --function-name ${FunctionName} \\`);
