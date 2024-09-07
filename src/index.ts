@@ -174,11 +174,9 @@ run(process.env.ACTION ?? 'up', () => {
 		Type: 'TXT',
 	}));
 
-	// s3
-	// ACM certificate
-	// HTTPS
-	// domain name
+	// ACM certificate validation
 	// cloudfront
 	// RDS
+	// WAFv2
 	// ...
 });
