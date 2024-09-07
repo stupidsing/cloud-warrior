@@ -4,26 +4,26 @@ import { AttributesInput, Class, Resource_ } from "./types";
 let class_ = 'function';
 
 type Attributes = {
-	Name: string,
+	FunctionName: string,
 	Role: string,
 	Runtime?: string,
 };
 
-let delete_ = ({ Name }) => [
+let delete_ = ({ FunctionName }) => [
 	`aws function delete-function \\`,
-	`  --name ${Name} &&`,
+	`  --name ${FunctionName} &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { Name, Role, Runtime } = attributes;
+	let { FunctionName, Role, Runtime } = attributes;
 	let commands = [];
 
 	if (state == null) {
 		commands.push(
 			`aws function create-function \\`,
-			`  --function-name ${Name} \\`,
+			`  --function-name ${FunctionName} \\`,
 			`  --role ${Role} \\`,
 			...Runtime != null ? [`  --runtime ${Runtime}`] : [],
 			`  --tags '${JSON.stringify([
@@ -31,9 +31,9 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			])}' \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 			`aws function wait function-exists \\`,
-			`  --function-name ${Name}`,
+			`  --function-name ${FunctionName}`,
 		);
-		state = { Name, Role, Runtime };
+		state = { FunctionName, Role, Runtime };
 	}
 
 	{
@@ -41,7 +41,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		if (state[prop] !== attributes[prop]) {
 			commands.push(
 				`aws function update-function-configuration \\`,
-				`  --function-name ${Name} \\`,
+				`  --function-name ${FunctionName} \\`,
 				`  --role ${attributes[prop]} \\`,
 				`  | tee ${statesDirectory}/\${KEY}`,
 			);
@@ -53,7 +53,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		if (state[prop] !== attributes[prop]) {
 			commands.push(
 				`aws function update-function-configuration \\`,
-				`  --function-name ${Name} \\`,
+				`  --function-name ${FunctionName} \\`,
 				`  --runtime ${attributes[prop]} \\`,
 				`  | tee ${statesDirectory}/\${KEY}`,
 			);
@@ -63,15 +63,15 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	return commands;
 };
 
-export let internetGatewayClass: Class = {
+export let functionClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name, attributes: {} }: Resource_<Attributes>) => [
 		class_,
 		name,
 	].join('_'),
-	refresh: ({ Name }) => [
-		`NAME=${Name}`,
+	refresh: ({ FunctionName }) => [
+		`NAME=${FunctionName}`,
 		`aws function get-functions \\`,
 		`  --function-name \${NAME} \\`,
 		`  | jq .Configuration | tee ${statesDirectory}/\${KEY}`,

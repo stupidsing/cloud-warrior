@@ -1,6 +1,7 @@
 import { createBucket } from './bucket';
 import { prefix } from './constants';
 import { createDistribution } from './distribution';
+import { createFunction } from './function';
 import { createHostedZone } from './hostedZone';
 import { createInstance } from './instance';
 import { createInstanceProfile } from './instanceProfile';
@@ -119,6 +120,11 @@ run(process.env.ACTION ?? 'up', () => {
 		InstanceType: 't3.nano',
 		SecurityGroups: [{ GroupId: securityGroup.getSecurityGroupId(get) }],
 		SubnetId: privateSubnets[0].getSubnetId(get),
+	}));
+
+	let function_ = createFunction('function', get => ({
+		FunctionName: 'function',
+		Role: role.getRoleName(get),
 	}));
 
 	let loadBalancer = createLoadBalancer('alb', get => ({

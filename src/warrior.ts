@@ -4,6 +4,7 @@ import { bucketClass } from './bucket';
 import { certificateClass } from './certificate';
 import { dependenciesDirectory, statesDirectory } from './constants';
 import { distributionClass } from './distribution';
+import { functionClass } from './function';
 import { hostedZoneClass } from './hostedZone';
 import { instanceClass } from './instance';
 import { instanceProfileClass } from './instanceProfile';
@@ -47,6 +48,7 @@ let classes = Object.fromEntries([
 	bucketClass,
 	certificateClass,
 	distributionClass,
+	functionClass,
 	instanceClass,
 	instanceProfileClass,
 	internetGatewayClass,
