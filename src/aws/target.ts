@@ -56,7 +56,7 @@ export let targetClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
+import { create } from "../warrior";
 
 export let createTarget = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

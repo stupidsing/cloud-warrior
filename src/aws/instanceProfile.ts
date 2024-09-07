@@ -94,7 +94,7 @@ export let instanceProfileClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
+import { create } from "../warrior";
 
 export let createInstanceProfile = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

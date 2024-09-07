@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
-import { prefix, statesDirectory } from "../constants";
-import { AttributesInput, Class, Resource_ } from "../types";
 import { PolicyDocument } from "./aws";
+import { prefix, statesDirectory } from "./constants";
+import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'policy';
 
@@ -86,7 +86,7 @@ export let policyClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
+import { create } from "../warrior";
 
 export let createPolicy = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
