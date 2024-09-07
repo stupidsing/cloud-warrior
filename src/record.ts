@@ -42,7 +42,7 @@ let refreshByHostedZoneId = (HostedZoneId, Type, Name) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes, key } = resource;
+	let { name, attributes } = resource;
 	let { HostedZoneId, Name, ResourceRecords, TTL, Type } = attributes;
 	let commands = [];
 

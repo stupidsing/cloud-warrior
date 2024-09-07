@@ -22,7 +22,7 @@ let refreshByArn = arn => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes, key } = resource;
+	let { name, attributes } = resource;
 	let { DomainName } = attributes;
 	let commands = [];
 

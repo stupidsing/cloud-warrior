@@ -13,7 +13,7 @@ let delete_ = ({ InternetGatewayId }) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes, key } = resource;
+	let { name, attributes } = resource;
 	let commands = [];
 
 	let InternetGatewayId = `$(cat ${statesDirectory}/\${KEY} | jq -r .InternetGatewayId)`;

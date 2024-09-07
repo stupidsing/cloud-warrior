@@ -25,7 +25,7 @@ let refresh = ({ Target: { Id, Port }, TargetGroupArn }: Attributes) => [
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
-	let { name, attributes, key } = resource;
+	let { name, attributes } = resource;
 	let { Target: { Id, Port }, TargetGroupArn } = attributes;
 	let commands = [];
 
