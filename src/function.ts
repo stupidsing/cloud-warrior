@@ -48,17 +48,17 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	let updates = Object
 	.entries({
-		Environment: r => [`  --environment ${JSON.stringify(r ?? {})} \\`],
-		Handler: r => [`  --handler ${r} \\`],
+		Environment: r => [`--environment ${JSON.stringify(r ?? {})}`],
+		Handler: r => [`--handler ${r}`],
 		ImageConfigResponse: r => r != null
-			? [`  --image-config '${JSON.stringify(r.ImageConfig)}' \\`]
+			? [`--image-config '${JSON.stringify(r.ImageConfig)}'`]
 			: [],
-		MemorySize: r => [`  --memory-size ${r} \\`],
-		Role: r => [`  --role ${r} \\`],
-		Runtime: r => [`  --runtime ${r} \\`],
-		Timeout: r => [`  --timeout ${r} \\`],
+		MemorySize: r => [`--memory-size ${r}`],
+		Role: r => [`--role ${r}`],
+		Runtime: r => [`--runtime ${r}`],
+		Timeout: r => [`--timeout ${r}`],
 		VpcConfig: r => r != null
-			? [`  --vpc-config SecurityGroupIds=${r.SecurityGroupIds.join(',')},SubnetIds=${r.SubnetIds.join(',')} \\`]
+			? [`--vpc-config SecurityGroupIds=${r.SecurityGroupIds.join(',')},SubnetIds=${r.SubnetIds.join(',')}`]
 			: [],
 	})
 	.flatMap(([prop, transform]) => {
@@ -68,7 +68,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		if (same) {
 			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
-		return !same ? transform(target) : [];
+		return !same ? transform(target).map(s => `  ${s} \\`) : [];
 	});
 
 	if (updates.length > 0) {
