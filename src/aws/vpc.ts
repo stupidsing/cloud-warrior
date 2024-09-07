@@ -1,5 +1,5 @@
-import { prefix, statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
+import { prefix, statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
 
 let class_ = 'vpc';
 
@@ -116,7 +116,7 @@ export let vpcClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
+import { create } from "../warrior";
 
 export let createVpc = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

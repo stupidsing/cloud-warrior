@@ -1,6 +1,6 @@
-import { prefix, statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
-import { replace } from "./utils";
+import { prefix, statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
+import { replace } from "../utils";
 
 let class_ = 'listener';
 

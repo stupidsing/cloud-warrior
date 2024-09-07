@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
+import { prefix, statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
 import { PolicyDocument } from "./aws";
-import { prefix, statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
 
 let class_ = 'role';
 

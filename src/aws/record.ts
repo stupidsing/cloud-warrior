@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
-import { AttributesInput, Class, Resource_ } from "./types";
-import { replace } from "./utils";
+import { AttributesInput, Class, Resource_ } from "../types";
+import { replace } from "../utils";
 
 let class_ = 'record';
 
@@ -92,8 +92,8 @@ export let recordClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
 import { statesDirectory } from "./constants";
+import { create } from "./warrior";
 
 export let createRecord = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

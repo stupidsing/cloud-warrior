@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { AttributesInput, Class, Resource_ } from "./types";
+import { AttributesInput, Class, Resource_ } from "../types";
 
 let class_ = 'bucket';
 
@@ -56,8 +56,8 @@ export let bucketClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
-import { statesDirectory } from "./constants";
+import { statesDirectory } from "../constants";
+import { create } from "../warrior";
 
 export let createBucket = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

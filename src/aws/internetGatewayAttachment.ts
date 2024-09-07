@@ -1,6 +1,6 @@
-import { statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
-import { difference, replace } from "./utils";
+import { statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
+import { difference, replace } from "../utils";
 
 let class_ = 'internet-gateway-attachment';
 

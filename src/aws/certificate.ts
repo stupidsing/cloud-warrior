@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
-import { prefix, statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
+import { prefix, statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
 
 let class_ = 'certificate';
 
@@ -60,7 +60,7 @@ export let certificateClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
+import { create } from "../warrior";
 
 export let createCertificate = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;

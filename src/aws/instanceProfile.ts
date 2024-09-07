@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
-import { prefix, statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
-import { difference } from "./utils";
+import { prefix, statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
+import { difference } from "../utils";
 
 let class_ = 'instance-profile';
 

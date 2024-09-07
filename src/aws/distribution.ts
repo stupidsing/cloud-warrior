@@ -1,5 +1,5 @@
-import { statesDirectory } from "./constants";
-import { AttributesInput, Class, Resource_ } from "./types";
+import { statesDirectory } from "../constants";
+import { AttributesInput, Class, Resource_ } from "../types";
 
 let class_ = 'distribution';
 
@@ -202,7 +202,7 @@ export let distributionClass: Class = {
 	upsert,
 };
 
-import { create } from "./warrior";
+import { create } from "../warrior";
 
 export let createDistribution = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
