@@ -1,5 +1,5 @@
 {
-  "name": "aws_warrior",
+  "name": "cloud-warrior",
   "devDependencies": {
     "@types/node": "^22.5.1",
     "typescript": "^5.5.4"
