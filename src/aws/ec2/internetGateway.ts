@@ -24,7 +24,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'internet-gateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
-			`  | jq .InternetGateways[0] | tee ${statesDirectory}/\${KEY}`,
+			`  | jq .InternetGateway | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait internet-gateway-exists \\`,
 			`  --internet-gateway-ids ${InternetGatewayId}`,
 		);
