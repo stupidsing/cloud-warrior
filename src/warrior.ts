@@ -17,6 +17,7 @@ import { targetGroupClass } from './aws/elbv2/targetGroup';
 import { instanceProfileClass } from './aws/iam/instanceProfile';
 import { policyClass } from './aws/iam/policy';
 import { roleClass } from './aws/iam/role';
+import { eventSourceMappingClass } from './aws/lambda/eventSourceMapping';
 import { functionClass } from './aws/lambda/function';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
@@ -47,6 +48,7 @@ let readTextIfExists = name => {
 let classes = Object.fromEntries([
 	bucketClass,
 	certificateClass,
+	eventSourceMappingClass,
 	distributionClass,
 	functionClass,
 	instanceClass,
