@@ -107,7 +107,7 @@ export let functionClass: Class = {
 	].join('_'),
 	refresh: ({ FunctionName }) => [
 		`NAME=${FunctionName}`,
-		`aws lambda get-functions \\`,
+		`aws lambda get-function \\`,
 		`  --function-name \${NAME} \\`,
 		`  | jq .Configuration | tee ${statesDirectory}/\${KEY}`,
 	],

@@ -68,7 +68,7 @@ export let eventSourceMappingClass: Class = {
 	].join('_'),
 	refresh: ({ UUID }) => [
 		`UUID=${UUID}`,
-		`aws lambda get-event-source-mappings \\`,
+		`aws lambda get-event-source-mapping \\`,
 		`  --uuid \${UUID} \\`,
 		`  | tee ${statesDirectory}/\${KEY}`,
 	],

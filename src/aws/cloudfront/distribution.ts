@@ -141,15 +141,25 @@ type Attributes = {
 };
 
 let delete_ = ({ Id }) => [
+	`CONFIG=$(mktemp)`,
+	`aws cloudfront get-distribution-config \\`,
+	`  --id ${Id} \\`,
+	`  | jq .DistributionConfig | jq .Enabled=false > \${CONFIG}`,
+	`aws cloudfront update-distribution \\`,
+	`  --distribution-config file://\${CONFIG} \\`,
+	`  --id ${Id} \\`,
+	`  --if-match $(aws cloudfront get-distribution-config --id ${Id} | jq -r .ETag)`,
+	// TODO wait until distribution is disabled
 	`aws cloudfront delete-distribution \\`,
-	`  --id ${Id} &&`,
+	`  --id ${Id} \\`,
+	`  --if-match $(aws cloudfront get-distribution-config --id ${Id} | jq -r .ETag) &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let refreshById = id => [
 	`ID=${id}`,
 	`aws cloudfront get-distribution \\`,
-	`  --ids \${ID} \\`,
+	`  --id \${ID} \\`,
 	`  | jq .Distribution | tee ${statesDirectory}/\${KEY}`,
 ];
 

@@ -234,7 +234,7 @@ export let run = (action: string, f: () => void) => {
 							`KEY_${hash}=\${KEY}`,
 							`STATE_${hash}=${statesDirectory}/\${KEY}`,
 							...delete_(state),
-							`rm -f \${KEY}`,
+							`rm -f ${dependenciesDirectory}/\${KEY}`,
 						);
 					}
 
