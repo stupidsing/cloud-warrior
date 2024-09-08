@@ -120,6 +120,6 @@ export let createFunction = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		getArn: get => get(resource, 'FunctionArn'),
-		getName: get => get(resource, 'FunctionName'),
+		getFunctionName: get => get(resource, 'FunctionName'),
 	};
 };

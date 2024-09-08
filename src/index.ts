@@ -14,6 +14,7 @@ import { createTargetGroup } from './aws/elbv2/targetGroup';
 import { createInstanceProfile } from './aws/iam/instanceProfile';
 import { createPolicy } from './aws/iam/policy';
 import { createRole } from './aws/iam/role';
+import { createEventSourceMapping } from './aws/lambda/eventSourceMapping';
 import { createFunction } from './aws/lambda/function';
 import { createHostedZone } from './aws/route53/hostedZone';
 import { createRecord } from './aws/route53/record';
@@ -129,6 +130,10 @@ run(process.env.ACTION ?? 'up', () => {
 		Code: { ImageUri: 'https://image.com' },
 		FunctionName: 'function',
 		Role: role.getRoleName(get),
+	}));
+
+	let eventSourceMapping = createEventSourceMapping('event-source-mapping', get => ({
+		FunctionName: function_.getFunctionName(get),
 	}));
 
 	let loadBalancer = createLoadBalancer('alb', get => ({
