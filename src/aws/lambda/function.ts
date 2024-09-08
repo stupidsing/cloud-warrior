@@ -5,6 +5,12 @@ import { AttributesInput, Class, Resource_ } from "../../types";
 let class_ = 'function';
 
 type Attributes = {
+	Code: {
+		ImageUri?: string,
+		S3Bucket?: string,
+		S3Key?: string,
+		S3ObjectVersion?: string,
+	},
 	Description?: string,
 	Environment?: { Variables: Record<string, string> },
 	FileSystemConfigs?: { Arn: string, LocalMountPath: string }[],
@@ -23,29 +29,28 @@ type Attributes = {
 };
 
 let delete_ = ({ FunctionName }) => [
-	`aws function delete-function \\`,
+	`aws lambda delete-function \\`,
 	`  --name ${FunctionName} &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { FunctionName, Role } = attributes;
+	let { Code, FunctionName, Role } = attributes;
 	let commands = [];
 
 	if (state == null) {
 		commands.push(
-			`aws function create-function \\`,
+			`aws lambda create-function \\`,
+			`  --code ${Object.entries(Code).map(([key, value]) => `${key}=${value}`).join(',')} \\`,
 			`  --function-name ${FunctionName} \\`,
 			`  --role ${Role} \\`,
-			`  --tags '${JSON.stringify([
-				{ Key: 'Name', Value: `${prefix}-${name}` },
-			])}' \\`,
+			`  --tags Name=${prefix}-${name} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
-			`aws function wait function-exists \\`,
+			`aws lambda wait function-exists \\`,
 			`  --function-name ${FunctionName}`,
 		);
-		state = { FunctionName, Role };
+		state = { Code, FunctionName, Role };
 	}
 
 	let updates = Object
@@ -80,7 +85,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (updates.length > 0) {
 		updates.push(`  --function-name ${FunctionName} \\`);
 		commands.push(
-			`aws function update-function-configuration \\`,
+			`aws lambda update-function-configuration \\`,
 			...updates.sort((a, b) => a.localeCompare(b)),
 			`  | tee ${statesDirectory}/\${KEY}`,
 		);
@@ -92,16 +97,17 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let functionClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { FunctionName } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Code, FunctionName } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
+			JSON.stringify(Code),
 			FunctionName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ FunctionName }) => [
 		`NAME=${FunctionName}`,
-		`aws function get-functions \\`,
+		`aws lambda get-functions \\`,
 		`  --function-name \${NAME} \\`,
 		`  | jq .Configuration | tee ${statesDirectory}/\${KEY}`,
 	],

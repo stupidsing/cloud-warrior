@@ -22,6 +22,8 @@ import { prefix } from './constants';
 import { run } from './warrior';
 
 run(process.env.ACTION ?? 'up', () => {
+	let allocationIds = ['eipalloc-090b790ec9c32c45f', 'eipalloc-0fb97b6a07242da71'];
+
 	let policy = createPolicy('policy-app', get => ({
 		PolicyDocument: {
 			Version: '2012-10-17',
@@ -96,6 +98,7 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let natGateways = privateSubnets.map((subnet, i) => createNatGateway(`ngw-${i}`, get => ({
+		NatGatewayAddresses: [{ AllocationId: allocationIds[i] }],
 		SubnetId: subnet.getSubnetId(get),
 	})));
 
@@ -123,6 +126,7 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let function_ = createFunction('function', get => ({
+		Code: { ImageUri: 'https://image.com' },
 		FunctionName: 'function',
 		Role: role.getRoleName(get),
 	}));

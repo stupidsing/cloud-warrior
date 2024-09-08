@@ -4,6 +4,7 @@ import { AttributesInput, Class, Resource_ } from "../../types";
 let class_ = 'nat-gateway';
 
 type Attributes = {
+	NatGatewayAddresses?: { AllocationId: string }[];
 	SubnetId: string,
 };
 
@@ -15,7 +16,7 @@ let delete_ = ({ NatGatewayId }) => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { SubnetId } = attributes;
+	let { NatGatewayAddresses: [natGatewayAddress], SubnetId } = attributes;
 	let commands = [];
 
 	let NatGatewayId = `$(cat ${statesDirectory}/\${KEY} | jq -r .NatGatewayId)`;
@@ -23,9 +24,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-nat-gateway \\`,
+			...natGatewayAddress?.AllocationId ? [`  --allocation-id ${natGatewayAddress.AllocationId} \\`] : [],
 			`  --subnet-id ${SubnetId} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'nat-gateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: 'natgateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .NatGateway | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait nat-gateway-available \\`,
@@ -40,9 +42,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let natGatewayClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { SubnetId } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { NatGatewayAddresses, SubnetId } }: Resource_<Attributes>) => [
 		class_,
 		name,
+		NatGatewayAddresses.map(r => r.AllocationId).join(':'),
 		SubnetId,
 	].join('_'),
 	refresh: ({ NatGatewayId }) => [

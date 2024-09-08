@@ -1,4 +1,4 @@
-import { prefix, statesDirectory } from "../../constants";
+import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
 
 let class_ = 'eventSourceMapping';
@@ -26,9 +26,6 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws lambda create-event-source-mapping \\`,
 			`  --function-name ${FunctionName} \\`,
-			`  --tags '${JSON.stringify([
-				{ Key: 'Name', Value: `${prefix}-${name}` },
-			])}' \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 		);
 		state = { FunctionName };
