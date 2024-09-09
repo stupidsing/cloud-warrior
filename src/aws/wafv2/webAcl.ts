@@ -85,7 +85,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let updates = Object
 	.entries({
 		DefaultAction: r => [`--default-action ${JSON.stringify(r)}`],
-		Rules: r => [`--rules ${JSON.stringify(r)}`];
+		Rules: r => [`--rules ${JSON.stringify(r)}`],
 	})
 	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
