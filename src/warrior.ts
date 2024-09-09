@@ -22,6 +22,7 @@ import { functionClass } from './aws/lambda/function';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
 import { bucketClass } from './aws/s3/bucket';
+import { webAclClass } from './aws/wafv2/webAcl';
 import { dependenciesDirectory, statesDirectory } from './constants';
 import { AttributesInput, Resource } from './types';
 
@@ -68,6 +69,7 @@ let classes = Object.fromEntries([
 	targetClass,
 	targetGroupClass,
 	vpcClass,
+	webAclClass,
 ].map(c => [c.class_, c]));
 
 let resourceByKey: { [key: string]: Resource };

@@ -19,6 +19,7 @@ import { createFunction } from './aws/lambda/function';
 import { createHostedZone } from './aws/route53/hostedZone';
 import { createRecord } from './aws/route53/record';
 import { createBucket } from './aws/s3/bucket';
+import { createWebAcl } from './aws/wafv2/webAcl';
 import { prefix } from './constants';
 import { run } from './warrior';
 
@@ -161,6 +162,22 @@ run(process.env.ACTION ?? 'up', () => {
 	let target = createTarget('target', get => ({
 		Target: { Id: instance.getInstanceId(get) },
 		TargetGroupArn: targetGroup.getArn(get),
+	}));
+
+	let webAcl = createWebAcl('webacl', get => ({
+		DefaultAction: {
+			Allow: { CustomRequestHandling: { InsertHeaders: [] } },
+			Block: {
+				CustomResponse: {
+					CustomResponseBodyKey:  '',
+					ResponseCode: 403,
+					ResponseHeaders: [],
+				},
+			},
+		},
+		Name: 'webacl',
+		Scope: 'CLOUDFRONT',
+		Region: 'ap-southeast-1',
 	}));
 
 	let distribution = createDistribution('dist', get => ({
