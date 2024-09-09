@@ -20,6 +20,27 @@ type Attributes = {
 		},
 	},
 	Name: string,
+	Rules?: {
+		Name: string,
+		Priority: number,
+		Statement: {
+			AndStatement?: any,
+			ByteMatchStatement?: any,
+			GeoMatchStatement?: any,
+			IPSetReferenceStatement?: any,
+			LabelMatchStatement?: any,
+			ManagedRuleGroupStatement?: any,
+			NotStatement?: any,
+			OrStatement?: any,
+			RateBasedStatement?: any,
+			RegexMatchStatement?: any,
+			RegexPatternSetReferenceStatement?: any,
+			RuleGroupReferenceStatement?: any,
+			SizeConstraintStatement?: any,
+			SqliMatchStatement?: any,
+			XssMatchStatement?: any,
+		},
+	}[],
 	Scope: string,
 };
 
@@ -61,20 +82,30 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		state = { DefaultAction, Name, Scope };
 	}
 
-	{
-		let prop = 'DefaultAction';
-		let source = JSON.stringify(state[prop]);
-		let target = JSON.stringify(attributes[prop]);
-		if (source !== target) {
-			commands.push(
-				`aws wafv2 update-web-acl \\`,
-				`  --default-action '${target}' \\`,
-				`  --id \${ID} \\`,
-				`  --name ${Name} \\`,
-				`  --scope ${Scope}`,
-				...refreshById(Id, Name, Scope),
-		);
+	let updates = Object
+	.entries({
+		DefaultAction: r => [`--default-action ${JSON.stringify(r)}`],
+		Rules: r => [`--rules ${JSON.stringify(r)}`];
+	})
+	.flatMap(([prop, transform]) => {
+		let source = transform(state[prop]);
+		let target = transform(attributes[prop]);
+		let same = source.length === target.length;
+		if (same) {
+			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
+		return !same ? transform(target).map(s => `  ${s} \\`) : [];
+	});
+
+	if (updates.length > 0) {
+		updates.push(`  --id ${Id} \\`);
+		updates.push(`  --name ${Name} \\`);
+		updates.push(`  --scope ${Scope} \\`);
+		commands.push(
+			`aws wafv2 update-web-acl \\`,
+			...updates.sort((a, b) => a.localeCompare(b)),
+			`  | tee ${statesDirectory}/\${KEY}`,
+		);
 	}
 
 	return commands;
