@@ -51,7 +51,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws wafv2 create-web-acl \\`,
-			`  --default-action ${DefaultAction} \\`,
+			`  --default-action '${JSON.stringify(DefaultAction)}' \\`,
 			`  --name ${Name} \\`,
 			`  --scope ${Scope} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
@@ -63,10 +63,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	{
 		let prop = 'DefaultAction';
-		if (state[prop] !== attributes[prop]) {
+		let source = JSON.stringify(state[prop]);
+		let target = JSON.stringify(attributes[prop]);
+		if (source !== target) {
 			commands.push(
 				`aws wafv2 update-web-acl \\`,
-				`  --default-action ${DefaultAction} \\`,
+				`  --default-action '${target}' \\`,
 				`  --id \${ID} \\`,
 				`  --name ${Name} \\`,
 				`  --scope ${Scope}`,
