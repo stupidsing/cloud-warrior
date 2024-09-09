@@ -3,12 +3,12 @@ import { createInstance } from './aws/ec2/instance';
 import { createInternetGateway } from './aws/ec2/internetGateway';
 import { createInternetGatewayAttachment } from './aws/ec2/internetGatewayAttachment';
 import { createListener } from './aws/ec2/listener';
-import { createLoadBalancer } from './aws/ec2/loadBalancer';
 import { createNatGateway } from './aws/ec2/natGateway';
 import { createSecurityGroup } from './aws/ec2/securityGroup';
 import { createSecurityGroupRuleIngress } from './aws/ec2/securityGroupRule';
 import { createSubnet } from './aws/ec2/subnet';
 import { createVpc } from './aws/ec2/vpc';
+import { createLoadBalancer } from './aws/elbv2/loadBalancer';
 import { createTarget } from './aws/elbv2/target';
 import { createTargetGroup } from './aws/elbv2/targetGroup';
 import { createInstanceProfile } from './aws/iam/instanceProfile';
@@ -184,7 +184,6 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	// ACM certificate validation
-	// cloudfront
 	// RDS
 	// WAFv2
 	// ...
