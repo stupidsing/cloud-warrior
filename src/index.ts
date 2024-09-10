@@ -19,6 +19,7 @@ import { createFunction } from './aws/lambda/function';
 import { createHostedZone } from './aws/route53/hostedZone';
 import { createRecord } from './aws/route53/record';
 import { createBucket } from './aws/s3/bucket';
+import { createIpSet } from './aws/wafv2/ipSet';
 import { createWebAcl } from './aws/wafv2/webAcl';
 import { prefix } from './constants';
 import { run } from './warrior';
@@ -162,6 +163,13 @@ run(process.env.ACTION ?? 'up', () => {
 	let target = createTarget('target', get => ({
 		Target: { Id: instance.getInstanceId(get) },
 		TargetGroupArn: targetGroup.getArn(get),
+	}));
+
+	let ipSet = createIpSet('ipset', get => ({
+		Addresses: ['192.168.101.202'],
+		IPAddressVersion: 'IPV4',
+		Name: 'ipset',
+		Scope: 'CLOUDFRONT',
 	}));
 
 	let webAcl = createWebAcl('webacl', get => ({

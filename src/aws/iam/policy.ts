@@ -38,7 +38,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws iam create-policy \\`,
-			...Description != null ? [`  --description ${Description} \\`] : [],
+			...Description != null ? [`  --description '${Description}' \\`] : [],
 			`  --policy-document '${JSON.stringify(PolicyDocument)}' \\`,
 			`  --policy-name ${PolicyName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,

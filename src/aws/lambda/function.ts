@@ -55,7 +55,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	let updates = Object
 	.entries({
-		Description: r => [`--description ${r}`],
+		Description: r => [`--description '${r}'`],
 		Environment: r => [`--environment ${JSON.stringify(r ?? {})}`],
 		FileSystemConfigs: r => r != null
 			? [`--file-system-configs ${r.map(({ Arn, LocalMountPath }) => `Arn=${Arn},LocalMountPath=${LocalMountPath}`).join(',')}`]

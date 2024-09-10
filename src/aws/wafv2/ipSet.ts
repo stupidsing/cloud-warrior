@@ -2,51 +2,20 @@ import { createHash } from "crypto";
 import { prefix, statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
 
-let class_ = 'web-acl';
+let class_ = 'ip-set';
 
 type Attributes = {
-	DefaultAction: {
-		Allow: {
-			CustomRequestHandling: {
-				InsertHeaders: { Name: string, Value: string }[],
-			},
-		},
-		Block: {
-			CustomResponse: {
-				CustomResponseBodyKey: string,
-				ResponseCode: number,
-				ResponseHeaders: { Name: string, Value: string }[],
-			},
-		},
-	},
+	Addresses: string[],
+	Description?: string,
+	IPAddressVersion: 'IPV4' | 'IPV6',
 	Name: string,
-	Rules?: {
-		Name: string,
-		Priority: number,
-		Statement: {
-			AndStatement?: any,
-			ByteMatchStatement?: any,
-			GeoMatchStatement?: any,
-			IPSetReferenceStatement?: any,
-			LabelMatchStatement?: any,
-			ManagedRuleGroupStatement?: any,
-			NotStatement?: any,
-			OrStatement?: any,
-			RateBasedStatement?: any,
-			RegexMatchStatement?: any,
-			RegexPatternSetReferenceStatement?: any,
-			RuleGroupReferenceStatement?: any,
-			SizeConstraintStatement?: any,
-			SqliMatchStatement?: any,
-			XssMatchStatement?: any,
-		},
-	}[],
 	Scope: 'CLOUDFRONT' | 'REGIONAL',
 };
 
 let delete_ = ({ Id, Name, Scope }) => [
-	`aws wafv2 delete-web-acl \\`,
+	`aws wafv2 delete-ip-set \\`,
 	`  --id ${Id} \\`,
+	`--lock-token \$(aws wafv2 get-ip-set --id ${Id} --name ${Name} --scope ${Scope} | jq -r .LockToken)`,
 	`  --name ${Name} \\`,
 	`  --scope ${Scope} &&`,
 	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Scope`,
@@ -54,38 +23,38 @@ let delete_ = ({ Id, Name, Scope }) => [
 
 let refreshById = (id, name, scope) => [
 	`ID=${id} NAME=${name} SCOPE=${scope}`,
-	`aws wafv2 get-web-acl \\`,
+	`aws wafv2 get-ip-set \\`,
 	`  --id \${ID} \\`,
 	`  --name \${NAME} \\`,
 	`  --scope \${SCOPE} \\`,
-	`  | jq .WebACL | tee ${statesDirectory}/\${KEY}`,
+	`  | jq .IPSet | tee ${statesDirectory}/\${KEY}`,
 	`echo ${scope} > ${statesDirectory}/\${KEY}#Scope`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { DefaultAction, Name, Scope } = attributes;
+	let { Addresses, IPAddressVersion, Name, Scope } = attributes;
 	let commands = [];
 
 	let Id = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
 
 	if (state == null) {
 		commands.push(
-			`aws wafv2 create-web-acl \\`,
-			`  --default-action '${JSON.stringify(DefaultAction)}' \\`,
+			`aws wafv2 create-ip-set \\`,
+			`  --addresses ${Addresses} \\`,
+			`  --ip-address-version ${IPAddressVersion} \\`,
 			`  --name ${Name} \\`,
 			`  --scope ${Scope} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | jq .Summary | tee ${statesDirectory}/\${KEY}`,
 			...refreshById(Id, Name, Scope),
 		);
-		state = { DefaultAction, Name, Scope };
+		state = { Addresses, IPAddressVersion, Name, Scope };
 	}
 
 	let updates = Object
 	.entries({
-		DefaultAction: r => [`--default-action ${JSON.stringify(r)}`],
-		Rules: r => [`--rules ${JSON.stringify(r)}`],
+		Description: r => [`--description '${r}'`],
 	})
 	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
@@ -98,12 +67,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	});
 
 	if (updates.length > 0) {
+		updates.push(`--addresses ${Addresses}`);
 		updates.push(`--id ${Id}`);
+		updates.push(`--lock-token \$(aws wafv2 get-ip-set --id ${Id} --name ${Name} --scope ${Scope} | jq -r .LockToken)`);
 		updates.push(`--name ${Name}`);
 		updates.push(`--scope ${Scope}`);
 		commands.push(
-			`aws wafv2 update-web-acl \\`,
-			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
+			`aws wafv2 update-ip-set \\`,
+			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`).map(s => `  ${s} \\`),
 			`  | tee ${statesDirectory}/\${KEY}`,
 		);
 	}
@@ -111,13 +82,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	return commands;
 };
 
-export let webAclClass: Class = {
+export let ipSetClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { DefaultAction, Name, Scope } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { IPAddressVersion, Name, Scope } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
+			IPAddressVersion,
 			Name,
 			Scope,
 		].join('_')).digest('hex').slice(0, 4),
@@ -128,7 +100,7 @@ export let webAclClass: Class = {
 
 import { create } from "../../warrior";
 
-export let createWebAcl = (name: string, f: AttributesInput<Attributes>) => {
+export let createIpSet = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		getId: get => get(resource, 'Id'),

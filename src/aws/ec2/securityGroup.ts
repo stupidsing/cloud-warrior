@@ -33,7 +33,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-security-group \\`,
-			`  --description ${Description} \\`,
+			`  --description '${Description}' \\`,
 			`  --group-name ${GroupName} \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  --tag-specifications '${JSON.stringify([

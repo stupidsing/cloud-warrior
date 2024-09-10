@@ -22,6 +22,7 @@ import { functionClass } from './aws/lambda/function';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
 import { bucketClass } from './aws/s3/bucket';
+import { ipSetClass } from './aws/wafv2/ipSet';
 import { webAclClass } from './aws/wafv2/webAcl';
 import { dependenciesDirectory, statesDirectory } from './constants';
 import { AttributesInput, Resource } from './types';
@@ -56,6 +57,7 @@ let classes = Object.fromEntries([
 	instanceProfileClass,
 	internetGatewayClass,
 	internetGatewayAttachmentClass,
+	ipSetClass,
 	hostedZoneClass,
 	listenerClass,
 	loadBalancerClass,
