@@ -175,14 +175,7 @@ run(process.env.ACTION ?? 'up', () => {
 
 	let webAcl = createWebAcl('webacl', get => ({
 		DefaultAction: {
-			Allow: { CustomRequestHandling: { InsertHeaders: [] } },
-			Block: {
-				CustomResponse: {
-					CustomResponseBodyKey:  '',
-					ResponseCode: 403,
-					ResponseHeaders: [],
-				},
-			},
+			Allow: { CustomRequestHandling: { InsertHeaders: [{ Name: 'x-header', Value: 'npt' }] } },
 		},
 		Name: 'webacl',
 		Region: 'us-east-1',
@@ -190,7 +183,7 @@ run(process.env.ACTION ?? 'up', () => {
 		VisibilityConfig: {
 			CloudWatchMetricsEnabled: false,
 			MetricName: 'metric',
-			SampleRequestsEnabled: false,
+			SampledRequestsEnabled: false,
 		},
 	}));
 

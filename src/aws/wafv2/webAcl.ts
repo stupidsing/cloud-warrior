@@ -6,13 +6,13 @@ let class_ = 'web-acl';
 
 type Attributes = {
 	DefaultAction: {
-		Allow: {
-			CustomRequestHandling: {
+		Allow?: {
+			CustomRequestHandling?: {
 				InsertHeaders: { Name: string, Value: string }[],
 			},
 		},
-		Block: {
-			CustomResponse: {
+		Block?: {
+			CustomResponse?: {
 				CustomResponseBodyKey: string,
 				ResponseCode: number,
 				ResponseHeaders: { Name: string, Value: string }[],
@@ -46,14 +46,14 @@ type Attributes = {
 	VisibilityConfig: {
 		CloudWatchMetricsEnabled: boolean,
 		MetricName: string,
-		SampleRequestsEnabled: boolean,
+		SampledRequestsEnabled: boolean,
 	},
 };
 
 let delete_ = ({ Id, Name, Region, Scope }) => [
 	`aws wafv2 delete-web-acl \\`,
 	`  --id ${Id} \\`,
-	`  --lock-token \$(aws wafv2 get-ip-set --id ${Id} --name ${Name}${Region != null ? ` --region=${Region}` : ``} --scope ${Scope} | jq -r .LockToken) \\`,
+	`  --lock-token \$(aws wafv2 get-web-acl --id ${Id} --name ${Name}${Region != null ? ` --region=${Region}` : ``} --scope ${Scope} | jq -r .LockToken) \\`,
 	`  --name ${Name} \\`,
 	...Region != null ? [`  --region ${Region} \\`] : [],
 	`  --scope ${Scope} &&`,
@@ -117,7 +117,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (updates.length > 0) {
 		updates.push(`--id ${Id}`);
-		updates.push(`--lock-token \$(aws wafv2 get-ip-set --id ${Id} --name ${Name}${Region != null ? ` --region=${Region}` : ``} --scope ${Scope} | jq -r .LockToken)`);
+		updates.push(`--lock-token \$(aws wafv2 get-web-acl --id ${Id} --name ${Name}${Region != null ? ` --region=${Region}` : ``} --scope ${Scope} | jq -r .LockToken)`);
 		updates.push(`--name ${Name}`);
 		updates.push(...Region != null ? [`--region ${Region}`] : []);
 		updates.push(`--scope ${Scope}`);
