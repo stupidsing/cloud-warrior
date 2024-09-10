@@ -43,7 +43,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		if (source !== target) {
 			commands.push(
 				`aws iam update-assume-role-policy \\`,
-				`  --policy-document '${JSON.stringify(AssumeRolePolicyDocument)}'`,
+				`  --policy-document '${JSON.stringify(AssumeRolePolicyDocument)}' \\`,
 				`  --role-name ${RoleName}`,
 				`echo '${target}' > ${statesDirectory}/\${KEY}#${prop}`,
 			);
@@ -78,6 +78,7 @@ import { create } from "../../warrior";
 export let createRole = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
+		getArn: get => get(resource, 'Arn'),
 		getRoleId: get => get(resource, 'RoleId'),
 		getRoleName: get => get(resource, 'RoleName'),
 	};

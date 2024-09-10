@@ -22,6 +22,7 @@ type Attributes = {
 		WorkingDirectory: string,
 	} },
 	MemorySize?: number,
+	PackageType: 'Image' | 'Zip',
 	Role: string,
 	Runtime?: string,
 	Timeout?: number,
@@ -36,7 +37,7 @@ let delete_ = ({ FunctionName }) => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { Code, FunctionName, Role } = attributes;
+	let { Code, FunctionName, PackageType, Role, Runtime } = attributes;
 	let commands = [];
 
 	if (state == null) {
@@ -44,13 +45,15 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws lambda create-function \\`,
 			`  --code ${Object.entries(Code).map(([key, value]) => `${key}=${value}`).join(',')} \\`,
 			`  --function-name ${FunctionName} \\`,
+			`  --package-type ${PackageType} \\`,
 			`  --role ${Role} \\`,
+			...Runtime != null ? [`  --runtime ${Runtime} \\`] : [],
 			`  --tags Name=${prefix}-${name} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 			`aws lambda wait function-exists \\`,
 			`  --function-name ${FunctionName}`,
 		);
-		state = { Code, FunctionName, Role };
+		state = { Code, FunctionName, PackageType, Role, Runtime };
 	}
 
 	let updates = Object
@@ -97,12 +100,13 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let functionClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { Code, FunctionName } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Code, FunctionName, PackageType } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
 			JSON.stringify(Code),
 			FunctionName,
+			PackageType,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ FunctionName }) => [

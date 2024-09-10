@@ -49,6 +49,11 @@ run(process.env.ACTION ?? 'up', () => {
 					Action: ['sts:AssumeRole'],
 					Effect: 'Allow',
 					Principal: { AWS: 'arn:aws:iam::805876202485:user/ywsing' },
+				},
+				{
+					Action: ['sts:AssumeRole'],
+					Effect: 'Allow',
+					Principal: { Service: 'lambda.amazonaws.com' },
 				}
 			]
 		},
@@ -129,9 +134,10 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let function_ = createFunction('function', get => ({
-		Code: { ImageUri: 'https://image.com' },
+		Code: { ImageUri: '123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-world:latest' },
 		FunctionName: 'function',
-		Role: role.getRoleName(get),
+		PackageType: 'Image',
+		Role: role.getArn(get),
 	}));
 
 	let eventSourceMapping = createEventSourceMapping('event-source-mapping', get => ({

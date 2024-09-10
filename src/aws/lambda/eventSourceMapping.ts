@@ -1,7 +1,7 @@
 import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
 
-let class_ = 'eventSourceMapping';
+let class_ = 'event-source-mapping';
 
 type Attributes = {
 	BatchSize?: number,
