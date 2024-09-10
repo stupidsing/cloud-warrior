@@ -20,6 +20,7 @@ type Attributes = {
 		},
 	},
 	Name: string,
+	Region?: string,
 	Rules?: {
 		Name: string,
 		Priority: number,
@@ -44,27 +45,32 @@ type Attributes = {
 	Scope: 'CLOUDFRONT' | 'REGIONAL',
 };
 
-let delete_ = ({ Id, Name, Scope }) => [
+let delete_ = ({ Id, Name, Region, Scope }) => [
 	`aws wafv2 delete-web-acl \\`,
 	`  --id ${Id} \\`,
+	`  --lock-token \$(aws wafv2 get-ip-set --id ${Id} --name ${Name}${Region != null ? ` --region=${Region}` : ``} --scope ${Scope} | jq -r .LockToken) \\`,
 	`  --name ${Name} \\`,
+	...Region != null ? [`  --region ${Region} \\`] : [],
 	`  --scope ${Scope} &&`,
+	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Region`,
 	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Scope`,
 ];
 
-let refreshById = (id, name, scope) => [
-	`ID=${id} NAME=${name} SCOPE=${scope}`,
+let refreshById = (id, name, region, scope) => [
+	`ID=${id} NAME=${name} REGION=${region} SCOPE=${scope}`,
 	`aws wafv2 get-web-acl \\`,
 	`  --id \${ID} \\`,
 	`  --name \${NAME} \\`,
+	...region != null ? [`  --region \${REGION} \\`] : [],
 	`  --scope \${SCOPE} \\`,
 	`  | jq .WebACL | tee ${statesDirectory}/\${KEY}`,
-	`echo ${scope} > ${statesDirectory}/\${KEY}#Scope`,
+	`echo '${JSON.stringify(region)}' > ${statesDirectory}/\${KEY}#Region`,
+	`echo '${JSON.stringify(scope)}' > ${statesDirectory}/\${KEY}#Scope`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { DefaultAction, Name, Scope } = attributes;
+	let { DefaultAction, Name, Region, Scope } = attributes;
 	let commands = [];
 
 	let Id = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
@@ -74,10 +80,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws wafv2 create-web-acl \\`,
 			`  --default-action '${JSON.stringify(DefaultAction)}' \\`,
 			`  --name ${Name} \\`,
+			...Region != null ? [`  --region ${Region} \\`] : [],
 			`  --scope ${Scope} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | jq .Summary | tee ${statesDirectory}/\${KEY}`,
-			...refreshById(Id, Name, Scope),
+			...refreshById(Id, Name, Region, Scope),
 		);
 		state = { DefaultAction, Name, Scope };
 	}
@@ -85,6 +92,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let updates = Object
 	.entries({
 		DefaultAction: r => [`--default-action ${JSON.stringify(r)}`],
+		Region: r => [`--region ${r}`],
 		Rules: r => [`--rules ${JSON.stringify(r)}`],
 	})
 	.flatMap(([prop, transform]) => {
@@ -99,7 +107,9 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (updates.length > 0) {
 		updates.push(`--id ${Id}`);
+		updates.push(`--lock-token \$(aws wafv2 get-ip-set --id ${Id} --name ${Name}${Region != null ? ` --region=${Region}` : ``} --scope ${Scope} | jq -r .LockToken)`);
 		updates.push(`--name ${Name}`);
+		updates.push(...Region != null ? [`--region ${Region}`] : []);
 		updates.push(`--scope ${Scope}`);
 		commands.push(
 			`aws wafv2 update-web-acl \\`,
@@ -114,15 +124,16 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let webAclClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { DefaultAction, Name, Scope } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { DefaultAction, Name, Region, Scope } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
 			Name,
+			Region,
 			Scope,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ Id, Name, Scope }) => refreshById(Id, Name, Scope),
+	refresh: ({ Id, Name, Region, Scope }) => refreshById(Id, Name, Region, Scope),
 	upsert,
 };
 

@@ -72,7 +72,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-hostnames \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee ${statesDirectory}/\${KEY}#${prop}`,
+				`echo ${attributes[prop]} > ${statesDirectory}/\${KEY}#${prop}`,
 			);
 		}
 	}
@@ -84,7 +84,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws ec2 modify-vpc-attribute \\`,
 				`  --${attributes[prop] ? `` : `no-`}enable-dns-support \\`,
 				`  --vpc-id ${VpcId}`,
-				`echo ${attributes[prop]} | tee ${statesDirectory}/\${KEY}#${prop}`,
+				`echo ${attributes[prop]} > ${statesDirectory}/\${KEY}#${prop}`,
 			);
 		}
 	}
@@ -107,11 +107,11 @@ export let vpcClass: Class = {
 		`aws ec2 describe-vpc-attribute \\`,
 		`  --attribute enableDnsHostnames \\`,
 		`  --vpc-id \${ID} \\`,
-		`  | jq -r .EnableDnsHostnames.Value | tee ${statesDirectory}/\${KEY}#EnableDnsHostnames`,
+		`  | jq .EnableDnsHostnames.Value > ${statesDirectory}/\${KEY}#EnableDnsHostnames`,
 		`aws ec2 describe-vpc-attribute \\`,
 		`  --attribute enableDnsSupport \\`,
 		`  --vpc-id \${ID} \\`,
-		`  | jq -r .EnableDnsSupport.Value | tee ${statesDirectory}/\${KEY}#EnableDnsSupport`,
+		`  | jq .EnableDnsSupport.Value > ${statesDirectory}/\${KEY}#EnableDnsSupport`,
 	],
 	upsert,
 };

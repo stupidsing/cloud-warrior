@@ -45,7 +45,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws iam update-assume-role-policy \\`,
 				`  --policy-document '${JSON.stringify(AssumeRolePolicyDocument)}'`,
 				`  --role-name ${RoleName}`,
-				`echo ${attributes[prop]} | tee ${statesDirectory}/\${KEY}#${prop}`,
+				`echo '${target}' > ${statesDirectory}/\${KEY}#${prop}`,
 			);
 		}
 	}

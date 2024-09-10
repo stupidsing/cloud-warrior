@@ -166,9 +166,10 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let ipSet = createIpSet('ipset', get => ({
-		Addresses: ['192.168.101.202'],
+		Addresses: ['192.168.101.202/32'],
 		IPAddressVersion: 'IPV4',
 		Name: 'ipset',
+		Region: 'us-east-1',
 		Scope: 'CLOUDFRONT',
 	}));
 
@@ -184,8 +185,8 @@ run(process.env.ACTION ?? 'up', () => {
 			},
 		},
 		Name: 'webacl',
+		Region: 'us-east-1',
 		Scope: 'CLOUDFRONT',
-		Region: 'ap-southeast-1',
 	}));
 
 	let distribution = createDistribution('dist', get => ({

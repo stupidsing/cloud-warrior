@@ -25,7 +25,7 @@ let refreshByArn = arn => [
 	`aws iam get-policy-version \\`,
 	`  --policy-arn \${ARN} \\`,
 	`  --version-id $(aws iam list-policy-version --policy-arn \${ARN} | jq -r '.Versions | map(select(.IsDefaultVersion).VersionId)[0]') \\`,
-	`  | jq .PolicyDocument | tee ${statesDirectory}/\${KEY}#PolicyDocument`,
+	`  | jq .PolicyDocument > ${statesDirectory}/\${KEY}#PolicyDocument`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -45,7 +45,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  | jq .Policy | tee ${statesDirectory}/\${KEY}`,
 			`aws iam wait policy-exists \\`,
 			`  --policy-arn ${PolicyArn}`,
-			`echo '${JSON.stringify(PolicyDocument)}' | tee ${statesDirectory}/\${KEY}#PolicyDocument`,
+			`echo '${JSON.stringify(PolicyDocument)}' > ${statesDirectory}/\${KEY}#PolicyDocument`,
 		);
 		state = { Description, PolicyDocument, PolicyName };
 	}

@@ -39,7 +39,7 @@ let refreshByHostedZoneId = (HostedZoneId, Type, Name) => [
 	`aws route53 list-resource-record-sets \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
 	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee ${statesDirectory}/\${KEY}`,
-	`echo ${JSON.stringify(HostedZoneId)} > ${statesDirectory}/\${KEY}#HostedZoneId`,
+	`echo ${HostedZoneId} | jq -R > ${statesDirectory}/\${KEY}#HostedZoneId`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

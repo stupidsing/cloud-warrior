@@ -21,7 +21,7 @@ let refresh = ({ Target: { Id, Port }, TargetGroupArn }: Attributes) => [
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} \\`,
 	`  | jq .TargetHealthDescriptions[0] | tee ${statesDirectory}/\${KEY}`,
-	`echo ${JSON.stringify(TargetGroupArn)} | tee ${statesDirectory}/\${KEY}#TargetGroupArn`,
+	`echo ${TargetGroupArn} | jq -R > ${statesDirectory}/\${KEY}#TargetGroupArn`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
