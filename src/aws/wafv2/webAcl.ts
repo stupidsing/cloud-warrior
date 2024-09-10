@@ -43,6 +43,11 @@ type Attributes = {
 		},
 	}[],
 	Scope: 'CLOUDFRONT' | 'REGIONAL',
+	VisibilityConfig: {
+		CloudWatchMetricsEnabled: boolean,
+		MetricName: string,
+		SampleRequestsEnabled: boolean,
+	},
 };
 
 let delete_ = ({ Id, Name, Region, Scope }) => [
@@ -52,8 +57,11 @@ let delete_ = ({ Id, Name, Region, Scope }) => [
 	`  --name ${Name} \\`,
 	...Region != null ? [`  --region ${Region} \\`] : [],
 	`  --scope ${Scope} &&`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Region`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Scope`,
+	`rm -f \\`,
+	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#Name \\`,
+	`  ${statesDirectory}/\${KEY}#Region \\`,
+	`  ${statesDirectory}/\${KEY}#Scope`,
 ];
 
 let refreshById = (id, name, region, scope) => [
@@ -64,13 +72,14 @@ let refreshById = (id, name, region, scope) => [
 	...region != null ? [`  --region \${REGION} \\`] : [],
 	`  --scope \${SCOPE} \\`,
 	`  | jq .WebACL | tee ${statesDirectory}/\${KEY}`,
+	`echo '${JSON.stringify(name)}' > ${statesDirectory}/\${KEY}#Name`,
 	`echo '${JSON.stringify(region)}' > ${statesDirectory}/\${KEY}#Region`,
 	`echo '${JSON.stringify(scope)}' > ${statesDirectory}/\${KEY}#Scope`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { DefaultAction, Name, Region, Scope } = attributes;
+	let { DefaultAction, Name, Region, Scope, VisibilityConfig } = attributes;
 	let commands = [];
 
 	let Id = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
@@ -83,10 +92,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...Region != null ? [`  --region ${Region} \\`] : [],
 			`  --scope ${Scope} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
+			`  --visibility-config '${JSON.stringify(VisibilityConfig)}' \\`,
 			`  | jq .Summary | tee ${statesDirectory}/\${KEY}`,
 			...refreshById(Id, Name, Region, Scope),
 		);
-		state = { DefaultAction, Name, Scope };
+		state = { DefaultAction, Name, Region, Scope, VisibilityConfig };
 	}
 
 	let updates = Object

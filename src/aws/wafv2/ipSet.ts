@@ -20,8 +20,10 @@ let delete_ = ({ Id, Name, Region, Scope }) => [
 	`  --name ${Name} \\`,
 	...Region != null ? [`  --region ${Region} \\`] : [],
 	`  --scope ${Scope} &&`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Region`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Scope`,
+	`rm -f ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#Name \\`,
+	`  ${statesDirectory}/\${KEY}#Region \\`,
+	`  ${statesDirectory}/\${KEY}#Scope`,
 ];
 
 let refreshById = (id, name, region, scope) => [
@@ -32,6 +34,7 @@ let refreshById = (id, name, region, scope) => [
 	...region != null ? [`  --region \${REGION} \\`] : [],
 	`  --scope \${SCOPE} \\`,
 	`  | jq .IPSet | tee ${statesDirectory}/\${KEY}`,
+	`echo '${JSON.stringify(name)}' > ${statesDirectory}/\${KEY}#Name`,
 	`echo '${JSON.stringify(region)}' > ${statesDirectory}/\${KEY}#Region`,
 	`echo '${JSON.stringify(scope)}' > ${statesDirectory}/\${KEY}#Scope`,
 ];
@@ -55,7 +58,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  | jq .Summary | tee ${statesDirectory}/\${KEY}`,
 			...refreshById(Id, Name, Region, Scope),
 		);
-		state = { Addresses, IPAddressVersion, Name, Scope };
+		state = { Addresses, IPAddressVersion, Name, Region, Scope };
 	}
 
 	let updates = Object
@@ -82,7 +85,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		updates.push(`--scope ${Scope}`);
 		commands.push(
 			`aws wafv2 update-ip-set \\`,
-			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`).map(s => `  ${s} \\`),
+			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
 			`  | tee ${statesDirectory}/\${KEY}`,
 		);
 	}

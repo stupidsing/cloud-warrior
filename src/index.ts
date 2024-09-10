@@ -187,6 +187,11 @@ run(process.env.ACTION ?? 'up', () => {
 		Name: 'webacl',
 		Region: 'us-east-1',
 		Scope: 'CLOUDFRONT',
+		VisibilityConfig: {
+			CloudWatchMetricsEnabled: false,
+			MetricName: 'metric',
+			SampleRequestsEnabled: false,
+		},
 	}));
 
 	let distribution = createDistribution('dist', get => ({
