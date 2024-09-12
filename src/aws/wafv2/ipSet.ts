@@ -20,10 +20,9 @@ let delete_ = ({ Id, Name, Region, Scope }) => [
 	`  --name ${Name} \\`,
 	...Region != null ? [`  --region ${Region} \\`] : [],
 	`  --scope ${Scope} &&`,
-	`rm -f ${statesDirectory}/\${KEY} \\`,
-	`  ${statesDirectory}/\${KEY}#Name \\`,
-	`  ${statesDirectory}/\${KEY}#Region \\`,
-	`  ${statesDirectory}/\${KEY}#Scope`,
+	`rm -f \\`,
+	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#{Name,Region,Scope}`,
 ];
 
 let refreshById = (id, name, region, scope) => [

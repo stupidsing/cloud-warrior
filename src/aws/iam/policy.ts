@@ -14,7 +14,9 @@ type Attributes = {
 let delete_ = ({ Arn }) => [
 	`aws iam delete-policy \\`,
 	`  --policy-arn ${Arn} &&`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#PolicyDocument`,
+	`rm -f \\`,
+	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#PolicyDocument`,
 ];
 
 let refreshByArn = arn => [

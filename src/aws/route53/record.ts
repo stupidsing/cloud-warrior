@@ -32,7 +32,9 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`  | jq -r .ChangeInfo.Id) &&`,
 	`aws route53 wait resource-record-sets-changed \\`,
 			`  --id \${CHANGE_ID}`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#HostedZoneId`,
+	`rm -f \\`,
+	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#HostedZoneId`,
 ];
 
 let refreshByHostedZoneId = (HostedZoneId, Type, Name) => [

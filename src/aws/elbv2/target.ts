@@ -13,7 +13,9 @@ let delete_ = ({ Target: { Id, Port }, TargetGroupArn }) => [
 	`aws elbv2 deregister-targets \\`,
 	`  --target-group-arn ${TargetGroupArn} \\`,
 	`  --targets Id=${Id}${Port != null ? `,Port=${Port}` : ``} &&`,
-	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#TargetGroupArn`,
+	`rm -f \\`,
+	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#TargetGroupArn`,
 ];
 
 let refresh = ({ Target: { Id, Port }, TargetGroupArn }: Attributes) => [
