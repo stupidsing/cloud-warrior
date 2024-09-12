@@ -44,7 +44,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-db-cluster \\`,
-			`  --availability-zones ${AvailabilityZones.join(' ')} \\`,
+			...AvailabilityZones != null ? [`  --availability-zones ${AvailabilityZones.join(' ')} \\`] : [],
 			...DatabaseName != null ? [`  --database-name ${DatabaseName} \\`] : [],
 			`  --db-cluster-identifier ${DBClusterIdentifier} \\`,
 			...DBSubnetGroup != null ? [`  --db-subnet-group-name ${DBSubnetGroup} \\`] : [],
