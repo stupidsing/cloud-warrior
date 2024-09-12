@@ -80,7 +80,7 @@ run(process.env.ACTION ?? 'up', () => {
 	let publicSubnets = [
 		{ AvailabilityZone: 'ap-southeast-1a', CidrBlock: '10.88.11.0/24' },
 		{ AvailabilityZone: 'ap-southeast-1b', CidrBlock: '10.88.12.0/24' },
-	].map(({ AvailabilityZone, CidrBlock }, i) => createSubnet(`subnet-public${i}`, get => ({
+	].map(({ AvailabilityZone, CidrBlock }, i) => createSubnet(`subnet-public-${i}`, get => ({
 		AvailabilityZone,
 		CidrBlock,
 		MapPublicIpOnLaunch: true,
@@ -90,7 +90,7 @@ run(process.env.ACTION ?? 'up', () => {
 	let privateSubnets = [
 		{ AvailabilityZone: 'ap-southeast-1a', CidrBlock: '10.88.21.0/24' },
 		{ AvailabilityZone: 'ap-southeast-1b', CidrBlock: '10.88.22.0/24' },
-	].map(({ AvailabilityZone, CidrBlock }, i) => createSubnet(`subnet-private${i}`, get => ({
+	].map(({ AvailabilityZone, CidrBlock }, i) => createSubnet(`subnet-private-${i}`, get => ({
 		AvailabilityZone,
 		CidrBlock,
 		MapPublicIpOnLaunch: false,

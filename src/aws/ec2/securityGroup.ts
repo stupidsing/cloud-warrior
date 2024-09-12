@@ -35,10 +35,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws ec2 create-security-group \\`,
 			`  --description '${Description}' \\`,
 			`  --group-name ${GroupName} \\`,
-			`  --vpc-id ${VpcId} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
+			`  --vpc-id ${VpcId} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait \\`,
 			`  security-group-exists --group-ids ${GroupId}`,
