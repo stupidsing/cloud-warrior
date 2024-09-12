@@ -19,6 +19,8 @@ import { policyClass } from './aws/iam/policy';
 import { roleClass } from './aws/iam/role';
 import { eventSourceMappingClass } from './aws/lambda/eventSourceMapping';
 import { functionClass } from './aws/lambda/function';
+import { dbClusterClass } from './aws/rds/dbCluster';
+import { dbSubnetGroupClass } from './aws/rds/dbSubnetGroup';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
 import { bucketClass } from './aws/s3/bucket';
@@ -51,6 +53,8 @@ let classes = Object.fromEntries([
 	bucketClass,
 	certificateClass,
 	eventSourceMappingClass,
+	dbClusterClass,
+	dbSubnetGroupClass,
 	distributionClass,
 	functionClass,
 	instanceClass,

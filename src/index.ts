@@ -16,6 +16,8 @@ import { createPolicy } from './aws/iam/policy';
 import { createRole } from './aws/iam/role';
 import { createEventSourceMapping } from './aws/lambda/eventSourceMapping';
 import { createFunction } from './aws/lambda/function';
+import { createDbCluster } from './aws/rds/dbCluster';
+import { createDbSubnetGroup } from './aws/rds/dbSubnetGroup';
 import { createHostedZone } from './aws/route53/hostedZone';
 import { createRecord } from './aws/route53/record';
 import { createBucket } from './aws/s3/bucket';
@@ -131,6 +133,18 @@ run(process.env.ACTION ?? 'up', () => {
 		InstanceType: 't3.nano',
 		SecurityGroups: [{ GroupId: securityGroup.getSecurityGroupId(get) }],
 		SubnetId: privateSubnets[0].getSubnetId(get),
+	}));
+
+	let dbSubnetGroup = createDbSubnetGroup('db-subnet-group', get => ({
+		DBSubnetGroupDescription: '-',
+		DBSubnetGroupName: 'db-subnet-group',
+		Subnets: [{ SubnetIdentifier: 'ap-southeast-1' }],
+	}));
+
+	let dbCluster = createDbCluster('db-cluster', get => ({
+		DBClusterIdentifier: 'db-cluster',
+		Engine: 'postgres',
+		MasterUsername: 'postgres',
 	}));
 
 	let function_ = createFunction('function', get => ({
