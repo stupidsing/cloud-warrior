@@ -68,11 +68,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
 		let target = transform(attributes[prop]);
-		let same = source.length === target.length;
+				let same = source.length === target.length;
 		if (same) {
 			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
-		return !same ? transform(target) : [];
+		return same ? [] : target;
 	});
 
 	if (updates.length > 0) {

@@ -10,7 +10,7 @@ type Attributes = {
 };
 
 let delete_ = ({ DBSubnetGroupName }) => [
-	`aws ec2 delete-db-subnet-group \\`,
+	`aws rds delete-db-subnet-group \\`,
 	`  --db-subnet-group-name ${DBSubnetGroupName} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
@@ -27,10 +27,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (state == null) {
 		commands.push(
-			`aws ec2 create-db-subnet-group \\`,
+			`aws rds create-db-subnet-group \\`,
 			`  --db-subnet-group-description ${DBSubnetGroupDescription} \\`,
 			`  --db-subnet-group-name ${DBSubnetGroupName} \\`,
-			` --subnet-ids ${Subnets.map(r => r.SubnetIdentifier).join(' ')} \\`,
+			`  --subnet-ids ${Subnets.map(r => r.SubnetIdentifier).sort((a, b) => a.localeCompare(b)).join(' ')} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | jq .DBSubnetGroup | tee ${statesDirectory}/\${KEY}`,
 		);
@@ -40,16 +40,16 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let updates = Object
 	.entries({
 		DBSubnetGroupDescription: r => [`--db-subnet-group-description ${r}`],
-		Subnets: r => [`--subnet-ids ${Subnets.map(r => r.SubnetIdentifier).join(' ')}`],
+		Subnets: r => [`--subnet-ids ${r.map(r => r.SubnetIdentifier).sort((a, b) => a.localeCompare(b)).join(' ')}`],
 	})
 	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
 		let target = transform(attributes[prop]);
-		let same = source.length === target.length;
+				let same = source.length === target.length;
 		if (same) {
 			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
-		return !same ? transform(target) : [];
+		return same ? [] : target;
 	});
 
 	if (updates.length > 0) {
@@ -73,7 +73,7 @@ export let dbSubnetGroupClass: Class = {
 	].join('_'),
 	refresh: ({ DBSubnetGroupName }) => [
 		`ID=${DBSubnetGroupName}`,
-		`aws ec2 describe-db-subnet-groups \\`,
+		`aws rds describe-db-subnet-groups \\`,
 		`  --db-subnet-group-name \${ID} \\`,
 		`  | jq .DBSubnetGroups[0] | tee ${statesDirectory}/\${KEY}`,
 	],

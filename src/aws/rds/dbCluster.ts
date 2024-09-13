@@ -5,9 +5,11 @@ import { AttributesInput, Class, Resource_ } from "../../types";
 let class_ = 'db-cluster';
 
 type Attributes = {
+	AllocatedStorage?: number,
 	AvailabilityZones?: string[],
 	DatabaseName?: string,
 	DBClusterIdentifier: string,
+	DBClusterInstanceClass?: string,
 	DBSubnetGroup?: string,
 	Engine: string,
 	EngineVersion?: string,
@@ -20,7 +22,7 @@ type Attributes = {
 };
 
 let delete_ = ({ DBClusterIdentifier }) => [
-	`aws ec2 delete-db-cluster \\`,
+	`aws rds delete-db-cluster \\`,
 	`  --db-cluster-identifier ${DBClusterIdentifier} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
@@ -30,9 +32,11 @@ let delete_ = ({ DBClusterIdentifier }) => [
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
 	let {
+		AllocatedStorage,
 		AvailabilityZones,
 		DatabaseName,
 		DBClusterIdentifier,
+		DBClusterInstanceClass,
 		DBSubnetGroup,
 		Engine,
 		EngineVersion,
@@ -43,10 +47,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (state == null) {
 		commands.push(
-			`aws ec2 create-db-cluster \\`,
+			`aws rds create-db-cluster \\`,
+			...AllocatedStorage != null ? [`  --allocated-storage ${AllocatedStorage} \\`] : [],
 			...AvailabilityZones != null ? [`  --availability-zones ${AvailabilityZones.join(' ')} \\`] : [],
 			...DatabaseName != null ? [`  --database-name ${DatabaseName} \\`] : [],
 			`  --db-cluster-identifier ${DBClusterIdentifier} \\`,
+			...DBClusterInstanceClass != null ? [`  --db-cluster-instance-class ${DBClusterInstanceClass} \\`] : [],
 			...DBSubnetGroup != null ? [`  --db-subnet-group-name ${DBSubnetGroup} \\`] : [],
 			`  --engine ${Engine} \\`,
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
@@ -54,17 +60,19 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | jq .DBCluster | tee ${statesDirectory}/\${KEY}`,
 		);
-		state = { AvailabilityZones, DBClusterIdentifier, DBSubnetGroup, Engine, EngineVersion, MasterUsername };
+		state = { AllocatedStorage, AvailabilityZones, DatabaseName, DBClusterIdentifier, DBClusterInstanceClass, DBSubnetGroup, Engine, EngineVersion, MasterUsername };
 	}
 
 	let updates = Object
 	.entries({
-		EngineVersion: r => [`--engine-version ${r}`],
-		MasterUserPassword: r => [`--master-user-password '${r}'`],
-		Port: r => [`--port ${r}`],
-		PreferredBackupWindow: r => [`-- preferred-backup-window ${r}`],
-		PreferredMaintenanceWindow: r => [`-- preferred-maintenance-window ${r}`],
-		VpcSecurityGroups: r => [`--vpc-security-group-ids ${r.map(r => r.VpcSecurityGroupId).join(' ')}`],
+		AllocatedStorage: r => r != null ? [`--allocated-storage ${r}`] : [],
+		DBClusterInstanceClass: r => r != null  ? [`--db-cluster-instance-class ${r}`] : [],
+		EngineVersion: r => r != null ? [`--engine-version ${r}`] : [],
+		MasterUserPassword: r => r != null ? [`--master-user-password '${r}'`] : [],
+		Port: r => r != null ? [`--port ${r}`] : [],
+		PreferredBackupWindow: r => r != null ? [`-- preferred-backup-window ${r}`] : [],
+		PreferredMaintenanceWindow: r => r != null ? [`-- preferred-maintenance-window ${r}`] : [],
+		VpcSecurityGroups: r => r != null ? [`--vpc-security-group-ids ${r.map(r => r.VpcSecurityGroupId).join(' ')}`] : [],
 	})
 	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
@@ -73,7 +81,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		if (same) {
 			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
-		return !same ? transform(target) : [];
+		return same ? [] : target;
 	});
 
 	if (updates.length > 0) {
@@ -116,7 +124,7 @@ export let dbClusterClass: Class = {
 	].join('_'),
 	refresh: ({ DBClusterIdentifier }) => [
 		`ID=${DBClusterIdentifier}`,
-		`aws ec2 describe-db-clusters \\`,
+		`aws rds describe-db-clusters \\`,
 		`  --db-cluster-identifier \${ID} \\`,
 		`  | jq .DBClusters[0] | tee ${statesDirectory}/\${KEY}`,
 	],

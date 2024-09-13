@@ -82,6 +82,7 @@ run(process.env.ACTION ?? 'up', () => {
 	let publicSubnets = [
 		{ AvailabilityZone: 'ap-southeast-1a', CidrBlock: '10.88.11.0/24' },
 		{ AvailabilityZone: 'ap-southeast-1b', CidrBlock: '10.88.12.0/24' },
+		{ AvailabilityZone: 'ap-southeast-1c', CidrBlock: '10.88.13.0/24' },
 	].map(({ AvailabilityZone, CidrBlock }, i) => createSubnet(`subnet-public-${i}`, get => ({
 		AvailabilityZone,
 		CidrBlock,
@@ -92,6 +93,7 @@ run(process.env.ACTION ?? 'up', () => {
 	let privateSubnets = [
 		{ AvailabilityZone: 'ap-southeast-1a', CidrBlock: '10.88.21.0/24' },
 		{ AvailabilityZone: 'ap-southeast-1b', CidrBlock: '10.88.22.0/24' },
+		{ AvailabilityZone: 'ap-southeast-1c', CidrBlock: '10.88.23.0/24' },
 	].map(({ AvailabilityZone, CidrBlock }, i) => createSubnet(`subnet-private-${i}`, get => ({
 		AvailabilityZone,
 		CidrBlock,
@@ -138,11 +140,14 @@ run(process.env.ACTION ?? 'up', () => {
 	let dbSubnetGroup = createDbSubnetGroup('db-subnet-group', get => ({
 		DBSubnetGroupDescription: '-',
 		DBSubnetGroupName: 'db-subnet-group',
-		Subnets: [{ SubnetIdentifier: 'ap-southeast-1' }],
+		Subnets: privateSubnets.map(subnet => ({ SubnetIdentifier: subnet.getSubnetId(get) })),
 	}));
 
 	let dbCluster = createDbCluster('db-cluster', get => ({
+		AllocatedStorage: 32,
 		DBClusterIdentifier: 'db-cluster',
+		DBClusterInstanceClass: 'db.m7g.large',
+		DBSubnetGroup: dbSubnetGroup.getDBSubnetGroupName(get),
 		Engine: 'postgres',
 		MasterUsername: 'postgres',
 	}));
