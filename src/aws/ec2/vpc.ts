@@ -14,7 +14,8 @@ let delete_ = ({ VpcId }) => {
 		`aws ec2 delete-vpc --vpc-id ${VpcId} &&`,
 		`rm -f \\`,
 		`  ${statesDirectory}/\${KEY} \\`,
-		`  ${statesDirectory}/\${KEY}#{EnableDnsHostnames,EnableDnsSupport}`,
+		`  ${statesDirectory}/\${KEY}#EnableDnsHostnames \\`,
+		`  ${statesDirectory}/\${KEY}#EnableDnsSupport`,
 	];
 };
 
