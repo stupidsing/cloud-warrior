@@ -20,6 +20,7 @@ import { roleClass } from './aws/iam/role';
 import { eventSourceMappingClass } from './aws/lambda/eventSourceMapping';
 import { functionClass } from './aws/lambda/function';
 import { dbClusterClass } from './aws/rds/dbCluster';
+import { dbInstanceClass } from './aws/rds/dbInstance';
 import { dbSubnetGroupClass } from './aws/rds/dbSubnetGroup';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
@@ -54,6 +55,7 @@ let classes = Object.fromEntries([
 	certificateClass,
 	eventSourceMappingClass,
 	dbClusterClass,
+	dbInstanceClass,
 	dbSubnetGroupClass,
 	distributionClass,
 	functionClass,

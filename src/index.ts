@@ -17,6 +17,7 @@ import { createRole } from './aws/iam/role';
 import { createEventSourceMapping } from './aws/lambda/eventSourceMapping';
 import { createFunction } from './aws/lambda/function';
 import { createDbCluster } from './aws/rds/dbCluster';
+import { createDbInstance } from './aws/rds/dbInstance';
 import { createDbSubnetGroup } from './aws/rds/dbSubnetGroup';
 import { createHostedZone } from './aws/route53/hostedZone';
 import { createRecord } from './aws/route53/record';
@@ -148,6 +149,13 @@ run(process.env.ACTION ?? 'up', () => {
 		DBClusterIdentifier: 'db-cluster',
 		DBClusterInstanceClass: 'db.m7g.large',
 		DBSubnetGroup: dbSubnetGroup.getDBSubnetGroupName(get),
+		Engine: 'postgres',
+		MasterUsername: 'postgres',
+	}));
+
+	let dbInstance = createDbInstance('db-instance', get => ({
+		DBClusterIdentifier: dbCluster.getDBClusterIdentifier(get),
+		DBInstanceIdentifier: 'db-instance',
 		Engine: 'postgres',
 		MasterUsername: 'postgres',
 	}));

@@ -2,14 +2,15 @@ import { createHash } from "crypto";
 import { prefix, statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
 
-let class_ = 'db-cluster';
+let class_ = 'db-instance';
 
 type Attributes = {
 	AllocatedStorage?: number,
-	AvailabilityZones?: string[],
-	DatabaseName?: string,
-	DBClusterIdentifier: string,
-	DBClusterInstanceClass?: string,
+	AvailabilityZone?: string,
+	DBClusterIdentifier?: string,
+	DBInstanceClass?: string,
+	DBInstanceIdentifier: string,
+	DBName?: string,
 	DBSubnetGroup?: string,
 	Engine: string,
 	EngineVersion?: string,
@@ -21,9 +22,9 @@ type Attributes = {
 	VpcSecurityGroups?: { VpcSecurityGroupId: string },
 };
 
-let delete_ = ({ DBClusterIdentifier }) => [
-	`aws rds delete-db-cluster \\`,
-	`  --db-cluster-identifier ${DBClusterIdentifier} &&`,
+let delete_ = ({ DBInstanceIdentifier }) => [
+	`aws rds delete-db-instance \\`,
+	`  --db-instance-identifier ${DBInstanceIdentifier} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
 	`  ${statesDirectory}/\${KEY}#MasterUserPassword`,
@@ -33,10 +34,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
 	let {
 		AllocatedStorage,
-		AvailabilityZones,
-		DatabaseName,
+		AvailabilityZone,
 		DBClusterIdentifier,
-		DBClusterInstanceClass,
+		DBInstanceClass,
+		DBInstanceIdentifier,
+		DBName,
 		DBSubnetGroup,
 		Engine,
 		EngineVersion,
@@ -47,26 +49,27 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (state == null) {
 		commands.push(
-			`aws rds create-db-cluster \\`,
+			`aws rds create-db-instance \\`,
 			...AllocatedStorage != null ? [`  --allocated-storage ${AllocatedStorage} \\`] : [],
-			...AvailabilityZones != null ? [`  --availability-zones ${AvailabilityZones.join(' ')} \\`] : [],
-			...DatabaseName != null ? [`  --database-name ${DatabaseName} \\`] : [],
-			`  --db-cluster-identifier ${DBClusterIdentifier} \\`,
-			...DBClusterInstanceClass != null ? [`  --db-cluster-instance-class ${DBClusterInstanceClass} \\`] : [],
+			...AvailabilityZone != null ? [`  --availability-zone ${AvailabilityZone} \\`] : [],
+			...DBClusterIdentifier != null ? [`  --db-cluster-identifier ${DBClusterIdentifier} \\`] : [],
+			...DBInstanceClass != null ? [`  --db-instance-class ${DBInstanceClass} \\`] : [],
+			`  --db-instance-identifier ${DBInstanceIdentifier} \\`,
+			...DBName != null ? [`  --db-name ${DBName} \\`] : [],
 			...DBSubnetGroup != null ? [`  --db-subnet-group-name ${DBSubnetGroup} \\`] : [],
 			`  --engine ${Engine} \\`,
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
 			`  --master-username ${MasterUsername} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | jq .DBCluster | tee ${statesDirectory}/\${KEY}`,
+			`  | jq .DBInstance | tee ${statesDirectory}/\${KEY}`,
 		);
-		state = { AllocatedStorage, AvailabilityZones, DatabaseName, DBClusterIdentifier, DBClusterInstanceClass, DBSubnetGroup, Engine, EngineVersion, MasterUsername };
+		state = { AllocatedStorage, AvailabilityZone, DBInstanceIdentifier, DBInstanceClass, DBName, DBSubnetGroup, Engine, EngineVersion, MasterUsername };
 	}
 
 	let updates = Object
 	.entries({
 		AllocatedStorage: r => r != null ? [`--allocated-storage ${r}`] : [],
-		DBClusterInstanceClass: r => r != null  ? [`--db-cluster-instance-class ${r}`] : [],
+		DBInstanceClass: r => r != null  ? [`--db-instance-class ${r}`] : [],
 		EngineVersion: r => r != null ? [`--engine-version ${r}`] : [],
 		MasterUserPassword: r => r != null ? [`--master-user-password '${r}'`] : [],
 		Port: r => r != null ? [`--port ${r}`] : [],
@@ -85,11 +88,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	});
 
 	if (updates.length > 0) {
-		updates.push(`--db-cluster-identifier ${DBClusterIdentifier}`);
+		updates.push(`--db-instance-identifier ${DBInstanceIdentifier}`);
 		commands.push(
-			`aws rds modify-db-cluster \\`,
+			`aws rds modify-db-instance \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
-			`  | jq -r .DBCluster | tee ${statesDirectory}/\${KEY}`,
+			`  | jq -r .DBInstance | tee ${statesDirectory}/\${KEY}`,
 		);
 	}
 
@@ -100,13 +103,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	return commands;
 };
 
-export let dbClusterClass: Class = {
+export let dbInstanceClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name, attributes: {
-		AvailabilityZones,
-		DatabaseName,
+		AvailabilityZone,
 		DBClusterIdentifier,
+		DBName,
+		DBInstanceIdentifier,
 		DBSubnetGroup,
 		Engine,
 		MasterUsername,
@@ -114,28 +118,29 @@ export let dbClusterClass: Class = {
 		class_,
 		name,
 		createHash('sha256').update([
-			...AvailabilityZones != null ? AvailabilityZones.sort((a, b) => a.localeCompare(b)) : [],
-			DatabaseName,
+			AvailabilityZone,
 			DBClusterIdentifier,
+			DBInstanceIdentifier,
+			DBName,
 			DBSubnetGroup,
 			Engine,
 			MasterUsername,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ DBClusterIdentifier }) => [
-		`ID=${DBClusterIdentifier}`,
-		`aws rds describe-db-clusters \\`,
-		`  --db-cluster-identifier \${ID} \\`,
-		`  | jq .DBClusters[0] | tee ${statesDirectory}/\${KEY}`,
+	refresh: ({ DBInstanceIdentifier }) => [
+		`ID=${DBInstanceIdentifier}`,
+		`aws rds describe-db-instances \\`,
+		`  --db-instance-identifier \${ID} \\`,
+		`  | jq .DBInstances[0] | tee ${statesDirectory}/\${KEY}`,
 	],
 	upsert,
 };
 
 import { create } from "../../warrior";
 
-export let createDbCluster = (name: string, f: AttributesInput<Attributes>) => {
+export let createDbInstance = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getDBClusterIdentifier: get => get(resource, 'DBClusterIdentifier'),
+		getDBInstanceIdentifier: get => get(resource, 'DBInstanceIdentifier'),
 	};
 };
