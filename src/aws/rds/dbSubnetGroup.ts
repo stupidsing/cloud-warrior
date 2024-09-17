@@ -12,8 +12,7 @@ type Attributes = {
 let delete_ = ({ DBSubnetGroupName }) => [
 	`aws rds delete-db-subnet-group \\`,
 	`  --db-subnet-group-name ${DBSubnetGroupName} &&`,
-	`rm -f \\`,
-	`  ${statesDirectory}/\${KEY} \\`,
+	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

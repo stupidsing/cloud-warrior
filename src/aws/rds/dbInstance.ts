@@ -15,7 +15,7 @@ type Attributes = {
 	Engine: string,
 	EngineVersion?: string,
 	MasterUserPassword?: string,
-	MasterUsername: string,
+	MasterUsername?: string,
 	Port?: number,
 	PreferredBackupWindow?: string,
 	PreferredMaintenanceWindow?: string,
@@ -59,11 +59,21 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...DBSubnetGroup != null ? [`  --db-subnet-group-name ${DBSubnetGroup} \\`] : [],
 			`  --engine ${Engine} \\`,
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
-			`  --master-username ${MasterUsername} \\`,
+			...MasterUsername != null ? [`  --master-username ${MasterUsername} \\`] : [],
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | jq .DBInstance | tee ${statesDirectory}/\${KEY}`,
 		);
-		state = { AllocatedStorage, AvailabilityZone, DBInstanceIdentifier, DBInstanceClass, DBName, DBSubnetGroup, Engine, EngineVersion, MasterUsername };
+		state = {
+			AllocatedStorage,
+			AvailabilityZone,
+			DBInstanceIdentifier,
+			DBInstanceClass,
+			DBName,
+			DBSubnetGroup,
+			Engine,
+			EngineVersion,
+			MasterUsername,
+		};
 	}
 
 	let updates = Object

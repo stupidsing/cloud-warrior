@@ -145,19 +145,18 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let dbCluster = createDbCluster('db-cluster', get => ({
-		AllocatedStorage: 32,
 		DBClusterIdentifier: 'db-cluster',
-		DBClusterInstanceClass: 'db.m7g.large',
 		DBSubnetGroup: dbSubnetGroup.getDBSubnetGroupName(get),
-		Engine: 'postgres',
+		Engine: 'aurora-postgresql',
+		MasterUserPassword: '3cbf9540-749b-11ef-ad60-576b8c81f945',
 		MasterUsername: 'postgres',
 	}));
 
 	let dbInstance = createDbInstance('db-instance', get => ({
 		DBClusterIdentifier: dbCluster.getDBClusterIdentifier(get),
+		DBInstanceClass: 'db.t3.medium',
 		DBInstanceIdentifier: 'db-instance',
-		Engine: 'postgres',
-		MasterUsername: 'postgres',
+		Engine: 'aurora-postgresql',
 	}));
 
 	let function_ = createFunction('function', get => ({

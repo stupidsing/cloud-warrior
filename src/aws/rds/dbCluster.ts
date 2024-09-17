@@ -23,7 +23,8 @@ type Attributes = {
 
 let delete_ = ({ DBClusterIdentifier }) => [
 	`aws rds delete-db-cluster \\`,
-	`  --db-cluster-identifier ${DBClusterIdentifier} &&`,
+	`  --db-cluster-identifier ${DBClusterIdentifier} \\`,
+	`  --skip-final-snapshot &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
 	`  ${statesDirectory}/\${KEY}#MasterUserPassword`,
@@ -56,11 +57,23 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...DBSubnetGroup != null ? [`  --db-subnet-group-name ${DBSubnetGroup} \\`] : [],
 			`  --engine ${Engine} \\`,
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
+			...MasterUserPassword != null ? [`  --master-user-password ${MasterUserPassword} \\`] : [],
 			`  --master-username ${MasterUsername} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | jq .DBCluster | tee ${statesDirectory}/\${KEY}`,
 		);
-		state = { AllocatedStorage, AvailabilityZones, DatabaseName, DBClusterIdentifier, DBClusterInstanceClass, DBSubnetGroup, Engine, EngineVersion, MasterUsername };
+		state = {
+			AllocatedStorage,
+			AvailabilityZones,
+			DatabaseName,
+			DBClusterIdentifier,
+			DBClusterInstanceClass,
+			DBSubnetGroup,
+			Engine,
+			EngineVersion,
+			MasterUserPassword,
+			MasterUsername,
+		};
 	}
 
 	let updates = Object
