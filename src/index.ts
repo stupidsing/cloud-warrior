@@ -146,9 +146,14 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let replicationGroup = createReplicationGroup('replication-group', get => ({
+		AutomaticFailover: true,
+		CacheNodeType: 'cache.t3.micro',
 		Description: '-',
 		ReplicationGroupId: 'replication-group',
 		Engine: 'redis',
+		EngineVersion: '6.2',
+		NodeGroups: [{ NodeGroupMembers: [{}, {}] }], // numNodeGroups = 1, replicasPerNodeGroup = 1
+		PreferredMaintenanceWindow: 'sun:09:00-sun:19:00',
 	}));
 
 	let dbSubnetGroup = createDbSubnetGroup('db-subnet-group', get => ({

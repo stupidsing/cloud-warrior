@@ -5,12 +5,19 @@ import { AttributesInput, Class, Resource_ } from "../../types";
 let class_ = 'replication-group';
 
 type Attributes = {
+	AutomaticFailover?: boolean,
 	CacheNodeType?: string,
 	Description: string,
 	Engine: string,
 	EngineVersion?: string,
+	NodeGroups?: { NodeGroupMembers: {}[] }[],
+	ParameterGroupName?: string,
 	Port?: number,
+	PreferredMaintenanceWindow?: string,
 	ReplicationGroupId: string,
+	SecurityGroupIds?: string[],
+	SnapshotWindow?: string,
+	SubnetGroupName?: string,
 };
 
 let delete_ = ({ ReplicationGroupId }) => [
@@ -19,6 +26,9 @@ let delete_ = ({ ReplicationGroupId }) => [
 	`aws elasticache wait replication-group-deleted --replication-group-id ${ReplicationGroupId} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#ParameterGroupName \\`,
+	`  ${statesDirectory}/\${KEY}#PreferredMaintenanceWindow \\`,
+	`  ${statesDirectory}/\${KEY}#SubnetGroupName`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -29,6 +39,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		ReplicationGroupId,
 		Engine,
 		EngineVersion,
+		ParameterGroupName,
+		PreferredMaintenanceWindow,
+		NodeGroups,
+		SubnetGroupName,
 	} = attributes;
 	let commands = [];
 
@@ -36,8 +50,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws elasticache create-replication-group \\`,
 			...CacheNodeType != null ? [`  --cache-node-type ${CacheNodeType} \\`] : [],
+			...SubnetGroupName != null ? [`  --cache-subnet-group-name ${SubnetGroupName} \\`] : [],
 			`  --engine ${Engine} \\`,
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
+			...NodeGroups != null ? [`  --num-node-groups ${NodeGroups.length} \\`] : [],
+			...NodeGroups?.[0] != null ? [`  --replicas-per-node-group ${NodeGroups[0].NodeGroupMembers.length - 1} \\`] : [],
 			`  --replication-group-description ${Description} \\`,
 			`  --replication-group-id ${ReplicationGroupId} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
@@ -50,15 +67,21 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			ReplicationGroupId,
 			Engine,
 			EngineVersion,
+			NodeGroups,
 		};
 	}
 
 	let updates = Object
 	.entries({
+		AutomaticFailover: r => [r === 'true' ? `--automatic-failover-enabled` : `--no-automatic-failover-enabled`],
 		CacheNodeType: r => r != null ? [`--cache-node-type ${r}`] : [],
 		Description: r => r != null ? [`--replication-group-description '${r}'`] : [],
 		EngineVersion: r => r != null ? [`--engine-version ${r}`] : [],
+		ParameterGroupName: r => r != null ? [`--cache-parameter-group-name ${r}`] : [],
 		Port: r => r != null ? [`--port ${r}`] : [],
+		PreferredMaintenanceWindow: r => r != null ? [`-- preferred-maintenance-window ${r}`] : [],
+		SecurityGroupIds: r => r != null ? [`--security-group-ids ${r}`] : [],
+		SnapshotWindow: r => r !=  null ? [`--snapshot-window ${r}`] : [],
 	})
 	.flatMap(([prop, transform]) => {
 		let source = transform(state[prop]);
@@ -76,6 +99,9 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws elasticache modify-replication-group \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
 			`  | jq -r .ReplicationGroup | tee ${statesDirectory}/\${KEY}`,
+			`echo '${JSON.stringify(ParameterGroupName)}' > ${statesDirectory}/\${KEY}#ParameterGroupName`,
+			`echo '${JSON.stringify(PreferredMaintenanceWindow)}' > ${statesDirectory}/\${KEY}#PreferredMaintenanceWindow`,
+			`echo '${JSON.stringify(SubnetGroupName)}' > ${statesDirectory}/\${KEY}#SubnetGroupName`,
 		);
 	}
 
@@ -86,13 +112,15 @@ export let replicationGroupClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name, attributes: {
-		ReplicationGroupId,
 		Engine,
+		NodeGroups,
+		ReplicationGroupId,
 	} }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
 			Engine,
+			NodeGroups,
 			ReplicationGroupId,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
