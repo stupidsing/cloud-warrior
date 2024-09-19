@@ -8,6 +8,8 @@ import { createSecurityGroup } from './aws/ec2/securityGroup';
 import { createSecurityGroupRuleIngress } from './aws/ec2/securityGroupRule';
 import { createSubnet } from './aws/ec2/subnet';
 import { createVpc } from './aws/ec2/vpc';
+import { createCacheCluster } from './aws/elasticache/cacheCluster';
+import { createReplicationGroup } from './aws/elasticache/replicationGroup';
 import { createLoadBalancer } from './aws/elbv2/loadBalancer';
 import { createTarget } from './aws/elbv2/target';
 import { createTargetGroup } from './aws/elbv2/targetGroup';
@@ -136,6 +138,17 @@ run(process.env.ACTION ?? 'up', () => {
 		InstanceType: 't3.nano',
 		SecurityGroups: [{ GroupId: securityGroup.getSecurityGroupId(get) }],
 		SubnetId: privateSubnets[0].getSubnetId(get),
+	}));
+
+	let cacheCluster = createCacheCluster('cache-cluster', get => ({
+		CacheClusterId: 'cache-cluster',
+		Engine: 'redis',
+	}));
+
+	let replicationGroup = createReplicationGroup('replication-group', get => ({
+		Description: '-',
+		ReplicationGroupId: 'replication-group',
+		Engine: 'redis',
 	}));
 
 	let dbSubnetGroup = createDbSubnetGroup('db-subnet-group', get => ({

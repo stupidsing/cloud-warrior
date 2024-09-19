@@ -25,6 +25,7 @@ let delete_ = ({ DBClusterIdentifier }) => [
 	`aws rds delete-db-cluster \\`,
 	`  --db-cluster-identifier ${DBClusterIdentifier} \\`,
 	`  --skip-final-snapshot &&`,
+	`aws rds wait db-cluster-deleted --db-cluster-identifier ${DBClusterIdentifier} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
 	`  ${statesDirectory}/\${KEY}#MasterUserPassword`,
@@ -60,7 +61,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...MasterUserPassword != null ? [`  --master-user-password ${MasterUserPassword} \\`] : [],
 			`  --master-username ${MasterUsername} \\`,
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | jq .DBCluster | tee ${statesDirectory}/\${KEY}`,
+			`  | jq .DBCluster | tee ${statesDirectory}/\${KEY} &&`,
+			`aws rds wait db-cluster-available --db-cluster-identifier ${DBClusterIdentifier}`,
 		);
 		state = {
 			AllocatedStorage,

@@ -25,6 +25,7 @@ type Attributes = {
 let delete_ = ({ DBInstanceIdentifier }) => [
 	`aws rds delete-db-instance \\`,
 	`  --db-instance-identifier ${DBInstanceIdentifier} &&`,
+	`aws rds wait db-instance-deleted --db-instance-identifier ${DBInstanceIdentifier} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
 	`  ${statesDirectory}/\${KEY}#MasterUserPassword`,
@@ -61,7 +62,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
 			...MasterUsername != null ? [`  --master-username ${MasterUsername} \\`] : [],
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
-			`  | jq .DBInstance | tee ${statesDirectory}/\${KEY}`,
+			`  | jq .DBInstance | tee ${statesDirectory}/\${KEY} &&`,
+			`aws rds wait db-instance-available --db-instance-identifier ${DBInstanceIdentifier}`,
 		);
 		state = {
 			AllocatedStorage,

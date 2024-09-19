@@ -11,6 +11,8 @@ import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
 import { subnetClass } from './aws/ec2/subnet';
 import { vpcClass } from './aws/ec2/vpc';
+import { cacheClusterClass } from './aws/elasticache/cacheCluster';
+import { replicationGroupClass } from './aws/elasticache/replicationGroup';
 import { loadBalancerClass } from './aws/elbv2/loadBalancer';
 import { targetClass } from './aws/elbv2/target';
 import { targetGroupClass } from './aws/elbv2/targetGroup';
@@ -52,6 +54,7 @@ let readTextIfExists = name => {
 
 let classes = Object.fromEntries([
 	bucketClass,
+	cacheClusterClass,
 	certificateClass,
 	eventSourceMappingClass,
 	dbClusterClass,
@@ -70,6 +73,7 @@ let classes = Object.fromEntries([
 	natGatewayClass,
 	policyClass,
 	recordClass,
+	replicationGroupClass,
 	roleClass,
 	securityGroupClass,
 	securityGroupRuleIngressClass,
