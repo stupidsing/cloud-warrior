@@ -15,8 +15,7 @@ type Attributes = {
 
 let delete_ = ({ CacheClusterId }) => [
 	`aws elasticache delete-cache-cluster \\`,
-	`  --cache-cluster-id ${CacheClusterId} \\`,
-	`  --skip-final-snapshot &&`,
+	`  --cache-cluster-id ${CacheClusterId} &&`,
 	`aws elasticache wait cache-cluster-deleted --cache-cluster-id ${CacheClusterId} &&`,
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,

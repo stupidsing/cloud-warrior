@@ -36,7 +36,7 @@ let refreshById = (id, name, region, scope) => [
 	`  --scope \${SCOPE} \\`,
 	`  | jq .IPSet | tee ${statesDirectory}/\${KEY}`,
 	`echo '${JSON.stringify(name)}' > ${statesDirectory}/\${KEY}#Name`,
-	`echo '${JSON.stringify(region)}' > ${statesDirectory}/\${KEY}#Region`,
+	`echo '${JSON.stringify(region ?? null)}' > ${statesDirectory}/\${KEY}#Region`,
 	`echo '${JSON.stringify(scope)}' > ${statesDirectory}/\${KEY}#Scope`,
 ];
 

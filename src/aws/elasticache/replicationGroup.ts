@@ -99,9 +99,9 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws elasticache modify-replication-group \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
 			`  | jq -r .ReplicationGroup | tee ${statesDirectory}/\${KEY}`,
-			`echo '${JSON.stringify(ParameterGroupName)}' > ${statesDirectory}/\${KEY}#ParameterGroupName`,
-			`echo '${JSON.stringify(PreferredMaintenanceWindow)}' > ${statesDirectory}/\${KEY}#PreferredMaintenanceWindow`,
-			`echo '${JSON.stringify(SubnetGroupName)}' > ${statesDirectory}/\${KEY}#SubnetGroupName`,
+			`echo '${JSON.stringify(ParameterGroupName ?? null)}' > ${statesDirectory}/\${KEY}#ParameterGroupName`,
+			`echo '${JSON.stringify(PreferredMaintenanceWindow ?? null)}' > ${statesDirectory}/\${KEY}#PreferredMaintenanceWindow`,
+			`echo '${JSON.stringify(SubnetGroupName ?? null)}' > ${statesDirectory}/\${KEY}#SubnetGroupName`,
 		);
 	}
 
