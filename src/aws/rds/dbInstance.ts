@@ -85,8 +85,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		EngineVersion: r => r != null ? [`--engine-version ${r}`] : [],
 		MasterUserPassword: r => r != null ? [`--master-user-password '${r}'`] : [],
 		Port: r => r != null ? [`--port ${r}`] : [],
-		PreferredBackupWindow: r => r != null ? [`-- preferred-backup-window ${r}`] : [],
-		PreferredMaintenanceWindow: r => r != null ? [`-- preferred-maintenance-window ${r}`] : [],
+		PreferredBackupWindow: r => r != null ? [`--preferred-backup-window ${r}`] : [],
+		PreferredMaintenanceWindow: r => r != null ? [`--preferred-maintenance-window ${r}`] : [],
 		VpcSecurityGroups: r => r != null ? [`--vpc-security-group-ids ${r.map(r => r.VpcSecurityGroupId).join(' ')}`] : [],
 	})
 	.flatMap(([prop, transform]) => {

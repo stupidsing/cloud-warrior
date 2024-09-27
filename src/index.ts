@@ -142,7 +142,9 @@ run(process.env.ACTION ?? 'up', () => {
 
 	let cacheCluster = createCacheCluster('cache-cluster', get => ({
 		CacheClusterId: 'cache-cluster',
+		CacheNodeType: 'cache.t3.micro',
 		Engine: 'redis',
+		NumCacheNodes: 1,
 	}));
 
 	let replicationGroup = createReplicationGroup('replication-group', get => ({
@@ -154,6 +156,7 @@ run(process.env.ACTION ?? 'up', () => {
 		EngineVersion: '6.2',
 		NodeGroups: [{ NodeGroupMembers: [{}, {}] }], // numNodeGroups = 1, replicasPerNodeGroup = 1
 		PreferredMaintenanceWindow: 'sun:09:00-sun:19:00',
+		SnapshotWindow: '20:00-21:00',
 	}));
 
 	let dbSubnetGroup = createDbSubnetGroup('db-subnet-group', get => ({

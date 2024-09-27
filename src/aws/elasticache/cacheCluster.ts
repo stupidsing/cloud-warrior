@@ -6,8 +6,10 @@ let class_ = 'cache-cluster';
 
 type Attributes = {
 	CacheClusterId: string,
+	CacheNodeType?: string,
 	Engine: 'memcached' | 'redis',
 	EngineVersion?: string,
+	NumCacheNodes?: number,
 	Port?: number,
 };
 
@@ -24,8 +26,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
 	let {
 		CacheClusterId,
+		CacheNodeType,
 		Engine,
 		EngineVersion,
+		NumCacheNodes,
 	} = attributes;
 	let commands = [];
 
@@ -33,22 +37,28 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws elasticache create-cache-cluster \\`,
 			`  --cache-cluster-id ${CacheClusterId} \\`,
+			...CacheNodeType != null ? [`  --cache-node-type ${CacheNodeType} \\`] : [],
 			`  --engine ${Engine} \\`,
 			...EngineVersion != null ? [`  --engine-version ${EngineVersion} \\`] : [],
+			...NumCacheNodes != null ? [`  --num-cache-nodes ${NumCacheNodes} \\`] : [],
 			`  --tag '${JSON.stringify([{ Key: 'Name', Value: `${prefix}-${name}` }])}' \\`,
 			`  | jq .CacheCluster | tee ${statesDirectory}/\${KEY} &&`,
 			`aws elasticache wait cache-cluster-available --cache-cluster-id ${CacheClusterId}`,
 		);
 		state = {
 			CacheClusterId,
+			CacheNodeType,
 			Engine,
 			EngineVersion,
+			NumCacheNodes,
 		};
 	}
 
 	let updates = Object
 	.entries({
+		CacheNodeType: r => r != null ? [`--cache-node-type ${r}`] : [],
 		EngineVersion: r => r != null ? [`--engine-version ${r}`] : [],
+		NumCacheNodes: r => r != null ? [`--num-cache-nodes ${r}`] : [],
 		Port: r => r != null ? [`--port ${r}`] : [],
 	})
 	.flatMap(([prop, transform]) => {

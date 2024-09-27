@@ -79,7 +79,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		EngineVersion: r => r != null ? [`--engine-version ${r}`] : [],
 		ParameterGroupName: r => r != null ? [`--cache-parameter-group-name ${r}`] : [],
 		Port: r => r != null ? [`--port ${r}`] : [],
-		PreferredMaintenanceWindow: r => r != null ? [`-- preferred-maintenance-window ${r}`] : [],
+		PreferredMaintenanceWindow: r => r != null ? [`--preferred-maintenance-window ${r}`] : [],
 		SecurityGroupIds: r => r != null ? [`--security-group-ids ${r}`] : [],
 		SnapshotWindow: r => r !=  null ? [`--snapshot-window ${r}`] : [],
 	})
