@@ -78,25 +78,19 @@ run(process.env.ACTION ?? 'up', () => {
 	}));
 
 	let lifecyclePolicy = createLifecyclePolicy('lifecycle-policy', get => ({
-		lifecyclePolicyText: JSON.stringify(
-			{
-				rules: [
-					{
-						action: {
-							type: 'expire',
-						},
-						description: 'Expire images older than 14 days',
-						rulePriority: 1,
-						selection: {
-							countNumber: 14,
-							countType: 'sinceImagePushed',
-							countUnit: 'days',
-							tagStatus: 'untagged',
-						},
-					}
-				]
-			}
-		),
+		lifecyclePolicyText: JSON.stringify({
+			rules: [{
+				action: { type: 'expire' },
+				description: 'Expire images older than 14 days',
+				rulePriority: 1,
+				selection: {
+					countNumber: 14,
+					countType: 'sinceImagePushed',
+					countUnit: 'days',
+					tagStatus: 'untagged',
+				},
+			}],
+		}),
 		repositoryName: repository.getRepositoryName(get),
 	}));
 
