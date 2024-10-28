@@ -11,6 +11,7 @@ import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
 import { subnetClass } from './aws/ec2/subnet';
 import { vpcClass } from './aws/ec2/vpc';
+import { lifecyclePolicyClass } from './aws/ecr/lifecyclePolicy';
 import { repositoryClass } from './aws/ecr/repository';
 import { cacheClusterClass } from './aws/elasticache/cacheCluster';
 import { replicationGroupClass } from './aws/elasticache/replicationGroup';
@@ -69,6 +70,7 @@ let classes = Object.fromEntries([
 	internetGatewayAttachmentClass,
 	ipSetClass,
 	hostedZoneClass,
+	lifecyclePolicyClass,
 	listenerClass,
 	loadBalancerClass,
 	natGatewayClass,

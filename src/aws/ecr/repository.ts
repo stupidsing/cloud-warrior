@@ -36,12 +36,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...imageScanningConfiguration?.scanOnPush != null ? [`  --image-scanning-configuration scanOnPush=${imageScanningConfiguration.scanOnPush} \\`] : [],
 			...imageTagMutability != null ? [`  --image-tag-mutability ${imageTagMutability} \\`] : [],
 			`  --repository-name ${repositoryName} \\`,
-			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'repository', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}' \\`,
+			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
-			`aws ecr wait \\`,
-			`  repository-exists --repository-names ${repositoryName}`,
 			...refreshByName(repositoryName),
 		);
 		state = { encryptionConfiguration, imageScanningConfiguration, imageTagMutability, repositoryName };

@@ -8,6 +8,7 @@ import { createSecurityGroup } from './aws/ec2/securityGroup';
 import { createSecurityGroupRuleIngress } from './aws/ec2/securityGroupRule';
 import { createSubnet } from './aws/ec2/subnet';
 import { createVpc } from './aws/ec2/vpc';
+import { createLifecyclePolicy } from './aws/ecr/lifecyclePolicy';
 import { createRepository } from './aws/ecr/repository';
 import { createCacheCluster } from './aws/elasticache/cacheCluster';
 import { createReplicationGroup } from './aws/elasticache/replicationGroup';
@@ -74,6 +75,29 @@ run(process.env.ACTION ?? 'up', () => {
 
 	let repository = createRepository('repository', get => ({
 		repositoryName: 'repository',
+	}));
+
+	let lifecyclePolicy = createLifecyclePolicy('lifecycle-policy', get => ({
+		lifecyclePolicyText: JSON.stringify(
+			{
+				rules: [
+					{
+						action: {
+							type: 'expire',
+						},
+						description: 'Expire images older than 14 days',
+						rulePriority: 1,
+						selection: {
+							countNumber: 14,
+							countType: 'sinceImagePushed',
+							countUnit: 'days',
+							tagStatus: 'untagged',
+						},
+					}
+				]
+			}
+		),
+		repositoryName: repository.getRepositoryName(get),
 	}));
 
 	let bucket = createBucket('bucket', get => ({
