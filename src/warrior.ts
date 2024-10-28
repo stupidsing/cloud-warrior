@@ -11,6 +11,7 @@ import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
 import { subnetClass } from './aws/ec2/subnet';
 import { vpcClass } from './aws/ec2/vpc';
+import { repositoryClass } from './aws/ecr/repository';
 import { cacheClusterClass } from './aws/elasticache/cacheCluster';
 import { replicationGroupClass } from './aws/elasticache/replicationGroup';
 import { loadBalancerClass } from './aws/elbv2/loadBalancer';
@@ -74,6 +75,7 @@ let classes = Object.fromEntries([
 	policyClass,
 	recordClass,
 	replicationGroupClass,
+	repositoryClass,
 	roleClass,
 	securityGroupClass,
 	securityGroupRuleIngressClass,

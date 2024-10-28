@@ -8,6 +8,7 @@ import { createSecurityGroup } from './aws/ec2/securityGroup';
 import { createSecurityGroupRuleIngress } from './aws/ec2/securityGroupRule';
 import { createSubnet } from './aws/ec2/subnet';
 import { createVpc } from './aws/ec2/vpc';
+import { createRepository } from './aws/ecr/repository';
 import { createCacheCluster } from './aws/elasticache/cacheCluster';
 import { createReplicationGroup } from './aws/elasticache/replicationGroup';
 import { createLoadBalancer } from './aws/elbv2/loadBalancer';
@@ -69,6 +70,10 @@ run(process.env.ACTION ?? 'up', () => {
 	let instanceProfile = createInstanceProfile('instance-profile-app', get => ({
 		InstanceProfileName: `${prefix}-instance-profile-app`,
 		Roles: [{ RoleName: role.getRoleName(get) }],
+	}));
+
+	let repository = createRepository('repository', get => ({
+		repositoryName: 'repository',
 	}));
 
 	let bucket = createBucket('bucket', get => ({
