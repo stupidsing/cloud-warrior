@@ -1,4 +1,5 @@
 import { createDistribution } from './aws/cloudfront/distribution';
+import { createUserPool } from './aws/cognito-idp/userPool';
 import { createInstance } from './aws/ec2/instance';
 import { createInternetGateway } from './aws/ec2/internetGateway';
 import { createInternetGatewayAttachment } from './aws/ec2/internetGatewayAttachment';
@@ -33,6 +34,10 @@ import { run } from './warrior';
 
 run(process.env.ACTION ?? 'up', () => {
 	let allocationIds = ['eipalloc-090b790ec9c32c45f', 'eipalloc-0fb97b6a07242da71'];
+
+	let userPool = createUserPool('user-pool', get => ({
+		Name: 'user-pool',
+	}));
 
 	let policy = createPolicy('policy-app', get => ({
 		PolicyDocument: {

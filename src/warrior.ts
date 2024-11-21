@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { certificateClass } from './aws/acm/certificate';
 import { distributionClass } from './aws/cloudfront/distribution';
+import { userPoolClass } from './aws/cognito-idp/userPool';
 import { instanceClass } from './aws/ec2/instance';
 import { internetGatewayClass } from './aws/ec2/internetGateway';
 import { internetGatewayAttachmentClass } from './aws/ec2/internetGatewayAttachment';
@@ -84,6 +85,7 @@ let classes = Object.fromEntries([
 	subnetClass,
 	targetClass,
 	targetGroupClass,
+	userPoolClass,
 	vpcClass,
 	webAclClass,
 ].map(c => [c.class_, c]));
