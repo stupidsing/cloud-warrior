@@ -39,7 +39,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { ClientName, UserPoolId } = attributes;
 	let commands = [];
 
-	let Id = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
+	let ClientId = `$(cat ${statesDirectory}/\${KEY} | jq -r .ClientIdId)`;
 
 	if (state == null) {
 		commands.push(
@@ -71,6 +71,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	});
 
 	if (updates.length > 0) {
+		updates.push(`--client-id ${ClientId}`);
+		updates.push(`--user-pool-id ${UserPoolId}`);
 		commands.push(
 			`aws cognito-idp update-user-pool-client \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),

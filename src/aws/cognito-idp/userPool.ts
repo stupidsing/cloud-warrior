@@ -8,6 +8,13 @@ type Attributes = {
 	Id?: string,
 	MfaConfiguration?: string,
 	Name: string,
+	PasswordPolicy?: {
+		MinimumLength: number,
+		RequireLowercase: boolean,
+		RequireNumbers: boolean,
+		RequireSymbols: boolean,
+		RequireUppercase: boolean,
+	},
 };
 
 let delete_ = ({ Id }) => [
@@ -40,18 +47,37 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		state = { Name };
 	}
 
-	{
-		let prop = 'MfaConfiguration';
-		let source = state[prop];
-		let target = attributes[prop];
-		if (source !== target) {
-			commands.push(
-				`aws cognito-idp update-user-pool \\`,
-				`  --mfa-configuration ${target} \\`,
-				`  --user-pool-id ${Id} \\`,
-				`  | jq .UserPool | tee ${statesDirectory}/\${KEY}`,
-			);
+	let updates = Object
+	.entries({
+		MfaConfiguration: r => r != null ? [`--mfa-configuration ${r}`,] : [],
+		PasswordPolicy: r => r != null ? [
+			`--policies PasswordPolicy="{`
+			+ `MinimumLength=${r.MinimumLength},`
+			+ `RequireLowercase=${r.RequireLowercase},`
+			+ `RequireNumbers=${r.RequireNumbers},`
+			+ `RequireSymbols=${r.RequireSymbols},`
+			+ `RequireUppercase=${r.RequireUppercase}`
+			+ `}"`,
+		] : [],
+	})
+	.flatMap(([prop, transform]) => {
+		let source = transform(state[prop]);
+		let target = transform(attributes[prop]);
+		let same = source.length === target.length;
+		if (same) {
+			for (let i = 0; i < source.length; i++) same &&= source[i] === target[i];
 		}
+		return same ? [] : target;
+	});
+
+	if (updates.length > 0) {
+		updates.push(`--user-pool-id ${Id}`);
+		commands.push(
+			`aws cognito-idp update-user-pool \\`,
+			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
+			`  --user-pool-id ${Id} \\`,
+			`  | jq -r .UserPool | tee ${statesDirectory}/\${KEY}`,
+		);
 	}
 
 	return commands;
