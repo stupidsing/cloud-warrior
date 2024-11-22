@@ -3,6 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'fs';
 import { certificateClass } from './aws/acm/certificate';
 import { distributionClass } from './aws/cloudfront/distribution';
 import { userPoolClass } from './aws/cognito-idp/userPool';
+import { userPoolClientClass } from './aws/cognito-idp/userPoolClient';
 import { instanceClass } from './aws/ec2/instance';
 import { internetGatewayClass } from './aws/ec2/internetGateway';
 import { internetGatewayAttachmentClass } from './aws/ec2/internetGatewayAttachment';
@@ -86,6 +87,7 @@ let classes = Object.fromEntries([
 	targetClass,
 	targetGroupClass,
 	userPoolClass,
+	userPoolClientClass,
 	vpcClass,
 	webAclClass,
 ].map(c => [c.class_, c]));

@@ -1,5 +1,6 @@
 import { createDistribution } from './aws/cloudfront/distribution';
 import { createUserPool } from './aws/cognito-idp/userPool';
+import { createUserPoolClient } from './aws/cognito-idp/userPoolClient';
 import { createInstance } from './aws/ec2/instance';
 import { createInternetGateway } from './aws/ec2/internetGateway';
 import { createInternetGatewayAttachment } from './aws/ec2/internetGatewayAttachment';
@@ -37,6 +38,11 @@ run(process.env.ACTION ?? 'up', () => {
 
 	let userPool = createUserPool('user-pool', get => ({
 		Name: 'user-pool',
+	}));
+
+	let userPoolClient = createUserPoolClient('user-pool-client', get => ({
+		ClientName: 'user-pool-client',
+		UserPoolId: userPool.getId(get),
 	}));
 
 	let policy = createPolicy('policy-app', get => ({

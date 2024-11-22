@@ -17,7 +17,7 @@ let delete_ = ({ Id }) => [
 ];
 
 let refreshById = id => [
-	`NAME=${id}`,
+	`ID=${id}`,
 	`aws cognito-idp describe-user-pool \\`,
 	`  --user-pool-id \${ID} \\`,
 	`  | jq .UserPool | tee ${statesDirectory}/\${KEY}`,
