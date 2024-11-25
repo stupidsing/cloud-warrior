@@ -31,6 +31,7 @@ import { dbSubnetGroupClass } from './aws/rds/dbSubnetGroup';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
 import { bucketClass } from './aws/s3/bucket';
+import { queueClass } from './aws/sqs/Queue';
 import { ipSetClass } from './aws/wafv2/ipSet';
 import { webAclClass } from './aws/wafv2/webAcl';
 import { dependenciesDirectory, statesDirectory } from './constants';
@@ -77,6 +78,7 @@ let classes = Object.fromEntries([
 	loadBalancerClass,
 	natGatewayClass,
 	policyClass,
+	queueClass,
 	recordClass,
 	replicationGroupClass,
 	repositoryClass,

@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
 
-let class_ = 'hostedZone';
+let class_ = 'hosted-zone';
 
 type Attributes = {
 	CallerReference: string,

@@ -28,6 +28,7 @@ import { createDbSubnetGroup } from './aws/rds/dbSubnetGroup';
 import { createHostedZone } from './aws/route53/hostedZone';
 import { createRecord } from './aws/route53/record';
 import { createBucket } from './aws/s3/bucket';
+import { createQueue } from './aws/sqs/Queue';
 import { createIpSet } from './aws/wafv2/ipSet';
 import { createWebAcl } from './aws/wafv2/webAcl';
 import { prefix } from './constants';
@@ -212,6 +213,10 @@ run(process.env.ACTION ?? 'up', () => {
 		DBInstanceClass: 'db.t3.medium',
 		DBInstanceIdentifier: 'db-instance',
 		Engine: 'aurora-postgresql',
+	}));
+
+	let queue = createQueue('queue', get => ({
+		QueueName: 'queue',
 	}));
 
 	let function_ = createFunction('function', get => ({
