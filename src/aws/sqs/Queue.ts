@@ -6,13 +6,21 @@ let class_ = 'queue';
 
 type Attributes = {
 	Attributes?: {
-		DelaySeconds: number,
-		MaximumMessageSize: number,
-		MessageRetentionPeriod: number,
-		Policy: string,
-		ReceiveMessageWaitTimeSeconds: number,
-		RedrivePolicy: string,
-		VisibilityTimeout: number,
+		ContentBasedDeduplication?: boolean,
+		DeduplicationScope?: 'message' | 'queue',
+		DelaySeconds?: number,
+		FifoQueue?: boolean,
+		FifoThroughputLimit?: 'perMessageGroupId' | 'perQueue',
+		KmsDataKeyReusePeriodSeconds?: number,
+		KmsMasterKeyId?: string,
+		MaximumMessageSize?: number,
+		MessageRetentionPeriod?: number,
+		Policy?: string,
+		ReceiveMessageWaitTimeSeconds?: number,
+		RedrivePolicy?: string,
+		RedriveAllowPolicy?: string,
+		SqsManagedSseEnabled?: boolean,
+		VisibilityTimeout?: number,
 	},
 	QueueName: string,
 };
