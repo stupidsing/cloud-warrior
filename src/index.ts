@@ -4,9 +4,10 @@ import { createUserPoolClient } from './aws/cognito-idp/userPoolClient';
 import { createInstance } from './aws/ec2/instance';
 import { createInternetGateway } from './aws/ec2/internetGateway';
 import { createInternetGatewayAttachment } from './aws/ec2/internetGatewayAttachment';
-import { createRouteTable } from './aws/ec2/routeTable';
 import { createListener } from './aws/ec2/listener';
 import { createNatGateway } from './aws/ec2/natGateway';
+import { createRouteTable } from './aws/ec2/routeTable';
+import { createRouteTableAssociation } from './aws/ec2/routeTableAssociation';
 import { createSecurityGroup } from './aws/ec2/securityGroup';
 import { createSecurityGroupRuleIngress } from './aws/ec2/securityGroupRule';
 import { createSubnet } from './aws/ec2/subnet';
@@ -151,6 +152,13 @@ run(process.env.ACTION ?? 'up', () => {
 	let routeTable = createRouteTable('rt', get => ({
 		VpcId: vpc.getVpcId(get),
 	}));
+
+	let routeTableAssociations = publicSubnets.map((subnet, i) => createRouteTableAssociation(`rta-${i}`, get => ({
+		Associations: [{
+			GatewayId: internetGateway.getInternetGatewayId(get),
+		}],
+		RouteTableId: routeTable.getRouteTableId(get),
+	})));
 
 	let natGateways = privateSubnets.map((subnet, i) => createNatGateway(`ngw-${i}`, get => ({
 		NatGatewayAddresses: [{ AllocationId: allocationIds[i] }],

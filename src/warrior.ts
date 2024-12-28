@@ -10,6 +10,7 @@ import { internetGatewayAttachmentClass } from './aws/ec2/internetGatewayAttachm
 import { listenerClass } from './aws/ec2/listener';
 import { natGatewayClass } from './aws/ec2/natGateway';
 import { routeTableClass } from './aws/ec2/routeTable';
+import { routeTableAssociationClass } from './aws/ec2/routeTableAssociation';
 import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
 import { subnetClass } from './aws/ec2/subnet';
@@ -85,6 +86,7 @@ let classes = Object.fromEntries([
 	repositoryClass,
 	roleClass,
 	routeTableClass,
+	routeTableAssociationClass,
 	securityGroupClass,
 	securityGroupRuleIngressClass,
 	subnetClass,
