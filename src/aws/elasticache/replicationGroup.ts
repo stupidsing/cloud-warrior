@@ -138,6 +138,6 @@ import { create } from "../../warrior";
 export let createReplicationGroup = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getReplicationGroupId: get => get(resource, 'ReplicationGroupId'),
+		getReplicationGroupId: (get: (resource: any, prop: string) => string) => get(resource, 'ReplicationGroupId'),
 	};
 };

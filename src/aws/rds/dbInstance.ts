@@ -153,6 +153,6 @@ import { create } from "../../warrior";
 export let createDbInstance = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getDBInstanceIdentifier: get => get(resource, 'DBInstanceIdentifier'),
+		getDBInstanceIdentifier: (get: (resource: any, prop: string) => string) => get(resource, 'DBInstanceIdentifier'),
 	};
 };

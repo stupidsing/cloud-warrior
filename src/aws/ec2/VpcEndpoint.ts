@@ -79,6 +79,6 @@ import { create } from "../../warrior";
 export let createVpcEndpoint = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getVpcEndpointId: get => get(resource, 'VpcEndpointId'),
+		getVpcEndpointId: (get: (resource: any, prop: string) => string) => get(resource, 'VpcEndpointId'),
 	};
 };

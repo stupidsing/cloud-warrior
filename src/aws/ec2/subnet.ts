@@ -83,6 +83,6 @@ import { create } from "../../warrior";
 export let createSubnet = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getSubnetId: get => get(resource, 'SubnetId'),
+		getSubnetId: (get: (resource: any, prop: string) => string) => get(resource, 'SubnetId'),
 	};
 };

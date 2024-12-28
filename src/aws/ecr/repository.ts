@@ -93,7 +93,7 @@ import { create } from "../../warrior";
 export let createRepository = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getRepositoryName: get => get(resource, 'repositoryName'),
-		getRepositoryUri: get => get(resource, 'repositoryUri'),
+		getRepositoryName: (get: (resource: any, prop: string) => string) => get(resource, 'repositoryName'),
+		getRepositoryUri: (get: (resource: any, prop: string) => string) => get(resource, 'repositoryUri'),
 	};
 };

@@ -84,6 +84,6 @@ import { create } from "../../warrior";
 export let createDbSubnetGroup = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getDBSubnetGroupName: get => get(resource, 'DBSubnetGroupName'),
+		getDBSubnetGroupName: (get: (resource: any, prop: string) => string) => get(resource, 'DBSubnetGroupName'),
 	};
 };

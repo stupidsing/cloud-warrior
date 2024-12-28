@@ -110,6 +110,6 @@ import { create } from "../../warrior";
 export let createCacheCluster = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getCacheClusterId: get => get(resource, 'CacheClusterId'),
+		getCacheClusterId: (get: (resource: any, prop: string) => string) => get(resource, 'CacheClusterId'),
 	};
 };

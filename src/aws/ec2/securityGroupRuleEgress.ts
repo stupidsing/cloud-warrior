@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { prefix, statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
 
-let class_ = 'security-group-rule-ingress';
+let class_ = 'security-group-rule-egress';
 
 type Attributes = {
 	CidrIpv4?: string,
@@ -14,7 +14,7 @@ type Attributes = {
 };
 
 let delete_ = ({ GroupId, SecurityGroupRuleId }) => [
-	`aws ec2 revoke-security-group-ingress \\`,
+	`aws ec2 revoke-security-group-egress \\`,
 	`  --group-id ${GroupId} \\`,
 	`  --security-group-rule-ids ${SecurityGroupRuleId} &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
@@ -36,7 +36,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 
 	if (state == null) {
 		commands.push(
-			`aws ec2 authorize-security-group-ingress \\`,
+			`aws ec2 authorize-security-group-egress \\`,
 			`  --group-id ${GroupId} \\`,
 			`  --ip-permissions FromPort=${FromPort}${IpProtocol != null ? `,IpProtocol=${IpProtocol}` : ``},IpRanges=[{CidrIp=${CidrIpv4}}],ToPort=${ToPort}${SourceGroup != null ? `,UserIdGroupPairs=[{GroupId=${SourceGroup}}]` : ``} \\`,
 			`  --tag-specifications '${JSON.stringify([
@@ -51,7 +51,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	return commands;
 };
 
-export let securityGroupRuleIngressClass: Class = {
+export let securityGroupRuleEgressClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name, attributes: { CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort } }: Resource_<Attributes>) => [
@@ -72,7 +72,7 @@ export let securityGroupRuleIngressClass: Class = {
 
 import { create } from "../../warrior";
 
-export let createSecurityGroupRuleIngress = (name: string, f: AttributesInput<Attributes>) => {
+export let createSecurityGroupRuleEgress = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		getSecurityGroupRuleId: (get: (resource: any, prop: string) => string) => get(resource, 'SecurityGroupRuleId'),

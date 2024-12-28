@@ -121,6 +121,6 @@ import { create } from "../../warrior";
 export let createVpc = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getVpcId: get => get(resource, 'VpcId'),
+		getVpcId: (get: (resource: any, prop: string) => string) => get(resource, 'VpcId'),
 	};
 };

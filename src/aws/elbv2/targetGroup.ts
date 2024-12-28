@@ -72,6 +72,6 @@ import { create } from "../../warrior";
 export let createTargetGroup = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getArn: get => get(resource, 'TargetGroupArn'),
+		getArn: (get: (resource: any, prop: string) => string) => get(resource, 'TargetGroupArn'),
 	};
 };

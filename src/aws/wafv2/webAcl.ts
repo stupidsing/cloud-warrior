@@ -152,6 +152,6 @@ import { create } from "../../warrior";
 export let createWebAcl = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getId: get => get(resource, 'Id'),
+		getId: (get: (resource: any, prop: string) => string) => get(resource, 'Id'),
 	};
 };

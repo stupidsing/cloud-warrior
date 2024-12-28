@@ -80,6 +80,6 @@ import { create } from "../../warrior";
 export let createEventSourceMapping = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getUUID: get => get(resource, 'UUID'),
+		getUUID: (get: (resource: any, prop: string) => string) => get(resource, 'UUID'),
 	};
 };

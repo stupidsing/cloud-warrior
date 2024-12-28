@@ -14,6 +14,7 @@ import { routeTableClass } from './aws/ec2/routeTable';
 import { routeTableAssociationClass } from './aws/ec2/routeTableAssociation';
 import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
+import { securityGroupRuleEgressClass } from './aws/ec2/securityGroupRuleEgress';
 import { subnetClass } from './aws/ec2/subnet';
 import { vpcClass } from './aws/ec2/vpc';
 import { vpcEndpointClass } from './aws/ec2/VpcEndpoint';
@@ -91,6 +92,7 @@ let classes = Object.fromEntries([
 	routeTableClass,
 	routeTableAssociationClass,
 	securityGroupClass,
+	securityGroupRuleEgressClass,
 	securityGroupRuleIngressClass,
 	subnetClass,
 	targetClass,

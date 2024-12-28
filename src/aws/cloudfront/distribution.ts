@@ -217,6 +217,6 @@ import { create } from "../../warrior";
 export let createDistribution = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getDistributionId: get => get(resource, 'Id'),
+		getDistributionId: (get: (resource: any, prop: string) => string) => get(resource, 'Id'),
 	};
 };

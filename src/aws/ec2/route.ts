@@ -95,6 +95,6 @@ import { create } from "../../warrior";
 export let createRoute = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getRouteTableId: get => get(resource, 'RouteTableId'),
+		getRouteTableId: (get: (resource: any, prop: string) => string) => get(resource, 'RouteTableId'),
 	};
 };

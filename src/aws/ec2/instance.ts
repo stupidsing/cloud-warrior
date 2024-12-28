@@ -117,6 +117,6 @@ import { create } from "../../warrior";
 export let createInstance = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getInstanceId: get => get(resource, 'InstanceId'),
+		getInstanceId: (get: (resource: any, prop: string) => string) => get(resource, 'InstanceId'),
 	};
 };

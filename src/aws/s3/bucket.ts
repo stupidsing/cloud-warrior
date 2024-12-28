@@ -62,6 +62,6 @@ import { create } from "../../warrior";
 export let createBucket = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getBucket: get => get(resource, 'Bucket'),
+		getBucket: (get: (resource: any, prop: string) => string) => get(resource, 'Bucket'),
 	};
 };

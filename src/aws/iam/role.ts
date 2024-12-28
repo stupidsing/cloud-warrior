@@ -78,8 +78,8 @@ import { create } from "../../warrior";
 export let createRole = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getArn: get => get(resource, 'Arn'),
-		getRoleId: get => get(resource, 'RoleId'),
-		getRoleName: get => get(resource, 'RoleName'),
+		getArn: (get: (resource: any, prop: string) => string) => get(resource, 'Arn'),
+		getRoleId: (get: (resource: any, prop: string) => string) => get(resource, 'RoleId'),
+		getRoleName: (get: (resource: any, prop: string) => string) => get(resource, 'RoleName'),
 	};
 };

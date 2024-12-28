@@ -99,8 +99,8 @@ import { create } from "../../warrior";
 export let createInstanceProfile = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getArn: get => get(resource, 'Arn'),
-		getInstanceProfileId: get => get(resource, 'InstanceProfileId'),
-		getInstanceProfileName: get => get(resource, 'InstanceProfileName'),
+		getArn: (get: (resource: any, prop: string) => string) => get(resource, 'Arn'),
+		getInstanceProfileId: (get: (resource: any, prop: string) => string) => get(resource, 'InstanceProfileId'),
+		getInstanceProfileName: (get: (resource: any, prop: string) => string) => get(resource, 'InstanceProfileName'),
 	};
 };
