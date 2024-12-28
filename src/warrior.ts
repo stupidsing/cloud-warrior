@@ -16,6 +16,7 @@ import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
 import { subnetClass } from './aws/ec2/subnet';
 import { vpcClass } from './aws/ec2/vpc';
+import { vpcEndpointClass } from './aws/ec2/VpcEndpoint';
 import { lifecyclePolicyClass } from './aws/ecr/lifecyclePolicy';
 import { repositoryClass } from './aws/ecr/repository';
 import { cacheClusterClass } from './aws/elasticache/cacheCluster';
@@ -97,6 +98,7 @@ let classes = Object.fromEntries([
 	userPoolClass,
 	userPoolClientClass,
 	vpcClass,
+	vpcEndpointClass,
 	webAclClass,
 ].map(c => [c.class_, c]));
 
