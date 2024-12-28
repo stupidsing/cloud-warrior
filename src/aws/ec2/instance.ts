@@ -16,7 +16,7 @@ let delete_ = ({ InstanceId }) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${InstanceId} &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
-	`aws ec2 wait  instance-terminated \\`,
+	`aws ec2 wait instance-terminated \\`,
 	`  --instance-id ${InstanceId}`,
 ];
 
