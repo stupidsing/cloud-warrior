@@ -28,8 +28,6 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  | jq .RouteTable | tee ${statesDirectory}/\${KEY}`,
-			`aws ec2 wait route-table-exists \\`,
-			`  --route-table-ids ${RouteTableId}`,
 		);
 		state = { VpcId };
 	}
