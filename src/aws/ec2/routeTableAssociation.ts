@@ -5,30 +5,30 @@ import { difference, replace } from "../../utils";
 let class_ = 'route-table-association';
 
 type Attributes = {
-	Associations: { GatewayId: string }[],
+	Associations: { SubnetId: string }[],
 	RouteTableId: string,
 };
 
 let updateAssociations = ({ RouteTableId }, associations0, associations1) => {
-	let source = new Set<string>(associations0.map(r => r.GatewayId));
-	let target = new Set<string>(associations1.map(r => r.GatewayId));
+	let source = new Set<string>(associations0.map(r => r.SubnetId));
+	let target = new Set<string>(associations1.map(r => r.SubnetId));
 	let commands = [];
 	let needRefresh = false;
 
-	difference(target, source).forEach(GatewayId => {
+	difference(target, source).forEach(subnetId => {
 		commands.push(
 			`aws ec2 associate-route-table \\`,
-			`  --gateway-id ${GatewayId} \\`,
-			`  --route-table-id ${RouteTableId}`,
+			`  --route-table-id ${RouteTableId} \\`,
+			`  --subnet-id ${subnetId}`,
 		);
 		needRefresh = true;
 	});
 
-	difference(source, target).forEach(GatewayId => {
+	difference(source, target).forEach(subnetId => {
 		commands.push(
 			`aws ec2 disassociate-route-table \\`,
-			`  --gateway-id ${GatewayId} \\`,
-			`  --route-table-id ${RouteTableId}`,
+			`  --route-table-id ${RouteTableId} \\`,
+			`  --subnet-id ${subnetId}`,
 		);
 		needRefresh = true;
 	});

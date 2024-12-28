@@ -1,4 +1,4 @@
-export let prefix = 'npt-cloud';
+export let prefix = 'et-prd';
 
 export let dependenciesDirectory = 'dependencies';
 
