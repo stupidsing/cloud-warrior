@@ -4,6 +4,7 @@ import { createUserPoolClient } from './aws/cognito-idp/userPoolClient';
 import { createInstance } from './aws/ec2/instance';
 import { createInternetGateway } from './aws/ec2/internetGateway';
 import { createInternetGatewayAttachment } from './aws/ec2/internetGatewayAttachment';
+import { createRouteTable } from './aws/ec2/routeTable';
 import { createListener } from './aws/ec2/listener';
 import { createNatGateway } from './aws/ec2/natGateway';
 import { createSecurityGroup } from './aws/ec2/securityGroup';
@@ -145,6 +146,10 @@ run(process.env.ACTION ?? 'up', () => {
 	let internetGatewayAttachment = createInternetGatewayAttachment('igw-a', get => ({
 		Attachments: [{ VpcId: vpc.getVpcId(get) }],
 		InternetGatewayId: internetGateway.getInternetGatewayId(get),
+	}));
+
+	let routeTable = createRouteTable('rt', get => ({
+		VpcId: vpc.getVpcId(get),
 	}));
 
 	let natGateways = privateSubnets.map((subnet, i) => createNatGateway(`ngw-${i}`, get => ({
