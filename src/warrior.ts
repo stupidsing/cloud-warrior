@@ -13,7 +13,7 @@ import { listenerClass } from './aws/ec2/listener';
 import { natGatewayClass } from './aws/ec2/natGateway';
 import { routesClass } from './aws/ec2/routes';
 import { routeTableClass } from './aws/ec2/routeTable';
-import { routeTableAssociationsClass } from './aws/ec2/routeTableAssociation';
+import { routeTableAssociationsClass } from './aws/ec2/routeTableAssociations';
 import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleEgressClass } from './aws/ec2/securityGroupRuleEgress';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRuleIngress';
