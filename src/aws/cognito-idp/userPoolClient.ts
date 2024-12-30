@@ -89,9 +89,9 @@ export let userPoolClientClass: Class = {
 	getKey: ({ name, attributes: { ClientName, UserPoolId } }: Resource_<Attributes>) => [
 		class_,
 		name,
+		UserPoolId,
 		createHash('sha256').update([
 			ClientName,
-			UserPoolId,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ ClientName, UserPoolId }) => refreshById(ClientName, UserPoolId),

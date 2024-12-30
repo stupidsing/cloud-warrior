@@ -43,9 +43,9 @@ export let keyPairClass: Class = {
 	getKey: ({ name, attributes: { Filename, KeyName } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		KeyName,
 		createHash('sha256').update([
 			fs.readFileSync(Filename),
+			KeyName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ KeyName }) => [

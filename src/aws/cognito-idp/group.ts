@@ -78,9 +78,9 @@ export let groupClass: Class = {
 	getKey: ({ name, attributes: { GroupName, UserPoolId } }: Resource_<Attributes>) => [
 		class_,
 		name,
+		UserPoolId,
 		createHash('sha256').update([
 			GroupName,
-			UserPoolId,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ GroupName, UserPoolId }) => refreshByName(GroupName, UserPoolId),
