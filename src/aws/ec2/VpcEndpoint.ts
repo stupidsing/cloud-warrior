@@ -28,15 +28,15 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 create-vpc-endpoint \\`,
-			PrivateDnsEnabled ? `  --private-dns-enabled` : `  --no-private-dns-enabled`,
-			`  --security-group-ids ${SecurityGroupIds.join(' ')}`,
-			`  --service-name ${ServiceName}`,
-			`  --subnet-ids ${attributes.SubnetIds.join(' ')}`,
-			`  --vpc-endpoint-type ${VpcEndpointType}`,
-			`  --vpc-id ${VpcId}`,
+			PrivateDnsEnabled ? `  --private-dns-enabled \\` : `  --no-private-dns-enabled \\`,
+			`  --security-group-ids ${SecurityGroupIds.join(' ')} \\`,
+			`  --service-name ${ServiceName} \\`,
+			`  --subnet-ids ${attributes.SubnetIds.join(' ')} \\`,
+			`  --vpc-endpoint-type ${VpcEndpointType} \\`,
+			`  --vpc-id ${VpcId} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'vpcendpoint', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
-			])}'`,
+				{ ResourceType: 'vpc-endpoint', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+			])}' \\`,
 			`  | jq .VpcEndpoint | tee ${statesDirectory}/\${KEY}`,
 		);
 		state = { PrivateDnsEnabled, SecurityGroupIds, ServiceName, SubnetIds, VpcEndpointType, VpcId };

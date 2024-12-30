@@ -8,8 +8,10 @@ type Attributes = {
 	IamInstanceProfile?: { Arn: string },
 	ImageId: string,
 	InstanceType: string,
+	KeyName?: string,
 	SecurityGroups: { GroupId: string }[],
 	SubnetId: string,
+	UserData?: string,
 };
 
 let delete_ = ({ InstanceId }) => [
@@ -29,7 +31,7 @@ let refreshById = id => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { ImageId, InstanceType, SecurityGroups, SubnetId } = attributes;
+	let { ImageId, InstanceType, KeyName, SecurityGroups, SubnetId, UserData } = attributes;
 	let commands = [];
 
 	let InstanceId = `$(cat ${statesDirectory}/\${KEY} | jq -r .InstanceId)`;
@@ -37,18 +39,20 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 run-instances \\`,
-			...SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(' ')} \\`] : [],
+			...KeyName != null ? [`  --key-name ${KeyName} \\`] : [],
 			`  --image-id ${ImageId} \\`,
 			`  --instance-type ${InstanceType} \\`,
+			...SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(' ')} \\`] : [],
 			`  --subnet-id ${SubnetId} \\`,
 			`  --tag-specifications '${JSON.stringify([
 				{ ResourceType: 'instance', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
+			...UserData != null ? [`  --user-data file://${UserData} \\`] : [],
 			`  | jq .Instances[0] | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait instance-exists \\`,
 			`  --instance-id ${InstanceId}`,
 		);
-		state = { ImageId, InstanceType, SecurityGroups, SubnetId };
+		state = { ImageId, InstanceType, SecurityGroups, SubnetId, UserData };
 	}
 
 	{
@@ -99,11 +103,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let instanceClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { ImageId, InstanceType, SubnetId } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { ImageId, InstanceType, KeyName, SubnetId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		SubnetId,
 		ImageId,
+		KeyName,
+		SubnetId,
 		createHash('sha256').update([
 			InstanceType,
 		].join('_')).digest('hex').slice(0, 4),

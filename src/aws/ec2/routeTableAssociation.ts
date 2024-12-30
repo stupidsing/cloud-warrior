@@ -5,13 +5,20 @@ import { difference, replace } from "../../utils";
 let class_ = 'route-table-association';
 
 type Attributes = {
-	Associations: { SubnetId: string }[],
+	Associations: {
+		RouteTableAssociationId?: string,
+		SubnetId: string,
+	}[],
 	RouteTableId: string,
 };
 
 let updateAssociations = ({ RouteTableId }, associations0, associations1) => {
-	let source = new Set<string>(associations0.map(r => r.SubnetId));
-	let target = new Set<string>(associations1.map(r => r.SubnetId));
+	let associationBySubnetId0 = {};
+	let associationBySubnetId1 = {};
+	for (let association of associations0) associationBySubnetId0[association.SubnetId] = association;
+	for (let association of associations1) associationBySubnetId1[association.SubnetId] = association;
+	let source = new Set<string>(Object.keys(associationBySubnetId0));
+	let target = new Set<string>(Object.keys(associationBySubnetId1));
 	let commands = [];
 	let needRefresh = false;
 
@@ -27,8 +34,7 @@ let updateAssociations = ({ RouteTableId }, associations0, associations1) => {
 	difference(source, target).forEach(subnetId => {
 		commands.push(
 			`aws ec2 disassociate-route-table \\`,
-			`  --route-table-id ${RouteTableId} \\`,
-			`  --subnet-id ${subnetId}`,
+			`  --association-id ${associationBySubnetId0[subnetId].RouteTableAssociationId}`,
 		);
 		needRefresh = true;
 	});
@@ -68,7 +74,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	return commands;
 };
 
-export let routeTableAssociationClass: Class = {
+export let routeTableAssociationsClass: Class = {
 	class_,
 	delete_,
 	getKey: ({ name, attributes: { RouteTableId } }: Resource_<Attributes>) => [
@@ -82,7 +88,7 @@ export let routeTableAssociationClass: Class = {
 
 import { create } from "../../warrior";
 
-export let createRouteTableAssociation = (name: string, f: AttributesInput<Attributes>) => {
+export let createRouteTableAssociations = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		getRouteTableId: (get: (resource: any, prop: string) => string) => get(resource, 'RouteTableId'),

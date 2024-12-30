@@ -2,19 +2,21 @@ import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { certificateClass } from './aws/acm/certificate';
 import { distributionClass } from './aws/cloudfront/distribution';
+import { groupClass } from './aws/cognito-idp/group';
 import { userPoolClass } from './aws/cognito-idp/userPool';
 import { userPoolClientClass } from './aws/cognito-idp/userPoolClient';
 import { instanceClass } from './aws/ec2/instance';
 import { internetGatewayClass } from './aws/ec2/internetGateway';
 import { internetGatewayAttachmentClass } from './aws/ec2/internetGatewayAttachment';
+import { keyPairClass } from './aws/ec2/keyPair';
 import { listenerClass } from './aws/ec2/listener';
 import { natGatewayClass } from './aws/ec2/natGateway';
-import { routeClass } from './aws/ec2/route';
+import { routesClass } from './aws/ec2/routes';
 import { routeTableClass } from './aws/ec2/routeTable';
-import { routeTableAssociationClass } from './aws/ec2/routeTableAssociation';
+import { routeTableAssociationsClass } from './aws/ec2/routeTableAssociation';
 import { securityGroupClass } from './aws/ec2/securityGroup';
-import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRule';
 import { securityGroupRuleEgressClass } from './aws/ec2/securityGroupRuleEgress';
+import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRuleIngress';
 import { subnetClass } from './aws/ec2/subnet';
 import { vpcClass } from './aws/ec2/vpc';
 import { vpcEndpointClass } from './aws/ec2/VpcEndpoint';
@@ -72,12 +74,14 @@ let classes = Object.fromEntries([
 	dbSubnetGroupClass,
 	distributionClass,
 	functionClass,
+	groupClass,
+	hostedZoneClass,
 	instanceClass,
 	instanceProfileClass,
 	internetGatewayClass,
 	internetGatewayAttachmentClass,
 	ipSetClass,
-	hostedZoneClass,
+	keyPairClass,
 	lifecyclePolicyClass,
 	listenerClass,
 	loadBalancerClass,
@@ -88,9 +92,9 @@ let classes = Object.fromEntries([
 	replicationGroupClass,
 	repositoryClass,
 	roleClass,
-	routeClass,
+	routesClass,
 	routeTableClass,
-	routeTableAssociationClass,
+	routeTableAssociationsClass,
 	securityGroupClass,
 	securityGroupRuleEgressClass,
 	securityGroupRuleIngressClass,
