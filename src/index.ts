@@ -6,9 +6,9 @@ import { createInternetGateway } from './aws/ec2/internetGateway';
 import { createInternetGatewayAttachment } from './aws/ec2/internetGatewayAttachment';
 import { createListener } from './aws/ec2/listener';
 import { createNatGateway } from './aws/ec2/natGateway';
-import { createRoute } from './aws/ec2/route';
+import { createRoutes } from './aws/ec2/routes';
 import { createRouteTable } from './aws/ec2/routeTable';
-import { createRouteTableAssociation } from './aws/ec2/routeTableAssociation';
+import { createRouteTableAssociations } from './aws/ec2/routeTableAssociations';
 import { createSecurityGroup } from './aws/ec2/securityGroup';
 import { createSecurityGroupRuleIngress } from './aws/ec2/securityGroupRule';
 import { createSubnet } from './aws/ec2/subnet';
@@ -154,14 +154,14 @@ run(process.env.ACTION ?? 'up', () => {
 		VpcId: vpc.getVpcId(get),
 	}));
 
-	let route = createRoute('route', get => ({
+	let route = createRoutes('route', get => ({
 		Routes: [
 			{ DestinationCidrBlock: '0.0.0.0/0', GatewayId: internetGateway.getInternetGatewayId(get) },
 		],
 		RouteTableId: routeTable.getRouteTableId(get),
 	}));
 
-	let routeTableAssociations = publicSubnets.map((subnet, i) => createRouteTableAssociation(`rta-${i}`, get => ({
+	let routeTableAssociations = publicSubnets.map((subnet, i) => createRouteTableAssociations(`rta-${i}`, get => ({
 		Associations: [{ SubnetId: subnet.getSubnetId(get) }],
 		RouteTableId: routeTable.getRouteTableId(get),
 	})));
