@@ -15,8 +15,8 @@ let delete_ = ({ Name }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByName = name => [
-	`NAME=${name}`,
+let refresh = Name => [
+	`NAME=${Name}`,
 	`aws s3api list-buckets \\`,
 	`  --query "Buckets[?Name == '\${NAME}']" \\`,
 	`  | jq .[0] | tee ${statesDirectory}/\${KEY}`,
@@ -35,7 +35,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --region ${Region}`,
 			`aws s3api wait bucket-exists \\`,
 			`  --bucket ${Name}`,
-			...refreshByName(Name),
+			...refresh(Name),
 		);
 		state = { Name, Region };
 	}
@@ -53,7 +53,7 @@ export let bucketClass: Class = {
 			Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ Name }) => refreshByName(Name),
+	refresh: ({ Name }) => refresh(Name),
 	upsert,
 };
 
@@ -62,6 +62,7 @@ import { create } from "../../warrior";
 export let createBucket = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getBucket: (get: (resource: any, prop: string) => string) => get(resource, 'Bucket'),
+		getBucket: (get: (resource: any, prop: string) => string) => resource.attributes.Name,
+		// getBucket: (get: (resource: any, prop: string) => string) => get(resource, 'Name'),
 	};
 };

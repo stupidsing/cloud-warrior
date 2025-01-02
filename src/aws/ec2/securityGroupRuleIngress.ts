@@ -20,8 +20,8 @@ let delete_ = ({ GroupId, SecurityGroupRuleId }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshById = id => [
-	`ID=${id}`,
+let refresh = SecurityGroupRuleId => [
+	`ID=${SecurityGroupRuleId}`,
 	`aws ec2 describe-security-group-rules \\`,
 	`  --security-group-rule-ids \${ID} \\`,
 	`  | jq .SecurityGroupRules[0] | tee ${statesDirectory}/\${KEY}`,
@@ -43,7 +43,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				{ ResourceType: 'security-group-rule', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .SecurityGroupRules[0] | tee ${statesDirectory}/\${KEY}`,
-			...refreshById(SecurityGroupRuleId),
+			...refresh(SecurityGroupRuleId),
 		);
 		state = {  CidrIpv4, FromPort, GroupId, IpProtocol, SourceGroup, ToPort };
 	}
@@ -66,7 +66,7 @@ export let securityGroupRuleIngressClass: Class = {
 			ToPort,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ SecurityGroupRuleId }) => refreshById(SecurityGroupRuleId),
+	refresh: ({ SecurityGroupRuleId }) => refresh(SecurityGroupRuleId),
 	upsert,
 };
 

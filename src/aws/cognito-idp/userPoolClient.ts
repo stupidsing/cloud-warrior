@@ -8,6 +8,16 @@ type Attributes = {
 	AccessTokenValidity?: number,
 	ClientId?: string,
 	ClientName: string,
+	ExplicitAuthFlows?: (
+		'ALLOW_ADMIN_USER_PASSWORD_AUTH'
+		| 'ALLOW_CUSTOM_AUTH'
+		| 'ADMIN_NO_SRP_AUTH'
+		| 'ALLOW_REFRESH_TOKEN_AUTH'
+		| 'ALLOW_USER_PASSWORD_AUTH'
+		| 'ALLOW_USER_SRP_AUTH'
+		| 'CUSTOM_AUTH_FLOW_ONLY'
+		| 'USER_PASSWORD_AUTH'
+	)[],
 	IdTokenValidity?: number,
 	RefreshTokenValidity?: number,
 	TokenValidityUnits?: {
@@ -25,9 +35,9 @@ let delete_ = ({ ClientId, UserPoolId }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshById = (clientId, userPoolId) => [
-	`CLIENT_ID=${clientId}`,
-	`USER_POOL_ID=${userPoolId}`,
+let refresh = (ClientId, UserPoolId) => [
+	`CLIENT_ID=${ClientId}`,
+	`USER_POOL_ID=${UserPoolId}`,
 	`aws cognito-idp describe-user-pool-client \\`,
 	`  --client-id \${CLIENT_ID} \\`,
 	`  --user-pool-id \${USER_POOL_ID} \\`,
@@ -39,7 +49,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { ClientName, UserPoolId } = attributes;
 	let commands = [];
 
-	let ClientId = `$(cat ${statesDirectory}/\${KEY} | jq -r .ClientIdId)`;
+	let ClientId = `$(cat ${statesDirectory}/\${KEY} | jq -r .ClientId)`;
 
 	if (state == null) {
 		commands.push(
@@ -55,6 +65,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	.entries({
 		AccessTokenValidity: r => r != null ? [`--access-token-validity ${r}`] : [],
 		IdTokenValidity: r => r != null ? [`--id-token-validity ${r}`] : [],
+		ExplicitAuthFlows: r => r != null ? [`--explicit-auth-flows ${r.join(' ')}`] : [],
 		RefreshTokenValidity: r => r != null ? [`--refresh-token-validity ${r}`] : [],
 		TokenValidityUnits: r => r != null ? [
 			`--token-validity-units AccessToken=${r.AccessToken} IdToken=${r.IdToken} RefreshToken=${r.RefreshToken}`,
@@ -76,7 +87,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws cognito-idp update-user-pool-client \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
-			`  | jq -r .UserPoolClient | tee ${statesDirectory}/\${KEY}`,
+			`  | jq .UserPoolClient | tee ${statesDirectory}/\${KEY}`,
 		);
 	}
 
@@ -94,7 +105,7 @@ export let userPoolClientClass: Class = {
 			ClientName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ ClientName, UserPoolId }) => refreshById(ClientName, UserPoolId),
+	refresh: ({ ClientName, UserPoolId }) => refresh(ClientName, UserPoolId),
 	upsert,
 };
 
@@ -103,6 +114,6 @@ import { create } from "../../warrior";
 export let createUserPoolClient = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
-		getId: (get: (resource: any, prop: string) => string) => get(resource, 'Id'),
+		getClientId: (get: (resource: any, prop: string) => string) => get(resource, 'ClientId'),
 	};
 };

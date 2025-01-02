@@ -10,6 +10,20 @@ type Attributes = {
 	Roles: { RoleName: string }[],
 };
 
+let delete_ = state => [
+	...updateRoles(state, state.Roles, []).commands,
+	`aws iam delete-instance-profile \\`,
+	`  --instance-profile-name ${state.InstanceProfileName} &&`,
+	`rm -f ${statesDirectory}/\${KEY}`,
+];
+
+let refresh = InstanceProfileName => [
+		`NAME=${InstanceProfileName}`,
+		`aws iam get-instance-profile \\`,
+		`  --instance-profile-name \${NAME} \\`,
+		`  | jq .InstanceProfile | tee ${statesDirectory}/\${KEY}`,
+];
+
 let updateRoles = ({ InstanceProfileName }, roles0, roles1) => {
 	let source = new Set<string>(roles0.map(r => r.RoleName));
 	let target = new Set<string>(roles1.map(r => r.RoleName));
@@ -37,20 +51,6 @@ let updateRoles = ({ InstanceProfileName }, roles0, roles1) => {
 	return { commands, needRefresh };
 };
 
-let delete_ = (state) => [
-	...updateRoles(state, state.Roles, []).commands,
-	`aws iam delete-instance-profile \\`,
-	`  --instance-profile-name ${state.InstanceProfileName} &&`,
-	`rm -f ${statesDirectory}/\${KEY}`,
-];
-
-let refreshByName = name => [
-		`NAME=${name}`,
-		`aws iam get-instance-profile \\`,
-		`  --instance-profile-name \${NAME} \\`,
-		`  | jq .InstanceProfile | tee ${statesDirectory}/\${KEY}`,
-];
-
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
 	let { InstanceProfileName } = attributes;
@@ -73,7 +73,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		let { commands: commands_, needRefresh } = updateRoles(attributes, state[prop], attributes[prop]);
 
 		if (needRefresh) {
-			commands.push(...commands_, ...refreshByName(InstanceProfileName));
+			commands.push(...commands_, ...refresh(InstanceProfileName));
 		}
 	}
 
@@ -90,7 +90,7 @@ export let instanceProfileClass: Class = {
 			InstanceProfileName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ InstanceProfileName }) => refreshByName(InstanceProfileName),
+	refresh: ({ InstanceProfileName }) => refresh(InstanceProfileName),
 	upsert,
 };
 

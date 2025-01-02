@@ -22,7 +22,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws ec2 create-internet-gateway \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'internet-gateway', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .InternetGateway | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait internet-gateway-exists \\`,

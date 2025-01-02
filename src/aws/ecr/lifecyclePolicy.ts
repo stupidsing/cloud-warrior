@@ -15,8 +15,8 @@ let delete_ = ({ repositoryName }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByName = name => [
-	`NAME=${name}`,
+let refresh = repositoryName => [
+	`NAME=${repositoryName}`,
 	`aws ecr get-lifecycle-policy \\`,
 	`  --repository-name \${NAME} \\`,
 	`  | tee ${statesDirectory}/\${KEY}`,
@@ -50,7 +50,7 @@ export let lifecyclePolicyClass: Class = {
 			repositoryName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ repositoryName }) => refreshByName(repositoryName),
+	refresh: ({ repositoryName }) => refresh(repositoryName),
 	upsert,
 };
 

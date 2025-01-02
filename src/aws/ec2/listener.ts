@@ -17,8 +17,8 @@ let delete_ = ({ ListenerArn }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByArn = arn => [
-	`ARN=${arn}`,
+let refresh = ListenerArn => [
+	`ARN=${ListenerArn}`,
 	`aws elbv2 describe-listeners \\`,
 	`  --listener-arns \${ARN} \\`,
 	`  | jq .Listeners[0] | tee ${statesDirectory}/\${KEY}`,
@@ -97,7 +97,7 @@ export let listenerClass: Class = {
 		name,
 		replace(LoadBalancerArn),
 	].join('_'),
-	refresh: ({ ListenerArn }) => refreshByArn(ListenerArn),
+	refresh: ({ ListenerArn }) => refresh(ListenerArn),
 	upsert,
 };
 

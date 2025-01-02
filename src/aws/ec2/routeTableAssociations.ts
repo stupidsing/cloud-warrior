@@ -47,9 +47,9 @@ let delete_ = (state: { Associations, RouteTableId }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshById = routeTableId => [
+let refresh = RouteTableId => [
 	`aws ec2 describe-route-tables \\`,
-	`  --route-table-id ${routeTableId} \\`,
+	`  --route-table-id ${RouteTableId} \\`,
 	`  | jq .RouteTables[0] | tee ${statesDirectory}/\${KEY}`,
 ];
 
@@ -67,7 +67,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		let { commands: commands_, needRefresh } = updateAssociations(attributes, state[prop], attributes[prop]);
 
 		if (needRefresh) {
-			commands.push(...commands_, ...refreshById(RouteTableId));
+			commands.push(...commands_, ...refresh(RouteTableId));
 		}
 	}
 
@@ -82,7 +82,7 @@ export let routeTableAssociationsClass: Class = {
 		name,
 		replace(RouteTableId),
 	].join('_'),
-	refresh: ({ RouteTableId }) => refreshById(RouteTableId),
+	refresh: ({ RouteTableId }) => refresh(RouteTableId),
 	upsert,
 };
 

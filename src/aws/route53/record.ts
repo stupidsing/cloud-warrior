@@ -15,7 +15,7 @@ type Attributes = {
 
 let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`CHANGE_ID=$(aws route53 change-resource-record-sets \\`,
-	`  --change-batch '${JSON.stringify({
+	`  --change-batch ${JSON.stringify(JSON.stringify({
 		Changes: [
 			{
 				Action: 'DELETE',
@@ -27,7 +27,7 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 				},
 			}
 		]
-	})}' \\`,
+	}))} \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
 	`  | jq -r .ChangeInfo.Id) &&`,
 	`aws route53 wait resource-record-sets-changed \\`,
@@ -37,7 +37,7 @@ let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`  ${statesDirectory}/\${KEY}#HostedZoneId`,
 ];
 
-let refreshByHostedZoneId = (HostedZoneId, Type, Name) => [
+let refresh = (HostedZoneId, Type, Name) => [
 	`aws route53 list-resource-record-sets \\`,
 	`  --hosted-zone-id ${HostedZoneId} \\`,
 	`  | jq '.ResourceRecordSets[] | select(.Type == "${Type}" and .Name == "${Name}")' | tee ${statesDirectory}/\${KEY}`,
@@ -52,7 +52,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`CHANGE_ID=$(aws route53 change-resource-record-sets \\`,
-			`  --change-batch '${JSON.stringify({
+			`  --change-batch ${JSON.stringify(JSON.stringify({
 				Changes: [
 					{
 						Action: 'CREATE',
@@ -64,12 +64,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 						},
 					}
 				]
-			})}'\\`,
+			}))} \\`,
 			`  --hosted-zone-id ${HostedZoneId} \\`,
 			`  | jq -r .ChangeInfo.Id) &&`,
 			`aws route53 wait \\`,
 			`  resource-record-sets-changed --id \${CHANGE_ID}`,
-			...refreshByHostedZoneId(HostedZoneId, Type, Name),
+			...refresh(HostedZoneId, Type, Name),
 		);
 		state = { HostedZoneId, Name, ResourceRecords, TTL, Type };
 	}
@@ -91,7 +91,7 @@ export let recordClass: Class = {
 			Type,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ HostedZoneId, ResourceRecords, Type }) => refreshByHostedZoneId(HostedZoneId, ResourceRecords, Type),
+	refresh: ({ HostedZoneId, ResourceRecords, Type }) => refresh(HostedZoneId, ResourceRecords, Type),
 	upsert,
 };
 

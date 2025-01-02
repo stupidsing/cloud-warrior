@@ -31,9 +31,9 @@ let delete_ = ({ QueueUrl }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByUrl = name => [
+let refresh = Name => [
 	/*
-	`NAME=${name}`,
+	`NAME=${Name}`,
 	`aws sqs list-queues \\`,
 	`  --queue-name-prefix \${NAME} \\`,
 	`  | tee ${statesDirectory}/\${KEY}`,
@@ -71,7 +71,7 @@ export let queueClass: Class = {
 			QueueName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ QueueUrl }) => refreshByUrl(QueueUrl),
+	refresh: ({ QueueUrl }) => refresh(QueueUrl),
 	upsert,
 };
 

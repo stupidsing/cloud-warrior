@@ -5,6 +5,7 @@ import { distributionClass } from './aws/cloudfront/distribution';
 import { groupClass } from './aws/cognito-idp/group';
 import { userPoolClass } from './aws/cognito-idp/userPool';
 import { userPoolClientClass } from './aws/cognito-idp/userPoolClient';
+import { addressAssociationClass } from './aws/ec2/addressAssociation';
 import { instanceClass } from './aws/ec2/instance';
 import { internetGatewayClass } from './aws/ec2/internetGateway';
 import { internetGatewayAttachmentClass } from './aws/ec2/internetGatewayAttachment';
@@ -30,6 +31,7 @@ import { targetGroupClass } from './aws/elbv2/targetGroup';
 import { instanceProfileClass } from './aws/iam/instanceProfile';
 import { policyClass } from './aws/iam/policy';
 import { roleClass } from './aws/iam/role';
+import { rolePolicyAttachmentClass } from './aws/iam/rolePolicyAttachment';
 import { eventSourceMappingClass } from './aws/lambda/eventSourceMapping';
 import { functionClass } from './aws/lambda/function';
 import { dbClusterClass } from './aws/rds/dbCluster';
@@ -38,6 +40,10 @@ import { dbSubnetGroupClass } from './aws/rds/dbSubnetGroup';
 import { hostedZoneClass } from './aws/route53/hostedZone';
 import { recordClass } from './aws/route53/record';
 import { bucketClass } from './aws/s3/bucket';
+import { bucketCorsClass } from './aws/s3/bucketCors';
+import { bucketPolicyClass } from './aws/s3/bucketPolicy';
+import { objectClass } from './aws/s3/object';
+import { publicAccessBlockClass } from './aws/s3/publicAccessBlock';
 import { queueClass } from './aws/sqs/Queue';
 import { ipSetClass } from './aws/wafv2/ipSet';
 import { webAclClass } from './aws/wafv2/webAcl';
@@ -47,8 +53,18 @@ import { AttributesInput, Resource } from './types';
 let readJsonIfExists = name => {
 	let filename = name;
 	if (existsSync(filename)) {
-		let text = readFileSync(filename, 'ascii');
+		let text = readFileSync(filename, 'utf8');
 		return text ? JSON.parse(text) : null;
+	} else {
+		return null;
+	}
+};
+
+let readLinesIfExists = name => {
+	let filename = name;
+	if (existsSync(filename)) {
+		let text = readFileSync(filename, 'utf8');
+		return text ? text.split('\n').filter(line => line) : null;
 	} else {
 		return null;
 	}
@@ -57,15 +73,17 @@ let readJsonIfExists = name => {
 let readTextIfExists = name => {
 	let filename = name;
 	if (existsSync(filename)) {
-		let text = readFileSync(filename, 'ascii');
-		return text ? text.split('\n').filter(line => line) : null;
+		return readFileSync(filename, 'utf8');
 	} else {
 		return null;
 	}
 };
 
 let classes = Object.fromEntries([
+	addressAssociationClass,
 	bucketClass,
+	bucketCorsClass,
+	bucketPolicyClass,
 	cacheClusterClass,
 	certificateClass,
 	eventSourceMappingClass,
@@ -86,12 +104,15 @@ let classes = Object.fromEntries([
 	listenerClass,
 	loadBalancerClass,
 	natGatewayClass,
+	objectClass,
 	policyClass,
+	publicAccessBlockClass,
 	queueClass,
 	recordClass,
 	replicationGroupClass,
 	repositoryClass,
 	roleClass,
+	rolePolicyAttachmentClass,
 	routesClass,
 	routeTableClass,
 	routeTableAssociationsClass,
@@ -148,8 +169,12 @@ export let run = (action: string, f: () => void) => {
 	stateByKey = {};
 
 	for (let stateFilename of stateFilenames) {
+		let isText = stateFilename.endsWith('.text');
 		let [key, subKey] = stateFilename.split('#');
-		let state = readJsonIfExists(`${statesDirectory}/${stateFilename}`);
+		if (subKey && isText) subKey = subKey.slice(0, -5);
+		let state = !isText
+			? readJsonIfExists(`${statesDirectory}/${stateFilename}`)
+			: readTextIfExists(`${statesDirectory}/${stateFilename}`);
 		if (state) {
 			if (subKey) state = { [subKey]: state };
 			stateByKey[key] = { ...stateByKey[key] ?? {}, key, ...state };
@@ -180,7 +205,7 @@ export let run = (action: string, f: () => void) => {
 
 		for (let dependenciesFilename of dependenciesFilenames) {
 			let [key, subKey] = dependenciesFilename.split('#');
-			let dependencies = readTextIfExists(`${dependenciesDirectory}/${dependenciesFilename}`) ?? [];
+			let dependencies = readLinesIfExists(`${dependenciesDirectory}/${dependenciesFilename}`) ?? [];
 			for (let dependency of dependencies) {
 				let dependers = dependersByKey[dependency];
 				if (dependers == null) dependers = dependersByKey[dependency] = [];
@@ -215,29 +240,29 @@ export let run = (action: string, f: () => void) => {
 					}
 
 					let { upsert } = classes[class_];
+					let upsertCommands = action === 'up' ? upsert(stateByKey[key], resource) : [];
 
-					commands.push(
-						'',
-						`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
-						`KEY=${key}`,
-						`KEY_${hash}=\${KEY}`,
-						`STATE_${hash}=${statesDirectory}/\${KEY}`,
-						...action === 'up' ? upsert(stateByKey[key], resource) : [],
-					);
-
-					if (dependencyHashes_.length === 0) {
+					if (action !== 'up' || upsertCommands.length > 0 || process.env.KEEP_EMPTY_BLOCKS) {
 						commands.push(
-							`echo -n > ${dependenciesDirectory}/\${KEY}`,
-						);
-					} else if (dependencyHashes_.length === 1) {
-						commands.push(
-							`echo \${KEY_${dependencyHashes_[0]}} > ${dependenciesDirectory}/\${KEY}`,
-						);
-					} else {
-						commands.push(
-							`(`,
-							...dependencyHashes_.map(dependencyHash => `  echo \${KEY_${dependencyHash}}`),
-							`) > ${dependenciesDirectory}/\${KEY}`,
+							'',
+							`# ${stateByKey[key] ? 'update' : 'create'} ${name}`,
+							`KEY=${key}`,
+							`KEY_${hash}=\${KEY}`,
+							`STATE_${hash}=${statesDirectory}/\${KEY}`,
+							...upsertCommands,
+							...(
+								dependencyHashes_.length === 0 ? [
+									`echo -n > ${dependenciesDirectory}/\${KEY}`,
+								]
+								: dependencyHashes_.length === 1 ? [
+									`echo \${KEY_${dependencyHashes_[0]}} > ${dependenciesDirectory}/\${KEY}`,
+								]
+								: [
+									`(`,
+									...dependencyHashes_.map(dependencyHash => `  echo \${KEY_${dependencyHash}}`),
+									`) > ${dependenciesDirectory}/\${KEY}`,
+								]
+							),
 						);
 					}
 

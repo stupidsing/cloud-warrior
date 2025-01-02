@@ -41,7 +41,7 @@ let delete_ = (state: { Attachments, InternetGatewayId }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshById = internetGatewayId => [
+let refresh = internetGatewayId => [
 	`aws ec2 describe-internet-gateways \\`,
 	`  --internet-gateway-id ${internetGatewayId} \\`,
 	`  | jq .InternetGateways[0] | tee ${statesDirectory}/\${KEY}`,
@@ -61,7 +61,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		let { commands: commands_, needRefresh } = updateAttachments(attributes, state[prop], attributes[prop]);
 
 		if (needRefresh) {
-			commands.push(...commands_, ...refreshById(InternetGatewayId));
+			commands.push(...commands_, ...refresh(InternetGatewayId));
 		}
 	}
 
@@ -76,7 +76,7 @@ export let internetGatewayAttachmentClass: Class = {
 		name,
 		replace(InternetGatewayId),
 	].join('_'),
-	refresh: ({ InternetGatewayId }) => refreshById(InternetGatewayId),
+	refresh: ({ InternetGatewayId }) => refresh(InternetGatewayId),
 	upsert,
 };
 

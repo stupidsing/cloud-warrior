@@ -8,12 +8,14 @@ type Attributes = {
 	Id?: string,
 	MfaConfiguration?: string,
 	Name: string,
-	PasswordPolicy?: {
-		MinimumLength: number,
-		RequireLowercase: boolean,
-		RequireNumbers: boolean,
-		RequireSymbols: boolean,
-		RequireUppercase: boolean,
+	Policies?: {
+		PasswordPolicy?: {
+			MinimumLength: number,
+			RequireLowercase: boolean,
+			RequireNumbers: boolean,
+			RequireSymbols: boolean,
+			RequireUppercase: boolean,
+		},
 	},
 };
 
@@ -23,8 +25,8 @@ let delete_ = ({ Id }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshById = id => [
-	`ID=${id}`,
+let refresh = Id => [
+	`ID=${Id}`,
 	`aws cognito-idp describe-user-pool \\`,
 	`  --user-pool-id \${ID} \\`,
 	`  | jq .UserPool | tee ${statesDirectory}/\${KEY}`,
@@ -50,13 +52,13 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let updates = Object
 	.entries({
 		MfaConfiguration: r => r != null ? [`--mfa-configuration ${r}`,] : [],
-		PasswordPolicy: r => r != null ? [
+		Policies: r => r != null && r.PasswordPolicy != null ? [
 			`--policies PasswordPolicy="{`
-			+ `MinimumLength=${r.MinimumLength},`
-			+ `RequireLowercase=${r.RequireLowercase},`
-			+ `RequireNumbers=${r.RequireNumbers},`
-			+ `RequireSymbols=${r.RequireSymbols},`
-			+ `RequireUppercase=${r.RequireUppercase}`
+			+ `MinimumLength=${r.PasswordPolicy.MinimumLength},`
+			+ `RequireLowercase=${r.PasswordPolicy.RequireLowercase},`
+			+ `RequireNumbers=${r.PasswordPolicy.RequireNumbers},`
+			+ `RequireSymbols=${r.PasswordPolicy.RequireSymbols},`
+			+ `RequireUppercase=${r.PasswordPolicy.RequireUppercase}`
 			+ `}"`,
 		] : [],
 	})
@@ -75,8 +77,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws cognito-idp update-user-pool \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
-			`  --user-pool-id ${Id} \\`,
-			`  | jq -r .UserPool | tee ${statesDirectory}/\${KEY}`,
+			`  | cat`,
+			...refresh(Id),
 		);
 	}
 
@@ -93,7 +95,7 @@ export let userPoolClass: Class = {
 			Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ Name }) => refreshById(Name),
+	refresh: ({ Name }) => refresh(Name),
 	upsert,
 };
 

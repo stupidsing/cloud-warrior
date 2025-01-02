@@ -24,7 +24,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws ec2 create-route-table \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'route-table', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  | jq .RouteTable | tee ${statesDirectory}/\${KEY}`,

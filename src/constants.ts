@@ -1,4 +1,6 @@
-export let prefix = 'et-prd';
+export let env = 'prd';
+
+export let prefix = `et-${env}`;
 
 export let dependenciesDirectory = 'dependencies';
 

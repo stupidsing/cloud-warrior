@@ -18,9 +18,9 @@ let delete_ = ({ GroupName, UserPoolId }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByName = (groupName, userPoolId) => [
-	`GROUP_NAME=${groupName}`,
-	`USER_POOL_ID=${userPoolId}`,
+let refresh = (GroupName, UserPoolId) => [
+	`GROUP_NAME=${GroupName}`,
+	`USER_POOL_ID=${UserPoolId}`,
 	`aws cognito-idp list-groups \\`,
 	`  --group-name \${GROUP_NAME} \\`,
 	`  --user-pool-id \${USER_POOL_ID} \\`,
@@ -79,11 +79,9 @@ export let groupClass: Class = {
 		class_,
 		name,
 		UserPoolId,
-		createHash('sha256').update([
-			GroupName,
-		].join('_')).digest('hex').slice(0, 4),
+		GroupName,
 	].join('_'),
-	refresh: ({ GroupName, UserPoolId }) => refreshByName(GroupName, UserPoolId),
+	refresh: ({ GroupName, UserPoolId }) => refresh(GroupName, UserPoolId),
 	upsert,
 };
 

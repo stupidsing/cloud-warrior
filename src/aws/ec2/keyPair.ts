@@ -27,7 +27,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --key-name ${KeyName} \\`,
 			`  --public-key-material fileb://${Filename} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'key-pair', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 		);
@@ -44,7 +44,7 @@ export let keyPairClass: Class = {
 		class_,
 		name,
 		createHash('sha256').update([
-			fs.readFileSync(Filename),
+			fs.readFileSync(Filename, 'utf8'),
 			KeyName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),

@@ -16,8 +16,8 @@ let delete_ = ({ LoadBalancerArn }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByArn = arn => [
-	`ARN=${arn}`,
+let refresh = LoadBalancerArn => [
+	`ARN=${LoadBalancerArn}`,
 	`aws elbv2 describe-load-balancers \\`,
 	`  --load-balancer-arns \${ARN} \\`,
 	`  | jq .LoadBalancers[0] | tee ${statesDirectory}/\${KEY}`,
@@ -53,7 +53,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws elbv2 set-subnets \\`,
 				`  --load-balancer-arns \${ARN} \\`,
 				`  --subnets ${target}`,
-				...refreshByArn(LoadBalancerArn),
+				...refresh(LoadBalancerArn),
 			);
 		}
 	}
@@ -67,7 +67,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws elbv2 set-security-groups \\`,
 				`  --load-balancer-arns ${LoadBalancerArn} \\`,
 				`  --security-groups ${target}`,
-				...refreshByArn(LoadBalancerArn),
+				...refresh(LoadBalancerArn),
 			);
 		}
 	}
@@ -85,7 +85,7 @@ export let loadBalancerClass: Class = {
 			Name,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ LoadBalancerArn }) => refreshByArn(LoadBalancerArn),
+	refresh: ({ LoadBalancerArn }) => refresh(LoadBalancerArn),
 	upsert,
 };
 

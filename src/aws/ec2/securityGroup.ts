@@ -16,8 +16,8 @@ let delete_ = ({ GroupId }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshById = id => [
-	`ID=${id}`,
+let refresh = GroupId => [
+	`ID=${GroupId}`,
 	`aws ec2 describe-security-groups \\`,
 	`  --group-ids \${ID} \\`,
 	`  | jq .SecurityGroups[0] | tee ${statesDirectory}/\${KEY}`,
@@ -36,13 +36,13 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --description '${Description}' \\`,
 			`  --group-name ${GroupName} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'security-group', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait \\`,
 			`  security-group-exists --group-ids ${GroupId}`,
-			...refreshById(GroupId),
+			...refresh(GroupId),
 		);
 		state = { Description, GroupName, VpcId };
 	}
@@ -62,7 +62,7 @@ export let securityGroupClass: Class = {
 			GroupName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ GroupId }) => refreshById(GroupId),
+	refresh: ({ GroupId }) => refresh(GroupId),
 	upsert,
 };
 

@@ -64,17 +64,17 @@ let delete_ = ({ Id, Name, Region, Scope }) => [
 	`  ${statesDirectory}/\${KEY}#Scope`,
 ];
 
-let refreshById = (id, name, region, scope) => [
-	`ID=${id} NAME=${name} REGION=${region} SCOPE=${scope}`,
+let refresh = (Id, Name, Region, Scope) => [
+	`ID=${Id} NAME=${Name} REGION=${Region} SCOPE=${Scope}`,
 	`aws wafv2 get-web-acl \\`,
 	`  --id \${ID} \\`,
 	`  --name \${NAME} \\`,
-	...region != null ? [`  --region \${REGION} \\`] : [],
+	...Region != null ? [`  --region \${REGION} \\`] : [],
 	`  --scope \${SCOPE} \\`,
 	`  | jq .WebACL | tee ${statesDirectory}/\${KEY}`,
-	`echo '${JSON.stringify(name)}' > ${statesDirectory}/\${KEY}#Name`,
-	`echo '${JSON.stringify(region ?? null)}' > ${statesDirectory}/\${KEY}#Region`,
-	`echo '${JSON.stringify(scope)}' > ${statesDirectory}/\${KEY}#Scope`,
+	`echo '${JSON.stringify(Name)}' > ${statesDirectory}/\${KEY}#Name`,
+	`echo '${JSON.stringify(Region ?? null)}' > ${statesDirectory}/\${KEY}#Region`,
+	`echo '${JSON.stringify(Scope)}' > ${statesDirectory}/\${KEY}#Scope`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -94,7 +94,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  --visibility-config '${JSON.stringify(VisibilityConfig)}' \\`,
 			`  | jq .Summary | tee ${statesDirectory}/\${KEY}`,
-			...refreshById(Id, Name, Region, Scope),
+			...refresh(Id, Name, Region, Scope),
 		);
 		state = { DefaultAction, Name, Region, Scope, VisibilityConfig };
 	}
@@ -143,7 +143,7 @@ export let webAclClass: Class = {
 			Scope,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ Id, Name, Region, Scope }) => refreshById(Id, Name, Region, Scope),
+	refresh: ({ Id, Name, Region, Scope }) => refresh(Id, Name, Region, Scope),
 	upsert,
 };
 

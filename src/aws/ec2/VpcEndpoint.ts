@@ -35,7 +35,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --vpc-endpoint-type ${VpcEndpointType} \\`,
 			`  --vpc-id ${VpcId} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'vpc-endpoint', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			`  | jq .VpcEndpoint | tee ${statesDirectory}/\${KEY}`,
 		);

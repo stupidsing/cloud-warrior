@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { prefix, statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
+import * as fs from 'fs';
 
 let class_ = 'instance';
 
@@ -22,8 +23,8 @@ let delete_ = ({ InstanceId }) => [
 	`  --instance-id ${InstanceId}`,
 ];
 
-let refreshById = id => [
-	`ID=${id}`,
+let refresh = InstanceId => [
+	`ID=${InstanceId}`,
 	`aws ec2 describe-instances \\`,
 	`  --instance-ids \${ID} \\`,
 	`  | jq .Reservations[0].Instances[0] | tee ${statesDirectory}/\${KEY}`,
@@ -45,7 +46,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			...SecurityGroups.length > 0 ? [`  --security-group-ids ${SecurityGroups.map(r => r.GroupId).join(' ')} \\`] : [],
 			`  --subnet-id ${SubnetId} \\`,
 			`  --tag-specifications '${JSON.stringify([
-				{ ResourceType: 'instance', Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
+				{ ResourceType: class_, Tags: [{ Key: 'Name', Value: `${prefix}-${name}` }] },
 			])}' \\`,
 			...UserData != null ? [`  --user-data file://${UserData} \\`] : [],
 			`  | jq .Instances[0] | tee ${statesDirectory}/\${KEY}`,
@@ -66,7 +67,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} \\`,
 					`  | jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
 					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
-					...refreshById(InstanceId),
+					...refresh(InstanceId),
 				);
 			}
 
@@ -75,7 +76,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`aws ec2 associate-iam-instance-profile \\`,
 					`  --iam-instance-profile Arn=${target} \\`,
 					`  --instance-id ${InstanceId}`,
-					...refreshById(InstanceId),
+					...refresh(InstanceId),
 				);
 			}
 		}
@@ -91,7 +92,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`aws ec2 modify-instance-attribute \\`,
 					`  --instance-id ${InstanceId}`,
 					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
-					...refreshById(InstanceId),
+					...refresh(InstanceId),
 				);
 			}
 		}
@@ -103,7 +104,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let instanceClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { ImageId, InstanceType, KeyName, SubnetId } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { ImageId, InstanceType, KeyName, SubnetId, UserData } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		ImageId,
@@ -111,9 +112,10 @@ export let instanceClass: Class = {
 		SubnetId,
 		createHash('sha256').update([
 			InstanceType,
+			fs.readFileSync(UserData, 'utf8'),
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ InstanceId }) => refreshById(InstanceId),
+	refresh: ({ InstanceId }) => refresh(InstanceId),
 	upsert,
 };
 
@@ -123,5 +125,6 @@ export let createInstance = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		getInstanceId: (get: (resource: any, prop: string) => string) => get(resource, 'InstanceId'),
+		getPublicIpAddress: (get: (resource: any, prop: string) => string) => get(resource, 'PublicIpAddress'),
 	};
 };

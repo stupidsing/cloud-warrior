@@ -19,15 +19,15 @@ let delete_ = ({ Arn }) => [
 	`  ${statesDirectory}/\${KEY}#PolicyDocument`,
 ];
 
-let refreshByArn = arn => [
-	`ARN=${arn}`,
+let refresh = Arn => [
+	`ARN=${Arn}`,
 	`aws iam get-policy \\`,
 	`  --policy-arn \${ARN} \\`,
 	`  | jq .Policy | tee ${statesDirectory}/\${KEY}`,
 	`aws iam get-policy-version \\`,
 	`  --policy-arn \${ARN} \\`,
-	`  --version-id $(aws iam list-policy-version --policy-arn \${ARN} | jq -r '.Versions | map(select(.IsDefaultVersion).VersionId)[0]') \\`,
-	`  | jq .PolicyDocument > ${statesDirectory}/\${KEY}#PolicyDocument`,
+	`  --version-id $(aws iam list-policy-versions --policy-arn \${ARN} | jq -r '.Versions | map(select(.IsDefaultVersion).VersionId)[0]') \\`,
+	`  | jq .PolicyVersion.Document > ${statesDirectory}/\${KEY}#PolicyDocument`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
@@ -60,12 +60,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			commands.push(
 				`aws iam delete-policy-version \\`,
 				`  --policy-arn ${PolicyArn} \\`,
-				`  --version-id $(aws iam list-policy-version --policy-arn ${PolicyArn} | jq -r '.Versions | map(select(.IsDefaultVersion | not).VersionId)[0]')`,
+				`  --version-id $(aws iam list-policy-versions --policy-arn ${PolicyArn} | jq -r '.Versions | map(select(.IsDefaultVersion | not).VersionId)[0]')`,
 				`aws iam create-policy-version \\`,
 				`  --policy-arn ${PolicyArn} \\`,
 				`  --policy-document '${target}' \\`,
 				`  --set-as-default`,
-				...refreshByArn(PolicyArn),
+				...refresh(PolicyArn),
 			);
 		}
 	}
@@ -84,7 +84,7 @@ export let policyClass: Class = {
 			PolicyName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ PolicyArn }) => refreshByArn(PolicyArn),
+	refresh: ({ PolicyArn }) => refresh(PolicyArn),
 	upsert,
 };
 

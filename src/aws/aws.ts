@@ -3,7 +3,7 @@ export type PolicyDocument = {
 	Statement: {
 		Action: string[],
 		Effect: string,
-		Principal?: { AWS?: string, Service?: string },
+		Principal?: '*' | { AWS?: string, Service?: string },
 		Resource?: string[],
 	}[],
 };

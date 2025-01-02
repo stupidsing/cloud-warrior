@@ -17,8 +17,8 @@ let delete_ = ({ repositoryName }) => [
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refreshByName = name => [
-	`NAME=${name}`,
+let refresh = repositoryName => [
+	`NAME=${repositoryName}`,
 	`aws ecr describe-repositories \\`,
 	`  --repository-names \${NAME} \\`,
 	`  | jq .repositories[0] | tee ${statesDirectory}/\${KEY}`,
@@ -38,7 +38,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --repository-name ${repositoryName} \\`,
 			`  --tags Key=Name,Value=${prefix}-${name} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
-			...refreshByName(repositoryName),
+			...refresh(repositoryName),
 		);
 		state = { encryptionConfiguration, imageScanningConfiguration, imageTagMutability, repositoryName };
 	}
@@ -51,7 +51,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws iam put-image-scanning-configuration \\`,
 				`  --image-scanning-configuration scanOnPush=${target} \\`,
 				`  --repository-name ${repositoryName} \\`,
-				...refreshByName(repositoryName),
+				...refresh(repositoryName),
 			);
 		}
 	}
@@ -65,7 +65,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws iam put-image-tag-mutability \\`,
 				`  --image-tag-mutability ${imageTagMutability} \\`,
 				`  --repository-name ${repositoryName} \\`,
-				...refreshByName(repositoryName),
+				...refresh(repositoryName),
 			);
 		}
 	}
@@ -84,7 +84,7 @@ export let repositoryClass: Class = {
 			repositoryName,
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
-	refresh: ({ repositoryName }) => refreshByName(repositoryName),
+	refresh: ({ repositoryName }) => refresh(repositoryName),
 	upsert,
 };
 
