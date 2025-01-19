@@ -1,11 +1,20 @@
 import { createHash } from "crypto";
+import * as fs from 'fs';
 import { prefix, statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
-import * as fs from 'fs';
 
 let class_ = 'instance';
 
 type Attributes = {
+	AssociatePublicIpAddress?: boolean,
+	BlockDeviceMappings?: {
+		DeviceName: string,
+		Ebs: {
+			DeleteOnTermination: boolean,
+			VolumeSize: number,
+			VolumeType: string,
+		},
+	}[],
 	IamInstanceProfile?: { Arn: string },
 	ImageId: string,
 	InstanceType: string,
@@ -18,7 +27,9 @@ type Attributes = {
 let delete_ = ({ InstanceId }) => [
 	`aws ec2 terminate-instances \\`,
 	`  --instance-ids ${InstanceId} &&`,
-	`rm -f ${statesDirectory}/\${KEY}`,
+	`rm -f \\`,
+	`  ${statesDirectory}/\${KEY} \\`,
+	`  ${statesDirectory}/\${KEY}#BlockDeviceMappings`,
 	`aws ec2 wait instance-terminated \\`,
 	`  --instance-id ${InstanceId}`,
 ];
@@ -32,7 +43,7 @@ let refresh = InstanceId => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { ImageId, InstanceType, KeyName, SecurityGroups, SubnetId, UserData } = attributes;
+	let { AssociatePublicIpAddress, BlockDeviceMappings, ImageId, InstanceType, KeyName, SecurityGroups, SubnetId, UserData } = attributes;
 	let commands = [];
 
 	let InstanceId = `$(cat ${statesDirectory}/\${KEY} | jq -r .InstanceId)`;
@@ -40,6 +51,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`aws ec2 run-instances \\`,
+			...AssociatePublicIpAddress != null
+				? [`  --${AssociatePublicIpAddress ? `` : `no-`}associate-public-ip-address \\`]
+				: [],
+			...BlockDeviceMappings != null
+				? [`  --block-device-mappings '${JSON.stringify(BlockDeviceMappings)}' \\`]
+				: [],
 			...KeyName != null ? [`  --key-name ${KeyName} \\`] : [],
 			`  --image-id ${ImageId} \\`,
 			`  --instance-type ${InstanceType} \\`,
@@ -52,8 +69,25 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  | jq .Instances[0] | tee ${statesDirectory}/\${KEY}`,
 			`aws ec2 wait instance-exists \\`,
 			`  --instance-id ${InstanceId}`,
+			`echo '${JSON.stringify(BlockDeviceMappings)}' > ${statesDirectory}/\${KEY}#BlockDeviceMappings`,
 		);
-		state = { ImageId, InstanceType, SecurityGroups, SubnetId, UserData };
+		state = { AssociatePublicIpAddress, BlockDeviceMappings, ImageId, InstanceType, SecurityGroups, SubnetId, UserData };
+	}
+
+	{
+		let prop = 'BlockDeviceMappings';
+		let source = JSON.stringify(state[prop]);
+		let target = JSON.stringify(attributes[prop]);
+		if (source !== target) {
+			if (attributes[prop] != null) {
+				commands.push(
+					`aws ec2 modify-instance-attribute \\`,
+					`  --instance-id ${InstanceId} \\`,
+					`  --block-device-mappings '${target}'`,
+					`echo '${target}' > ${statesDirectory}/\${KEY}#BlockDeviceMappings`,
+				);
+			}
+		}
 	}
 
 	{
@@ -66,7 +100,6 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 					`aws ec2 disassociate-iam-instance-profile \\`,
 					`  --association-id $(aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${InstanceId} \\`,
 					`  | jq -r '.IamInstanceProfileAssociations[] | select(.IamInstanceProfile.Arn == "${source}") | .AssociationId'`,
-					...target.length > 0 ? [`  --security-group-ids ${target} \\`] : [],
 					...refresh(InstanceId),
 				);
 			}
@@ -104,13 +137,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let instanceClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { ImageId, InstanceType, KeyName, SubnetId, UserData } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { AssociatePublicIpAddress, ImageId, InstanceType, KeyName, SubnetId, UserData } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		ImageId,
 		KeyName,
 		SubnetId,
 		createHash('sha256').update([
+			AssociatePublicIpAddress,
 			InstanceType,
 			fs.readFileSync(UserData, 'utf8'),
 		].join('_')).digest('hex').slice(0, 4),
@@ -124,6 +158,7 @@ import { create } from "../../warrior";
 export let createInstance = (name: string, f: AttributesInput<Attributes>) => {
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
+		getAvailabilityZone: (get: (resource: any, prop: string) => string) => get(resource, 'Placement.AvailabilityZone'),
 		getInstanceId: (get: (resource: any, prop: string) => string) => get(resource, 'InstanceId'),
 		getPublicIpAddress: (get: (resource: any, prop: string) => string) => get(resource, 'PublicIpAddress'),
 	};

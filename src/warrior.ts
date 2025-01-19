@@ -6,6 +6,7 @@ import { groupClass } from './aws/cognito-idp/group';
 import { userPoolClass } from './aws/cognito-idp/userPool';
 import { userPoolClientClass } from './aws/cognito-idp/userPoolClient';
 import { addressAssociationClass } from './aws/ec2/addressAssociation';
+import { elasticIpClass } from './aws/ec2/elasticIp';
 import { instanceClass } from './aws/ec2/instance';
 import { internetGatewayClass } from './aws/ec2/internetGateway';
 import { internetGatewayAttachmentClass } from './aws/ec2/internetGatewayAttachment';
@@ -19,6 +20,8 @@ import { securityGroupClass } from './aws/ec2/securityGroup';
 import { securityGroupRuleEgressClass } from './aws/ec2/securityGroupRuleEgress';
 import { securityGroupRuleIngressClass } from './aws/ec2/securityGroupRuleIngress';
 import { subnetClass } from './aws/ec2/subnet';
+import { volumeClass } from './aws/ec2/volume';
+import { volumeAttachmentClass } from './aws/ec2/volumeAttachment';
 import { vpcClass } from './aws/ec2/vpc';
 import { vpcEndpointClass } from './aws/ec2/VpcEndpoint';
 import { lifecyclePolicyClass } from './aws/ecr/lifecyclePolicy';
@@ -86,6 +89,7 @@ let classes = Object.fromEntries([
 	bucketPolicyClass,
 	cacheClusterClass,
 	certificateClass,
+	elasticIpClass,
 	eventSourceMappingClass,
 	dbClusterClass,
 	dbInstanceClass,
@@ -124,6 +128,8 @@ let classes = Object.fromEntries([
 	targetGroupClass,
 	userPoolClass,
 	userPoolClientClass,
+	volumeClass,
+	volumeAttachmentClass,
 	vpcClass,
 	vpcEndpointClass,
 	webAclClass,
@@ -152,7 +158,16 @@ export let create = (class_: string, name: string, f: AttributesInput<Record<str
 
 		let key = referredResource.key;
 		let state = stateByKey[key];
-		let value: string = state ? state[prop] : `$(cat \${STATE_${referredResource.hash}} | jq -r .${prop})`;
+		let value: string;
+
+		if (state) {
+			let v = state;
+			for(let p of prop.split('.')) v = v[p];
+			value = v;
+		} else {
+			value = `$(cat \${STATE_${referredResource.hash}} | jq -r .${prop})`;
+		}
+
 		return value;
 	};
 

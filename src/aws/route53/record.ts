@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
-import { replace } from "../../utils";
+import { replace, shellEscape } from "../../utils";
 
 let class_ = 'record';
 
@@ -15,7 +15,7 @@ type Attributes = {
 
 let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`CHANGE_ID=$(aws route53 change-resource-record-sets \\`,
-	`  --change-batch ${JSON.stringify(JSON.stringify({
+	`  --change-batch ${shellEscape(JSON.stringify({
 		Changes: [
 			{
 				Action: 'DELETE',
@@ -52,7 +52,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	if (state == null) {
 		commands.push(
 			`CHANGE_ID=$(aws route53 change-resource-record-sets \\`,
-			`  --change-batch ${JSON.stringify(JSON.stringify({
+			`  --change-batch ${shellEscape(JSON.stringify({
 				Changes: [
 					{
 						Action: 'CREATE',

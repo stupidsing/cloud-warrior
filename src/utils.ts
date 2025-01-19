@@ -23,3 +23,7 @@ export let replace = (s: string) => {
 
 	return t;
 };
+
+export let shellEscape = s => {
+	return `"${s.replaceAll('"', '\\"')}"`;
+};

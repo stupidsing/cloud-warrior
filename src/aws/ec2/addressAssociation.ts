@@ -1,5 +1,6 @@
 import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
+import { shellEscape } from "../../utils";
 
 let class_ = 'address-association';
 
@@ -8,10 +9,9 @@ type Attributes = {
 	InstanceId: string,
 };
 
-let delete_ = ({ AllocationId, InstanceId }) => [
+let delete_ = ({ AssociationId }) => [
 	`aws ec2 disassociate-address \\`,
-	`  --policy-arn ${AllocationId} \\`,
-	`  --role-name ${InstanceId} &&`,
+	`  --association-id ${AssociationId} &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
@@ -34,7 +34,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`ASSOCIATION_ID=$(aws ec2 associate-address \\`,
 			`  --allocation-id ${AllocationId} \\`,
 			`  --instance-id ${InstanceId} | jq -r .AssociationId)`,
-			`echo '{ "AllocationId": "${AllocationId}", "AssociationId": "'\${ASSOCIATION_ID}'", "InstanceId": "${InstanceId}" }' | jq . > ${statesDirectory}/\${KEY}`,
+			`echo ${shellEscape(JSON.stringify({ AllocationId, AssociationId: '${ASSOCIATION_ID}', InstanceId }))} | jq . > ${statesDirectory}/\${KEY}`,
 		);
 		state = { InstanceId, AllocationId };
 	}

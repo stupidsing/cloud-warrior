@@ -19,7 +19,7 @@ let delete_ = ({ Bucket, Key }) => [
 	`rm -f \\`,
 	`  ${statesDirectory}/\${KEY} \\`,
 	`  ${statesDirectory}/\${KEY}#Bucket \\`,
-	`  ${statesDirectory}/\${KEY}#Context.text`,
+	`  ${statesDirectory}/\${KEY}#Content.text`,
 ];
 
 let refresh = (Bucket, Key) => [

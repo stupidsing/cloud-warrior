@@ -65,7 +65,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	.entries({
 		AccessTokenValidity: r => r != null ? [`--access-token-validity ${r}`] : [],
 		IdTokenValidity: r => r != null ? [`--id-token-validity ${r}`] : [],
-		ExplicitAuthFlows: r => r != null ? [`--explicit-auth-flows ${r.join(' ')}`] : [],
+		ExplicitAuthFlows: r => r != null ? [`--explicit-auth-flows ${r.sort((a, b) => a.localeCompare(b)).join(' ')}`] : [],
 		RefreshTokenValidity: r => r != null ? [`--refresh-token-validity ${r}`] : [],
 		TokenValidityUnits: r => r != null ? [
 			`--token-validity-units AccessToken=${r.AccessToken} IdToken=${r.IdToken} RefreshToken=${r.RefreshToken}`,
@@ -82,9 +82,10 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	});
 
 	if (updates.length > 0) {
-		updates.push(`--client-id ${ClientId}`);
+		updates.push(`--client-id \${CLIENT_ID}`);
 		updates.push(`--user-pool-id ${UserPoolId}`);
 		commands.push(
+			`CLIENT_ID=${ClientId}`,
 			`aws cognito-idp update-user-pool-client \\`,
 			...updates.sort((a, b) => a.localeCompare(b)).map(s => `  ${s} \\`),
 			`  | jq .UserPoolClient | tee ${statesDirectory}/\${KEY}`,
