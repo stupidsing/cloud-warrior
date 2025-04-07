@@ -33,7 +33,8 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`ASSOCIATION_ID=$(aws ec2 associate-address \\`,
 			`  --allocation-id ${AllocationId} \\`,
-			`  --instance-id ${InstanceId} | jq -r .AssociationId)`,
+			`  --instance-id ${InstanceId} \\`,
+			` | jq -r .AssociationId)`,
 			`echo ${shellEscape(JSON.stringify({ AllocationId, AssociationId: '${ASSOCIATION_ID}', InstanceId }))} | jq . > ${statesDirectory}/\${KEY}`,
 		);
 		state = { InstanceId, AllocationId };

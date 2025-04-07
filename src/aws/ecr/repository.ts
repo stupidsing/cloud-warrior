@@ -46,11 +46,11 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	{
 		let source = state?.['imageScanningConfiguration']?.['scanOnPush'];
 		let target = attributes?.['imageScanningConfiguration']?.['scanOnPush'];
-		if (source !== target) {
+		if (target != null && source !== target) {
 			commands.push(
 				`aws iam put-image-scanning-configuration \\`,
 				`  --image-scanning-configuration scanOnPush=${target} \\`,
-				`  --repository-name ${repositoryName} \\`,
+				`  --repository-name ${repositoryName}`,
 				...refresh(repositoryName),
 			);
 		}
@@ -60,7 +60,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		let prop = 'imageTagMutability';
 		let source = state[prop];
 		let target = attributes[prop];
-		if (source !== target) {
+		if (target != null && source !== target) {
 			commands.push(
 				`aws iam put-image-tag-mutability \\`,
 				`  --image-tag-mutability ${imageTagMutability} \\`,

@@ -298,13 +298,6 @@ run(process.env.ACTION ?? 'up', () => {
 		},
 	}));
 
-	let distribution = createDistribution('dist', get => ({
-		DistributionConfig: {
-			DefaultRootObject: 'index.html',
-			Origins: { Items: [{ DomainName: 'npt.com' }]},
-		},
-	}));
-
 	let hostedZone = createHostedZone('zone', get => ({
 		Name: 'npt.com',
 		CallerReference: '862c3944-6b5a-11ef-8195-7f23c933da52',

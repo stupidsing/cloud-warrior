@@ -1,74 +1,45 @@
 import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
-import { difference, replace } from "../../utils";
+import { replace } from "../../utils";
 
 let class_ = 'volume-attachment';
 
 type Attributes = {
-	Attachments: { Device: string, InstanceId: string }[],
+	Device: string,
+	InstanceId: string,
 	VolumeId: string,
 };
 
-let updateAttachments = ({ VolumeId }, attachments0, attachments1) => {
-	let source = new Set<string>(attachments0.map(a => JSON.stringify({ Device: a.Device, InstanceId: a.InstanceId })));
-	let target = new Set<string>(attachments1.map(a => JSON.stringify({ Device: a.Device, InstanceId: a.InstanceId })));
-	let commands = [];
-	let needRefresh = false;
-
-	difference(target, source).forEach(json => {
-		let { Device, InstanceId } = JSON.parse(json);
-		commands.push(
-			`aws ec2 attach-volume \\`,
-			`  --device ${Device} \\`,
-			`  --volume-id ${VolumeId} \\`,
-			`  --instance-id ${InstanceId} &&`,
-			`aws ec2 wait volume-in-use --volume-ids ${VolumeId}`,
-		);
-		needRefresh = true;
-	});
-
-	difference(source, target).forEach(json => {
-		let { Device, InstanceId } = JSON.parse(json);
-		commands.push(
-			`aws ec2 detach-volume \\`,
-			`  --device ${Device} \\`,
-			`  --volume-id ${VolumeId} \\`,
-			`  --instance-id ${InstanceId} &&`,
-			`aws ec2 wait volume-available --volume-ids ${VolumeId}`,
-		);
-		needRefresh = true;
-	});
-
-	return { commands, needRefresh };
-};
-
-let delete_ = (state: { Attachments, VolumeId }) => [
-	...updateAttachments(state, state.Attachments, []).commands,
+let delete_ = ({ Device, InstanceId, VolumeId }) => [
+	`aws ec2 detach-volume \\`,
+	`  --device ${Device} \\`,
+	`  --volume-id ${VolumeId} \\`,
+	`  --instance-id ${InstanceId} &&`,
+	`aws ec2 wait volume-available --volume-ids ${VolumeId}`,
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
-let refresh = volumeId => [
+let refresh = (Device, InstanceId, VolumeId) => [
 	`aws ec2 describe-volumes \\`,
-	`  --volume-id ${volumeId} \\`,
-	`  | jq .Volumes[0] | tee ${statesDirectory}/\${KEY}`,
+	`  --volume-id ${VolumeId} \\`,
+	`  | jq '.Volumes[] | .Attachments[] | select(.Device == "${Device}" and .InstanceId == "'${InstanceId}'")' | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { VolumeId, Attachments } = attributes;
+	let { Device, InstanceId, VolumeId } = attributes;
 	let commands = [];
 
 	if (state == null) {
-		state = { Attachments: [], VolumeId };
-	}
-
-	{
-		let prop = 'Attachments';
-		let { commands: commands_, needRefresh } = updateAttachments(attributes, state[prop], attributes[prop]);
-
-		if (needRefresh) {
-			commands.push(...commands_, ...refresh(VolumeId));
-		}
+		commands.push(
+			`aws ec2 attach-volume \\`,
+			`  --device ${Device} \\`,
+			`  --instance-id ${InstanceId} \\`,
+			`  --volume-id ${VolumeId} &&`,
+			`aws ec2 wait volume-in-use --volume-ids ${VolumeId}`,
+			...refresh(Device, InstanceId, VolumeId),
+		);
+		state = { Device, InstanceId, VolumeId };
 	}
 
 	return commands;
@@ -77,12 +48,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let volumeAttachmentClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { VolumeId } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Device, InstanceId, VolumeId } }: Resource_<Attributes>) => [
 		class_,
 		name,
-		replace(VolumeId),
+		replace(Device),
+		InstanceId,
+		VolumeId,
 	].join('_'),
-	refresh: ({ VolumeId }) => refresh(VolumeId),
+	refresh: ({ Device, InstanceId, VolumeId }) => refresh(Device, InstanceId, VolumeId),
 	upsert,
 };
 

@@ -24,7 +24,7 @@ let refresh = (GroupName, UserPoolId) => [
 	`aws cognito-idp list-groups \\`,
 	`  --group-name \${GROUP_NAME} \\`,
 	`  --user-pool-id \${USER_POOL_ID} \\`,
-	`  | jq '.Groups[] | select (.GroupName == "\${GROUP_NAME}")' | tee ${statesDirectory}/\${KEY}`,
+	`  | jq '.Groups[] | select (.GroupName == "'\${GROUP_NAME}'")' | tee ${statesDirectory}/\${KEY}`,
 ];
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {

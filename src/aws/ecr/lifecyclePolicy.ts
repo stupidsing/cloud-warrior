@@ -31,6 +31,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 		commands.push(
 			`aws ecr put-lifecycle-policy \\`,
 			...lifecyclePolicyText != null ? [`  --lifecycle-policy-text '${lifecyclePolicyText}' \\`] : [],
+			`  --repository-name ${repositoryName} \\`,
 			`  | tee ${statesDirectory}/\${KEY}`,
 		);
 		state = { lifecyclePolicyText, repositoryName };

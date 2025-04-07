@@ -6,25 +6,25 @@ import { replace, shellEscape } from "../../utils";
 let class_ = 'record';
 
 type Attributes = {
+	AliasTarget?: {
+		DNSName: string,
+		EvaluateTargetHealth: boolean,
+		HostedZoneId: string,
+	},
 	HostedZoneId: string,
 	Name: string,
-	ResourceRecords: { Value: string }[],
-	TTL: number,
+	ResourceRecords?: { Value: string }[],
+	TTL?: number,
 	Type: string,
 };
 
-let delete_ = ({ HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
+let delete_ = ({ AliasTarget, HostedZoneId, Name, ResourceRecords, TTL, Type }) => [
 	`CHANGE_ID=$(aws route53 change-resource-record-sets \\`,
 	`  --change-batch ${shellEscape(JSON.stringify({
 		Changes: [
 			{
 				Action: 'DELETE',
-				ResourceRecordSet: {
-					Name,
-					ResourceRecords,
-					TTL,
-					Type,
-				},
+				ResourceRecordSet: { AliasTarget, Name, ResourceRecords, TTL, Type },
 			}
 		]
 	}))} \\`,
@@ -46,7 +46,7 @@ let refresh = (HostedZoneId, Type, Name) => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { HostedZoneId, Name, ResourceRecords, TTL, Type } = attributes;
+	let { AliasTarget, HostedZoneId, Name, ResourceRecords, TTL, Type } = attributes;
 	let commands = [];
 
 	if (state == null) {
@@ -56,12 +56,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				Changes: [
 					{
 						Action: 'CREATE',
-						ResourceRecordSet: {
-							Name,
-							ResourceRecords,
-							TTL,
-							Type,
-						},
+						ResourceRecordSet: { AliasTarget, Name, ResourceRecords, TTL, Type },
 					}
 				]
 			}))} \\`,
@@ -71,7 +66,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  resource-record-sets-changed --id \${CHANGE_ID}`,
 			...refresh(HostedZoneId, Type, Name),
 		);
-		state = { HostedZoneId, Name, ResourceRecords, TTL, Type };
+		state = { AliasTarget, HostedZoneId, Name, ResourceRecords, TTL, Type };
 	}
 
 	return commands;
@@ -80,13 +75,14 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let recordClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { HostedZoneId, Name, ResourceRecords, TTL, Type } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { AliasTarget, HostedZoneId, Name, ResourceRecords, TTL, Type } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		replace(HostedZoneId),
 		createHash('sha256').update([
+			...AliasTarget != null ? [AliasTarget.DNSName, AliasTarget.EvaluateTargetHealth, AliasTarget.HostedZoneId] : [],
 			Name,
-			ResourceRecords.map(r => r.Value).join(':'),
+			(ResourceRecords ?? []).map(r => r.Value).join(':'),
 			TTL,
 			Type,
 		].join('_')).digest('hex').slice(0, 4),

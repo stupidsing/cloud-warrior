@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { certificateClass } from './aws/acm/certificate';
+import { cachePolicyClass } from './aws/cloudfront/cachePolicy';
 import { distributionClass } from './aws/cloudfront/distribution';
 import { groupClass } from './aws/cognito-idp/group';
 import { userPoolClass } from './aws/cognito-idp/userPool';
@@ -37,6 +38,7 @@ import { roleClass } from './aws/iam/role';
 import { rolePolicyAttachmentClass } from './aws/iam/rolePolicyAttachment';
 import { eventSourceMappingClass } from './aws/lambda/eventSourceMapping';
 import { functionClass } from './aws/lambda/function';
+import { permissionClass } from './aws/lambda/permission';
 import { dbClusterClass } from './aws/rds/dbCluster';
 import { dbInstanceClass } from './aws/rds/dbInstance';
 import { dbSubnetGroupClass } from './aws/rds/dbSubnetGroup';
@@ -88,6 +90,7 @@ let classes = Object.fromEntries([
 	bucketCorsClass,
 	bucketPolicyClass,
 	cacheClusterClass,
+	cachePolicyClass,
 	certificateClass,
 	elasticIpClass,
 	eventSourceMappingClass,
@@ -109,6 +112,7 @@ let classes = Object.fromEntries([
 	loadBalancerClass,
 	natGatewayClass,
 	objectClass,
+	permissionClass,
 	policyClass,
 	publicAccessBlockClass,
 	queueClass,
@@ -162,7 +166,20 @@ export let create = (class_: string, name: string, f: AttributesInput<Record<str
 
 		if (state) {
 			let v = state;
-			for(let p of prop.split('.')) v = v[p];
+			let begin = 0;
+			for (let i = 0; i < prop.length; i++) {
+				if (prop[i] === '.') {
+					if (begin !== i) v = v[prop.slice(begin, i)];
+					begin = i + 1;
+				} else if (prop[i] === '[') {
+					v = v[prop.slice(begin, i)];
+					begin = i + 1;
+				} else if (prop[i] === ']') {
+					v = v[+prop.slice(begin, i)];
+					begin = i + 1;
+				}
+			}
+			v = v[prop.slice(begin)];
 			value = v;
 		} else {
 			value = `$(cat \${STATE_${referredResource.hash}} | jq -r .${prop})`;

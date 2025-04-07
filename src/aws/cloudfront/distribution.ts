@@ -1,109 +1,159 @@
 import { statesDirectory } from "../../constants";
 import { AttributesInput, Class, Resource_ } from "../../types";
+import { equals, shellEscape } from "../../utils";
 
 let class_ = 'distribution';
 
 type Attributes = {
 	DistributionConfig: {
+		Aliases?: { Items?: string[], Quantity: number },
 		AllowedMethods?: {
 			CachedMethods: { Items: string[] },
-			Items: string[],
+			Items?: string[],
 		},
-		CacheBehaviors?: { Items: {
+		CacheBehaviors: {
+			Items?: {
+				AllowedMethods?: {
+					CachedMethods: { Items?: string[], Quantity: number },
+					Items?: string[],
+					Quantity: number,
+				},
+				CachePolicyId?: string,
+				Compress?: boolean,
+				DefaultTTL: number,
+				FieldLevelEncryptionId?: string,
+				ForwardedValues?: {
+					Cookies: {
+						Forward: string,
+						Headers: { Items: string[] },
+						QueryStringCacheKeys: { Items: string[] },
+						WhitelistedNames: { Items: string[] },
+					},
+					QueryString: boolean,
+				},
+				FunctionAssociations?: {
+					Items?: {
+						EventType: string,
+						FunctionARN: string,
+					}[],
+					Quantity: number,
+				},
+				LambdaFunctionAssociations?: {
+					Items?: {
+						EventType: string,
+						IncludeBody: boolean,
+						LambdaFunctinoARN: string,
+					}[],
+					Quantity: number,
+				},
+				MaxTTL: number,
+				MinTTL: number,
+				OriginRequestPolicyId?: string,
+				PathPattern: string,
+				RealtimeLogConfigArn?: string,
+				ResponseHeadersPolicyId?: string,
+				SmoothStreaming?: boolean,
+				TargetOriginId?: string,
+				TrustedKeyGroups?: { Enabled: boolean, Items?: string[], Quantity: number },
+				TrustedSigners?: { Enabled: boolean, Items?: string[], Quantity: number },
+				ViewerProtocolPolicy: string,
+			}[],
+			Quantity: number,
+		},
+		CachePolicyId?: string,
+		CallerReference?: string,
+		Comment: string,
+		Compress?: boolean,
+		ContinuousDeploymentPolicyId?: string,
+		CustomErrorResponses?: {
+			Items?: {
+				ErrorCachingMinTTL: number,
+				ErrorCode: number,
+				ResponseCode: string,
+				ResponsePagePath: string,
+			}[],
+			Quantity: number,
+		},
+		DefaultCacheBehavior?: {
 			AllowedMethods?: {
-				CachedMethods: { Items: string[] },
-				Items: string[],
+				CachedMethods: { Items?: string[], Quantity: number },
+				Items?: string[],
+				Quantity: number,
 			},
 			CachePolicyId?: string,
-			CachedMethods: { Items: string[] },
 			Compress: boolean,
-			FieldLevelEncryptionId?: string,
+			DefaultTTL?: number,
+			FieldLevelEncryptionId: string,
 			ForwardedValues?: {
 				Cookies: {
 					Forward: string,
-					Headers: { Items: string[] },
-					QueryStringCacheKeys: { Items: string[] },
-					WhitelistedNames: { Items: string[] },
+					WhitelistedNames?: { Items?: string[], Quantity: number },
 				},
+				Headers: { Items?: string[], Quantity: number },
 				QueryString: boolean,
+				QueryStringCacheKeys: { Items?: string[], Quantity: number },
 			},
-			FunctionAssociations: { Items: {
-				EventType: string,
-				FunctionARN: string,
-			}[] },
-			LambdaFunctionAssociations: { Items: {
-				EventType: string,
-				IncludeBody: boolean,
-				LambdaFunctinoARN: string,
-			}[] },
-			OriginRequestPolicyId?: string,
-			PathPattern: string,
-			RealtimeLogConfigArn?: string,
-			ResponseHeadersPolicyId: string,
+			FunctionAssociations?: {
+				Items?: {
+					EventType: string,
+					FunctionARN: string,
+				}[],
+				Quantity: number,
+			},
+			LambdaFunctionAssociations?: {
+				Items?: {
+					EventType: string,
+					IncludeBody: boolean,
+					LambdaFunctinoARN: string,
+				}[],
+				Quantity: number,
+			},
+			MaxTTL?: number,
+			MinTTL?: number,
 			SmoothStreaming: boolean,
 			TargetOriginId: string,
-			TrustedKeyGroups: { Enabled: boolean, Items: string[] },
-			TrustedSigners: { Enabled: boolean, Items: string[] },
+			TrustedKeyGroups: { Enabled: boolean, Items?: string[], Quantity: number },
+			TrustedSigners: { Enabled: boolean, Items?: string[], Quantity: 0 },
 			ViewerProtocolPolicy: string,
-		}[] },
-		CachePolicyId?: string,
-		Comment?: string,
-		Compress?: boolean,
-		ContinuousDeploymentPolicyId?: string,
-		CustomErrorResponses?: { Items: {
-			ErrorCachingMinTTL: number,
-			ErrorCode: number,
-			ResponseCode: string,
-			ResponsePagePath: string,
-		}[] },
-		DefaultCacheBehavior?: {
-			TargetOriginId: string,
-			TrustedSigners: { Enabled: boolean, Items: string[] },
 		},
 		DefaultRootObject: string,
 		Enabled?: boolean,
 		FieldLevelEncryptionId?: string,
-		ForwardedValues?: {
-			Cookies: {
-				Forward: string,
-				Headers: { Items: string[] },
-				QueryStringCacheKeys: { Items: string[] },
-				WhitelistedNames: { Items: string[] },
-			},
-			QueryString: boolean,
-		},
 		FunctionAssociations?: { Items: {
 			EventType: string,
 			FunctionARN: string,
 		}[] },
-		HttpVersion?: string,
+		HttpVersion: string,
 		IsIPV6Enabled?: boolean,
 		LambdaFunctionAssociations?: { Items: {
 			EventType: string,
 			IncludeBody: boolean,
 			LambdaFunctinoARN: string,
 		}[] },
-		Logging?: {
+		Logging: {
 			Bucket: string,
 			Enabled: boolean,
 			IncludeCookies: boolean,
 			Prefix: string,
 		},
-		OriginGroups?: { Items: {
-			FailoverCriteria: { StatusCodes: { Items: number[] } },
-			Id: string,
-			Numbers: { Items:  { OriginId: string }[] },
-		}[] },
+		OriginGroups?: {
+			Items?: {
+				FailoverCriteria: { StatusCodes: { Items: number[] } },
+				Id: string,
+				Numbers: { Items:  { OriginId: string }[] },
+			}[],
+			Quantity: number,
+		},
 		OriginRequestPolicyId?: string,
 		Origins: { Items: {
 			ConnectionAttempts?: number,
 			ConnectionTimeout?: number,
-			CustomHeaders?: { Items?: { HeaderName: string, HeaderValue: string }[] },
+			CustomHeaders?: { Items?: { HeaderName: string, HeaderValue: string }[], Quantity: number },
 			CustomOriginConfig?: {
 				OriginKeepaliveTimeout: number,
-				OriginProtocolPolicy: string,
+				OriginProtocolPolicy: 'http-only' | 'https-only' | 'match-viewer',
 				OriginReadTimeout: number,
-				OriginSslProtocols: { Items: string[] },
+				OriginSslProtocols: { Items?: string[], Quantity: number },
 				HTTPPort: number,
 				HTTPSPort: number,
 			},
@@ -113,7 +163,7 @@ type Attributes = {
 			OriginPath?: string,
 			OriginShield?: {
 				Enabled: boolean,
-				OriginShieldRegion: string,
+				OriginShieldRegion?: string,
 			},
 			S3OriginConfig?: { OriginAccessIdentity: string },
 		}[] },
@@ -121,21 +171,18 @@ type Attributes = {
 		RealtimeLogConfigArn?: string,
 		ResponseHeadersPolicyId?: string,
 		Restrictions?: {
-			GeoRestriction: { RestrictionType: string, Items: string[] },
+			GeoRestriction: { RestrictionType: string, Items?: string[], Quantity: number },
 		},
-		SmoothStreaming?: boolean,
 		Staging?: boolean,
-		TrustedKeyGroups?: { Enabled: boolean, Items: string[] },
 		ViewerCertificate?: {
-			ACMCertificateArn: string,
-			Certificate: string,
-			CertificateSource: string,
+			ACMCertificateArn?: string,
+			Certificate?: string,
+			CertificateSource?: string,
 			CloudFrontDefaultCertificate: boolean,
-			IAMCertificateId: string,
+			IAMCertificateId?: string,
 			MinimumProtocolVersion: string,
 			SSLSupportMethod: string,
 		},
-		ViewerProtocolPolicy?: string,
 		WebACLId?: string,
 	},
 };
@@ -165,9 +212,10 @@ let refresh = Id => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { DistributionConfig: { DefaultRootObject, Origins } } = attributes;
+	let { DistributionConfig: { CacheBehaviors, Comment, DefaultRootObject, HttpVersion, Logging, Origins } } = attributes;
 	let commands = [];
 
+	let CallerReference = `$(cat ${statesDirectory}/\${KEY} | jq -r .DistributionConfig.CallerReference)`;
 	let DistributionId = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
 
 	if (state == null) {
@@ -177,25 +225,42 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`  --default-root-object ${DefaultRootObject} \\`,
 			`  --origin-domain-name ${originDomainName} \\`,
 			`  | jq .Distribution | tee ${statesDirectory}/\${KEY}`,
-			`aws cloudfront wait distribution-deployed \\`,
-			`  --id ${DistributionId}`,
 			...refresh(DistributionId),
 		);
-		state = { DistributionConfig: { DefaultRootObject, Origins: { Items: [{ DomainName: originDomainName }]} } };
+		state = { DistributionConfig: {
+			CacheBehaviors,
+			Comment,
+			DefaultRootObject,
+			HttpVersion,
+			Logging,
+			Origins: { Items: [{ DomainName: originDomainName }]} },
+		};
 	}
 
 	{
 		let prop = 'DistributionConfig';
-		let source = JSON.stringify(state[prop]);
-		let target = JSON.stringify(attributes[prop]);
-		if (source !== target) {
+		let source = state[prop];
+		let target = attributes[prop];
+		if (!equals({ ...source, CallerReference: undefined }, target)) {
 			commands.push(
+				`CALLER_REFERENCE=${CallerReference}`,
+				`ID=${DistributionId}`,
 				`aws cloudfront update-distribution \\`,
-				`  --distribution-config ${target} \\`,
-				`  --id ${DistributionId} \\`,
-				`  | jq .Distribution | tee ${statesDirectory}/\${KEY}`,
+				`  --distribution-config ${shellEscape(
+					JSON.stringify({ ...target, CallerReference: '${CALLER_REFERENCE}' })
+				)} \\`,
+				`  --id \${ID} \\`,
+				`  --if-match $(aws cloudfront get-distribution-config --id \${ID} | jq -r .ETag)`,
+				...refresh(DistributionId),
 			);
 		}
+	}
+
+	if (commands.length > 0) {
+		commands.push(
+			`aws cloudfront wait distribution-deployed \\`,
+			`  --id ${DistributionId}`,
+		);
 	}
 
 	return commands;
@@ -218,5 +283,7 @@ export let createDistribution = (name: string, f: AttributesInput<Attributes>) =
 	let resource = create(class_, name, f) as Resource_<Attributes>;
 	return {
 		getDistributionId: (get: (resource: any, prop: string) => string) => get(resource, 'Id'),
+		getDomainName: (get: (resource: any, prop: string) => string) => get(resource, 'DomainName'),
+		getHostedZoneId: (get: (resource: any, prop: string) => string) => 'Z2FDTNDATAQYW2',
 	};
 };
