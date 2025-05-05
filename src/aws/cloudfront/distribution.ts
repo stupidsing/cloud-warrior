@@ -20,7 +20,7 @@ type Attributes = {
 				},
 				CachePolicyId?: string,
 				Compress?: boolean,
-				DefaultTTL: number,
+				DefaultTTL?: number,
 				FieldLevelEncryptionId?: string,
 				ForwardedValues?: {
 					Cookies: {
@@ -46,8 +46,8 @@ type Attributes = {
 					}[],
 					Quantity: number,
 				},
-				MaxTTL: number,
-				MinTTL: number,
+				MaxTTL?: number,
+				MinTTL?: number,
 				OriginRequestPolicyId?: string,
 				PathPattern: string,
 				RealtimeLogConfigArn?: string,
@@ -125,11 +125,6 @@ type Attributes = {
 		}[] },
 		HttpVersion: string,
 		IsIPV6Enabled?: boolean,
-		LambdaFunctionAssociations?: { Items: {
-			EventType: string,
-			IncludeBody: boolean,
-			LambdaFunctinoARN: string,
-		}[] },
 		Logging: {
 			Bucket: string,
 			Enabled: boolean,

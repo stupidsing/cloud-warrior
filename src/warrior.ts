@@ -245,6 +245,43 @@ export let run = (action: string, f: () => void) => {
 			}
 		}
 
+		if (['down', 'up'].includes(action)) {
+			let deleted = new Set<string>();
+
+			let _delete = (keys: string[], key, state) => {
+				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
+
+				if (!deleted.has(key)) {
+					let [class_, name] = key.split('_');
+					let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
+					let dependers = dependersByKey[key] ?? [];
+
+					for (let depender of dependers) {
+						let state = stateByKey[depender];
+						if (state) _delete([key, ...keys], depender, state);
+					}
+
+					let { delete_ } = classes[class_];
+
+					if (action === 'down' || resourceByKey[key] == null) {
+						commands.push(
+							'',
+							`# delete ${name}`,
+							`KEY=${key}`,
+							`KEY_${hash}=\${KEY}`,
+							`STATE_${hash}=${statesDirectory}/\${KEY}`,
+							...delete_(state),
+							`rm -f ${dependenciesDirectory}/\${KEY}`,
+						);
+					}
+
+					deleted.add(key);
+				}
+			};
+
+			for (let [key, state] of Object.entries(stateByKey)) _delete([], key, state);
+		}
+
 		if (['refresh-dependencies', 'up'].includes(action)) {
 			let upserted = new Set<string>();
 
@@ -303,43 +340,6 @@ export let run = (action: string, f: () => void) => {
 			};
 
 			for (let [key, resource] of Object.entries(resourceByKey)) _upsert([], resource);
-		}
-
-		if (['down', 'up'].includes(action)) {
-			let deleted = new Set<string>();
-
-			let _delete = (keys: string[], key, state) => {
-				if (keys.includes(key)) throw new Error(`recursive dependencies for ${key}`);
-
-				if (!deleted.has(key)) {
-					let [class_, name] = key.split('_');
-					let hash = createHash('sha256').update(class_ + '_' + name).digest('hex').slice(0, 4);
-					let dependers = dependersByKey[key] ?? [];
-
-					for (let depender of dependers) {
-						let state = stateByKey[depender];
-						if (state) _delete([key, ...keys], depender, state);
-					}
-
-					let { delete_ } = classes[class_];
-
-					if (action === 'down' || resourceByKey[key] == null) {
-						commands.push(
-							'',
-							`# delete ${name}`,
-							`KEY=${key}`,
-							`KEY_${hash}=\${KEY}`,
-							`STATE_${hash}=${statesDirectory}/\${KEY}`,
-							...delete_(state),
-							`rm -f ${dependenciesDirectory}/\${KEY}`,
-						);
-					}
-
-					deleted.add(key);
-				}
-			};
-
-			for (let [key, state] of Object.entries(stateByKey)) _delete([], key, state);
 		}
 	}
 

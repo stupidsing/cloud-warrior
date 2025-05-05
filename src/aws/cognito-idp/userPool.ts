@@ -17,6 +17,7 @@ type Attributes = {
 			RequireUppercase: boolean,
 		},
 	},
+	UsernameAttributes?: string[],
 };
 
 let delete_ = ({ Id }) => [
@@ -34,7 +35,7 @@ let refresh = Id => [
 
 let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { name, attributes } = resource;
-	let { Name } = attributes;
+	let { Name, UsernameAttributes } = attributes;
 	let commands = [];
 
 	let Id = `$(cat ${statesDirectory}/\${KEY} | jq -r .Id)`;
@@ -44,6 +45,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 			`aws cognito-idp create-user-pool \\`,
 			`  --pool-name ${Name} \\`,
 			`  --user-pool-tags Key=Name,Value=${prefix}-${name} \\`,
+			`  --username-attributes ${UsernameAttributes.join(' ')} \\`,
 			`  | jq .UserPool | tee ${statesDirectory}/\${KEY}`,
 		);
 		state = { Name };
@@ -88,11 +90,12 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 export let userPoolClass: Class = {
 	class_,
 	delete_,
-	getKey: ({ name, attributes: { Name } }: Resource_<Attributes>) => [
+	getKey: ({ name, attributes: { Name, UsernameAttributes } }: Resource_<Attributes>) => [
 		class_,
 		name,
 		createHash('sha256').update([
 			Name,
+			UsernameAttributes.join(' '),
 		].join('_')).digest('hex').slice(0, 4),
 	].join('_'),
 	refresh: ({ Name }) => refresh(Name),

@@ -32,7 +32,8 @@ type Attributes = {
 
 let delete_ = ({ Id }) => [
 	`aws cloudfront delete-cache-policy \\`,
-	`  --id ${Id} &&`,
+	`  --id ${Id} \\`,
+	`  --if-match $(aws cloudfront get-cache-policy --id ${Id} | jq -r .ETag) &&`,
 	`rm -f ${statesDirectory}/\${KEY}`,
 ];
 
@@ -69,6 +70,7 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 				`aws cloudfront update-cache-policy \\`,
 				`  --cache-policy-config ${shellEscape(JSON.stringify(target))} \\`,
 				`  --id \${ID} \\`,
+				`  --if-match $(aws cloudfront get-cache-policy --id \${ID} | jq -r .ETag) \\`,
 				`  | jq .CachePolicy | tee ${statesDirectory}/\${KEY}`,
 				...refresh(CachePolicyId),
 			);

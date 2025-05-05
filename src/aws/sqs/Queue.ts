@@ -6,21 +6,21 @@ let class_ = 'queue';
 
 type Attributes = {
 	Attributes?: {
-		ContentBasedDeduplication?: boolean,
+		ContentBasedDeduplication?: string,
 		DeduplicationScope?: 'message' | 'queue',
-		DelaySeconds?: number,
-		FifoQueue?: boolean,
+		DelaySeconds?: string,
+		FifoQueue?: string,
 		FifoThroughputLimit?: 'perMessageGroupId' | 'perQueue',
-		KmsDataKeyReusePeriodSeconds?: number,
+		KmsDataKeyReusePeriodSeconds?: string,
 		KmsMasterKeyId?: string,
-		MaximumMessageSize?: number,
-		MessageRetentionPeriod?: number,
+		MaximumMessageSize?: string,
+		MessageRetentionPeriod?: string,
 		Policy?: string,
-		ReceiveMessageWaitTimeSeconds?: number,
+		ReceiveMessageWaitTimeSeconds?: string,
 		RedrivePolicy?: string,
 		RedriveAllowPolicy?: string,
-		SqsManagedSseEnabled?: boolean,
-		VisibilityTimeout?: number,
+		SqsManagedSseEnabled?: string,
+		VisibilityTimeout?: string,
 	},
 	QueueName: string,
 };
@@ -28,7 +28,7 @@ type Attributes = {
 let delete_ = ({ QueueUrl }) => [
 	`aws sqs delete-queue \\`,
 	`  --queue-url ${QueueUrl} &&`,
-	`rm -f ${statesDirectory}/\${KEY}`,
+	`rm -f ${statesDirectory}/\${KEY} ${statesDirectory}/\${KEY}#Attributes ${statesDirectory}/\${KEY}#QueueUrl`,
 ];
 
 let refresh = Name => [
@@ -45,14 +45,20 @@ let upsert = (state: Attributes, resource: Resource_<Attributes>) => {
 	let { Attributes, QueueName } = attributes;
 	let commands = [];
 
-	let queueUrl = `$(cat ${statesDirectory}/\${KEY} | jq -r .QueueUrl)`;
+	let queueUrl = `$(cat ${statesDirectory}/\${KEY}#QueueUrl)`;
 
 	if (state == null) {
 		commands.push(
-			`aws sqs create-queue \\`,
+			`QUEUE_URL=$(aws sqs create-queue \\`,
 			...Attributes != null ? [`  --attributes '${JSON.stringify(attributes.Attributes)}' \\`] : [],
-			`  --queue-name ${QueueName}`,
-			`echo '${JSON.stringify(attributes)}' > ${statesDirectory}/\${KEY}`,
+			`  --queue-name ${QueueName} | jq .QueueUrl) &&`,
+			`aws sqs get-queue-attributes \\`,
+			`  --attribute-names All \\`,
+			`  --queue-url \${QUEUE_URL} \\`,
+			`  | jq -r .Attributes \\`,
+			`  | tee ${statesDirectory}/\${KEY}#Attributes &&`,
+			`echo \${QUEUE_URL} | tee ${statesDirectory}/\${KEY}#QueueUrl &&`,
+			`echo {} > ${statesDirectory}/\${KEY}`,
 		);
 		state = { Attributes, QueueName };
 	}

@@ -16,14 +16,17 @@ export let dump = o => {
 };
 
 export let equals = (a, b) => {
+	let eq;
 	if (a === b)
-		return true;
+		eq = true;
 	else {
 		let ta = typeof a;
 		let tb = typeof b;
 
 		if (ta === tb) {
-			if (typeof a.length === 'number') {
+			if (ta === 'string') {
+				eq = false;
+			} else if (typeof a.length === 'number') {
 				if (a.length === b.length) {
 					if (typeof a[0] === 'string') {
 						a = a.toSorted();
@@ -32,24 +35,26 @@ export let equals = (a, b) => {
 
 					let b_ = true;
 					for (let i = 0; i < a.length; i++) b_ &&= equals(a[i], b[i]);
-					return b_;
+					eq = b_;
 				} else {
-					return false;
+					eq = false;
 				}
 			} else if (ta === 'object') {
 				let keys = new Set();
 				for (let key of Object.keys(a)) keys.add(key);
 				for (let key of Object.keys(b)) keys.add(key);
-				let b_ = true;
-				keys.forEach((key: any) => b_ &&= equals(a[key], b[key]));
-				return b_;
+				eq = true;
+				keys.forEach((key: any) => eq &&= equals(a[key], b[key]));
 			} else {
-				return false;
+				eq = false;
 			}
 		} else {
-			return false;
+			eq = false;
 		}
 	}
+
+	if (!eq) console.error(`not equal: ${JSON.stringify(a)} != ${JSON.stringify(b)}`);
+	return eq;
 };
 
 export let replace = (s: string) => {
